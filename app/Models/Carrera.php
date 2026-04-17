@@ -16,6 +16,11 @@ class Carrera extends Model
         'status',
     ];
 
+    protected $casts = [
+        'status' => 'boolean',
+        'fecha_creacion' => 'datetime',
+    ];
+
     public function director(){
         return $this->belongsTo(User::class, 'director_id');
     }
@@ -24,10 +29,20 @@ class Carrera extends Model
         return $this->belongsToMany(Materia::class, 'carrera_materia');
     }
 
-    public function profesores(){
-        return $this->belongsToMany(User::class, 'carrera_has_profesor', 'carrera_id', 'user_id');
+    public function docentes()
+    {
+        return $this->belongsToMany(User::class, 'carrera_has_profesor', 'carrera_id', 'docente_id')
+            ->withTimestamps();
     }
 
+    public function profesores()
+    {
+        return $this->docentes();
+    }
 
+    public function secuencias()
+    {
+        return $this->hasMany(Secuencia::class, 'carrera_id');
+    }
 
 }

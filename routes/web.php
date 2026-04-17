@@ -161,6 +161,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/usuarios/{id}/cambiar-rol', [UserController::class, 'cambiarRol'])
             ->name('usuarios.cambiarRol');
 
+        Route::post('/usuarios/{id}/accesos', [UserController::class, 'actualizarAccesos']);
+
         //********** PERMISOS ********** */    
         Route::get('/permisos',[PermisoController::class,'index'])
             ->name('permisos.index');
@@ -190,6 +192,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/secuenciasCreate',[SecuenciaController::class,'store'])
             ->name('secuencias.store');
 
+        Route::put('/secuencias/{secuencia}/estado', [SecuenciaController::class, 'cambiarEstado']);
+
         //********** MATERIAS ********* */   
         Route::get('/materias',[MateriaController::class,'index'])
             ->name('materias.index');
@@ -212,6 +216,8 @@ Route::middleware(['auth'])->group(function () {
         
         Route::post('/carreras/AsignarProfesor',[CarreraController::class,'asignarProfesores'])
             ->name('carreras.asignarProfesores');    
+
+        Route::put('/carreras/{carrera}/estado', [CarreraController::class, 'cambiarEstado']);
    
 
         //********** ROLES *********/
