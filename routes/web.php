@@ -157,11 +157,15 @@ Route::middleware(['auth'])->group(function () {
         //********** USUARIOS ********** */
         Route::get('usuarios',[UserController::class,'index'])
             ->name('usuarios.index');
+
+        Route::post('/usuarios/create', [UserController::class, 'store'])
+            ->name('usuarios.store');
         
         Route::post('/usuarios/{id}/cambiar-rol', [UserController::class, 'cambiarRol'])
             ->name('usuarios.cambiarRol');
 
-        Route::post('/usuarios/{id}/accesos', [UserController::class, 'actualizarAccesos']);
+        Route::post('/usuarios/{id}/accesos', [UserController::class, 'actualizarAccesos'])
+            ->name('usuarios.actualizarAccesos');
 
         //********** PERMISOS ********** */    
         Route::get('/permisos',[PermisoController::class,'index'])
@@ -192,7 +196,36 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/secuenciasCreate',[SecuenciaController::class,'store'])
             ->name('secuencias.store');
 
+        Route::get('/secuencias/{secuencia}', [SecuenciaController::class, 'show'])
+            ->name('secuencias.show');
+
+        Route::get('/secuencias/{secuencia}/archivo', [SecuenciaController::class, 'verArchivo'])
+            ->name('secuencias.verArchivo');
+
+        Route::get('/secuencias/{secuencia}/archivo-versiones/{version}', [SecuenciaController::class, 'verArchivoVersion'])
+            ->name('secuencias.verArchivoVersion');
+
+        Route::get('/secuencias/{secuencia}/editor', [SecuenciaController::class, 'editor'])
+            ->name('secuencias.editor');
+
+        Route::post('/secuencias/{secuencia}/ocr', [SecuenciaController::class, 'ocrArchivo'])
+            ->name('secuencias.ocrArchivo');
+
+        Route::post('/secuencias/{secuencia}/archivo', [SecuenciaController::class, 'actualizarArchivo'])
+            ->name('secuencias.actualizarArchivo');
+
+        Route::post('/secuencias/{secuencia}/archivo/anotar', [SecuenciaController::class, 'anotarArchivo'])
+            ->name('secuencias.anotarArchivo');
+
+        Route::post('/secuencias/{secuencia}/comentarios', [SecuenciaController::class, 'guardarComentario'])
+            ->name('secuencias.comentarios.guardar');
+
+        Route::put('/secuencias/{secuencia}/comentarios/{comentario}/responder', [SecuenciaController::class, 'responderComentario'])
+            ->name('secuencias.comentarios.responder');
+
         Route::put('/secuencias/{secuencia}/estado', [SecuenciaController::class, 'cambiarEstado']);
+        Route::put('/secuencias/{secuencia}/estatus-academico', [SecuenciaController::class, 'actualizarEstatusAcademico'])
+            ->name('secuencias.actualizarEstatusAcademico');
 
         //********** MATERIAS ********* */   
         Route::get('/materias',[MateriaController::class,'index'])

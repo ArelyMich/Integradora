@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" x-data="{ open: false, userMenu: false, notif: false, perfilModal: false }">
+<html lang="es" x-data="{ open: window.innerWidth >= 768, userMenu: false, notif: false, perfilModal: false }">
 <head>
     <meta charset="UTF-8">
     <meta name="csrf-token" content="{{ csrf_token() }}">

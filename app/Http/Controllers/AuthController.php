@@ -33,6 +33,11 @@ class AuthController extends Controller
 
     public function login(Request $request)
 {
+    $request->validate([
+        'username' => 'required|string|max:255',
+        'password' => 'required|string|min:8',
+    ]);
+
     $loginInput = trim($request->username); // username o email
     $ip = $request->ip();
     $ua = $request->header('User-Agent');
@@ -100,6 +105,12 @@ class AuthController extends Controller
     }
 
     $user = Auth::user();
+
+    if (!($user instanceof User)) {
+        Auth::logout();
+        return back()->withErrors(['username' => 'No se pudo iniciar sesion correctamente.']);
+    }
+
     // ❌ BLOQUEAR SI NO HA VERIFICADO CORREO
     if (!$user->email_verified_at) {
     Auth::logout();
@@ -305,16 +316,17 @@ $codigo = random_int(100000, 999999);
  public function register(Request $request)
 {
     $request->validate([
-        'name' => 'required|string|max:255',
-        'apellido_paterno' => 'required|string|max:255',
-        'apellido_materno' => 'required|string|max:255',
-        'username' => 'required|string|min:3|max:30|unique:users,username',
+        'name' => 'required|string|max:255|regex:/^[\pL\s]+$/u',
+        'apellido_paterno' => 'required|string|max:255|regex:/^[\pL\s]+$/u',
+        'apellido_materno' => 'required|string|max:255|regex:/^[\pL\s]+$/u',
+        'username' => 'required|string|min:3|max:30|regex:/^[A-Za-z0-9_.-]+$/|unique:users,username',
         'email' => [
             'required',
             'email',
             'unique:users,email',
             'regex:/^[\w\.-]+@[\w\.-]+\.edu\.mx$/'
         ],
+        'role_id' => 'nullable|in:4,5',
         'password' => [
             'required',
             'confirmed',
@@ -325,11 +337,18 @@ $codigo = random_int(100000, 999999);
     ], [
         'email.regex' => 'Solo correos .edu.mx',
         'password.regex' => 'Debe tener número y carácter especial',
+        'name.regex' => 'El nombre solo puede contener letras y espacios.',
+        'apellido_paterno.regex' => 'El apellido paterno solo puede contener letras y espacios.',
+        'apellido_materno.regex' => 'El apellido materno solo puede contener letras y espacios.',
+        'username.regex' => 'El username solo puede contener letras, números, punto, guion y guion bajo.',
     ]);
 
-    if (!str_ends_with($request->email, '.edu.mx')) {
+    if (!str_ends_with(strtolower($request->email), '.edu.mx')) {
         return back()->withErrors(['email' => 'Correo institucional inválido']);
     }
+
+    // Por defecto, el registro público se considera como Docente.
+    $roleId = (int) $request->input('role_id', 4);
 
     // ✅ CREAR USUARIO
     $user = User::create([
@@ -347,7 +366,7 @@ $codigo = random_int(100000, 999999);
     // ✅ ASIGNAR ROL
     DB::table('user_has_role')->insert([
         'user_id' => $user->id,
-        'role_id' => 5,
+        'role_id' => $roleId,
         'created_at' => now(),
         'updated_at' => now(),
     ]);

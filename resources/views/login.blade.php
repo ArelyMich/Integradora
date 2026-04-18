@@ -298,6 +298,7 @@
                 padding: 2rem;
                 max-height: 85vh;
             }
+        }
     </style>
 </head>
 
@@ -404,30 +405,33 @@
             {{-- FORMULARIO DE REGISTRO --}}
             <form action="{{ route('register.process') }}" method="POST" class="space-y-5" id="registerForm">
                 @csrf
+                <input type="hidden" name="role_id" value="4">
 
                 <div>
                     <label class="block mb-2 font-medium">Nombre</label>
-                    <input type="text" name="name" required placeholder="Tu nombre"
+                    <input type="text" name="name" required minlength="2" maxlength="255" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$" placeholder="Tu nombre"
                         class="w-full px-4 py-3 rounded-lg input-field text-white placeholder-white/60 focus:outline-none">
                 </div>
                 
                 <div>
                     <label class="block mb-2 font-medium">Apellido Paterno</label>
-                    <input type="text" name="apellido_paterno" required placeholder="Tu apellido paterno"
+                    <input type="text" name="apellido_paterno" required minlength="2" maxlength="255" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$" placeholder="Tu apellido paterno"
                         class="w-full px-4 py-3 rounded-lg input-field text-white placeholder-white/60 focus:outline-none">
                 </div>
                 
                 <div>
                     <label class="block mb-2 font-medium">Apellido Materno</label>
-                    <input type="text" name="apellido_materno" required placeholder="Tu apellido materno"
+                    <input type="text" name="apellido_materno" required minlength="2" maxlength="255" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$" placeholder="Tu apellido materno"
                         class="w-full px-4 py-3 rounded-lg input-field text-white placeholder-white/60 focus:outline-none">
                 </div>
 
                 <div>
                     <label class="block mb-2 font-medium">Username</label>
-                    <input type="username" name="username" required placeholder="Escribe un username para que puedas ingresar."
+                    <input type="text" name="username" required minlength="3" maxlength="30" pattern="^[A-Za-z0-9_.-]+$" placeholder="Escribe un username para que puedas ingresar."
                         class="w-full px-4 py-3 rounded-lg input-field text-white placeholder-white/60 focus:outline-none">
                 </div>
+
+                <p class="text-xs text-white/80">Tu cuenta se registrara como Docente.</p>
 
 
                 <div>

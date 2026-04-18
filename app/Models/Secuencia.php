@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Secuencia extends Model
 {
@@ -21,6 +22,9 @@ class Secuencia extends Model
         'director_id',
         'horas_programadas',
         'fecha_entrega',
+        'archivo_path',
+        'archivo_nombre_original',
+        'archivo_mime',
     ];
 
     protected $casts = [
@@ -56,5 +60,15 @@ class Secuencia extends Model
     public function director(): BelongsTo
     {
         return $this->belongsTo(User::class, 'director_id');
+    }
+
+    public function comentarios(): HasMany
+    {
+        return $this->hasMany(SecuenciaComentario::class, 'secuencia_id')->latest();
+    }
+
+    public function archivoVersiones(): HasMany
+    {
+        return $this->hasMany(SecuenciaArchivoVersion::class, 'secuencia_id')->latest();
     }
 }

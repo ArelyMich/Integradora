@@ -1,6 +1,10 @@
 @extends('layouts.principal')
 
 @section('content')
+@php
+    $roleIds = auth()->user()?->roles?->pluck('id')->all() ?? [];
+    $isReviewer = in_array(3, $roleIds, true);
+@endphp
 <div
     x-data="secuenciasDashboard({
         secuencias: {{ Js::from($secuencias->map(fn($secuencia) => [
@@ -13,11 +17,16 @@
             'status' => (int) $secuencia->status,
             'director' => $secuencia->director ? trim($secuencia->director->name . ' ' . $secuencia->director->apellido_paterno) : 'Sin director',
             'revisor' => $secuencia->revisor ? trim($secuencia->revisor->name . ' ' . $secuencia->revisor->apellido_paterno) : 'Sin revisor',
+            'revisor_id' => $secuencia->revisor_id,
             'horas_programadas' => $secuencia->horas_programadas ?: 'Sin captura',
             'fecha_entrega' => optional($secuencia->fecha_entrega)->format('d/m/Y H:i'),
             'created_at' => optional($secuencia->created_at)->format('d/m/Y H:i'),
         ])) }},
-        statusBaseUrl: '{{ url('/secuencias') }}'
+        statusBaseUrl: '{{ url('/secuencias') }}',
+        academicStatusBaseUrl: '{{ url('/secuencias') }}',
+        ocrUrl: '{{ route('secuencias.uploadAndExtract') }}',
+        templatePdfUrl: '{{ asset('docs/secuencia-didactica-uth.pdf') }}',
+        canReview: {{ $isReviewer ? 'true' : 'false' }}
     })"
     class="min-h-screen bg-slate-100/70 p-4 md:p-8"
     x-cloak>
@@ -26,10 +35,10 @@
             <div class="grid gap-3 bg-[radial-gradient(circle_at_top_left,_rgba(12,75,84,0.16),_transparent_30%),linear-gradient(135deg,_#ffffff,_#f5f7fb)] px-6 py-8 md:grid-cols-2">
                 <div class="space-y-4">
                     <div>
-                        <h1 class="text-3xl font-black text-slate-900 md:text-5xl">Secuencias</h1>
+                        <h1 class="text-3xl font-black text-slate-900 md:text-5xl">{{ $isReviewer ? 'Panel de Revisión de Secuencias' : 'Secuencias' }}</h1>
                     </div>
                     <div class="flex flex-wrap gap-3">
-                        @if (Auth::user()->hasPermission('secuencias.createView'))
+                        @if (!$isReviewer && Auth::user()->hasPermission('secuencias.createView'))
                         <a href="{{ route('secuencias.createView') }}" class="rounded-2xl bg-[#0C4B54] px-5 py-3 text-sm font-black text-white shadow-lg transition hover:-translate-y-0.5">
                             Nueva secuencia
                         </a>
@@ -79,6 +88,25 @@
                 @endforeach
             </ul>
         </div>
+        @endif
+
+        @if ($isReviewer)
+        <section class="rounded-[2rem] border border-sky-100 bg-gradient-to-r from-sky-50 to-cyan-50 p-5 shadow-sm">
+            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <p class="text-xs font-black uppercase tracking-[0.25em] text-sky-600">Plantilla oficial</p>
+                    <h2 class="mt-1 text-xl font-black text-slate-900">Vista rápida del formato SECUENCIA DIDÁCTICA UTH</h2>
+                    <p class="mt-1 text-sm text-slate-600">Presiona el recuadro para abrir el PDF en un visor rápido y revisar el formato antes del dictamen.</p>
+                </div>
+                <button
+                    type="button"
+                    @click="openTemplateModal()"
+                    class="rounded-2xl bg-sky-600 px-5 py-3 text-sm font-black text-white shadow-lg transition hover:bg-sky-700"
+                >
+                    Abrir formato rápido
+                </button>
+            </div>
+        </section>
         @endif
 
         <section class="grid gap-6 lg:grid-cols-[1.55fr_.85fr]">
@@ -148,11 +176,33 @@
                                                     class="rounded-2xl border border-slate-200 px-3 py-2 text-xs font-black text-slate-700 transition hover:border-[#0C4B54] hover:text-[#0C4B54]">
                                                     Ver
                                                 </button>
-                                                <button
-                                                    @click="openStatusModal(secuencia)"
-                                                    class="rounded-2xl px-3 py-2 text-xs font-black transition"
-                                                    :class="secuencia.status ? 'bg-rose-50 text-rose-700 hover:bg-rose-100' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'"
-                                                    x-text="secuencia.status ? 'Desactivar' : 'Reactivar'"></button>
+                                                <a
+                                                    :href="`${statusBaseUrl}/${secuencia.id}`"
+                                                    class="rounded-2xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs font-black text-cyan-700 transition hover:border-cyan-300 hover:bg-cyan-100"
+                                                >
+                                                    Panel
+                                                </a>
+                                                <template x-if="!canReview">
+                                                    <button
+                                                        @click="openStatusModal(secuencia)"
+                                                        class="rounded-2xl px-3 py-2 text-xs font-black transition"
+                                                        :class="secuencia.status ? 'bg-rose-50 text-rose-700 hover:bg-rose-100' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'"
+                                                        x-text="secuencia.status ? 'Desactivar' : 'Reactivar'"></button>
+                                                </template>
+                                                <template x-if="canReview">
+                                                    <button
+                                                        @click="openAcademicStatusModal(secuencia)"
+                                                        class="rounded-2xl bg-sky-50 px-3 py-2 text-xs font-black text-sky-700 transition hover:bg-sky-100">
+                                                        Emitir dictamen
+                                                    </button>
+                                                </template>
+                                                <template x-if="canReview">
+                                                    <button
+                                                        @click="openTemplateModal()"
+                                                        class="rounded-2xl bg-cyan-50 px-3 py-2 text-xs font-black text-cyan-700 transition hover:bg-cyan-100">
+                                                        Formato rápido
+                                                    </button>
+                                                </template>
                                             </div>
                                         </td>
                                     </tr>
@@ -290,6 +340,97 @@
             </form>
         </div>
     </div>
+
+    <div x-show="modalAcademicStatusOpen" class="fixed inset-0 z-50 flex items-center justify-center px-4" style="display: none;">
+        <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" @click="closeAcademicStatusModal()"></div>
+        <div class="relative z-10 w-full max-w-3xl rounded-[2rem] bg-white p-6 shadow-2xl">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <p class="text-sm font-black uppercase tracking-[0.25em] text-slate-400">Dictamen</p>
+                    <h3 class="mt-1 text-2xl font-black text-slate-900">Revisión de secuencia</h3>
+                    <p class="mt-2 text-sm text-slate-500" x-text="selectedSecuencia.materia ? selectedSecuencia.materia + ' - ' + selectedSecuencia.carrera : ''"></p>
+                </div>
+                <button @click="closeAcademicStatusModal()" class="rounded-full bg-slate-100 px-3 py-2 text-slate-500 transition hover:bg-slate-200">×</button>
+            </div>
+
+            <form :action="selectedAcademicStatusAction" method="POST" class="mt-6 space-y-5">
+                @csrf
+                @method('PUT')
+
+                <div class="grid gap-4 md:grid-cols-2">
+                    <div>
+                        <label class="text-sm font-bold text-slate-600">Nuevo estatus académico</label>
+                        <select name="estatus" x-model="selectedAcademicStatusValue" class="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none focus:border-[#0C4B54]">
+                            <option value="revision">Revisión</option>
+                            <option value="correcciones">Correcciones</option>
+                            <option value="aprobada">Aprobada</option>
+                        </select>
+                    </div>
+                    <div class="rounded-3xl bg-slate-50 p-4">
+                        <p class="text-xs font-black uppercase tracking-[0.25em] text-slate-400">Estatus actual</p>
+                        <p class="mt-2 text-sm font-semibold text-slate-800" x-text="labelAcademicStatus(selectedSecuencia.estatus)"></p>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-sm font-bold text-slate-600">Motivo del dictamen</label>
+                    <textarea name="motivo" rows="4" x-model="reviewNote" required class="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-[#0C4B54]" placeholder="Describe observaciones, correcciones o aprobacion final"></textarea>
+                </div>
+
+                <div class="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                    <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <p class="text-sm font-black text-slate-800">Ayuda con OCR</p>
+                            <p class="text-xs text-slate-500">Sube PDF o imagen para extraer texto y apoyar tu revision.</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <input type="file" accept=".pdf,.png,.jpg,.jpeg" @change="setOcrFile($event)" class="block w-full text-xs text-slate-500 file:mr-3 file:rounded-xl file:border-0 file:bg-slate-900 file:px-3 file:py-2 file:text-xs file:font-black file:text-white md:w-auto">
+                            <button type="button" @click="runOcrFromFile()" class="rounded-2xl bg-slate-900 px-4 py-2 text-xs font-black text-white transition hover:bg-slate-700" :disabled="ocrLoading || !ocrFile">
+                                <span x-show="!ocrLoading">Extraer OCR</span>
+                                <span x-show="ocrLoading" style="display: none;">Procesando...</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <template x-if="ocrError">
+                        <p class="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700" x-text="ocrError"></p>
+                    </template>
+
+                    <template x-if="Object.keys(ocrData).length">
+                        <div class="mt-4 grid gap-2 rounded-2xl bg-white p-3 text-xs text-slate-700 md:grid-cols-2">
+                            <template x-for="entry in Object.entries(ocrData)" :key="entry[0]">
+                                <p><span class="font-black" x-text="entry[0]"></span>: <span x-text="entry[1]"></span></p>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <button type="button" @click="closeAcademicStatusModal()" class="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-black text-slate-600">Cancelar</button>
+                    <button type="submit" class="rounded-2xl bg-[#0C4B54] px-5 py-3 text-sm font-black text-white shadow-lg transition hover:bg-[#083840]">
+                        Guardar dictamen
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div x-show="modalTemplateOpen" class="fixed inset-0 z-50 flex items-center justify-center px-4" style="display: none;">
+        <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" @click="closeTemplateModal()"></div>
+        <div class="relative z-10 h-[90vh] w-full max-w-6xl overflow-hidden rounded-[2rem] bg-white shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-200 px-5 py-3">
+                <div>
+                    <p class="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Vista rápida</p>
+                    <p class="text-sm font-semibold text-slate-700">Formato SECUENCIA DIDÁCTICA UTH</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a :href="templatePdfUrl" target="_blank" class="rounded-xl bg-slate-100 px-3 py-2 text-xs font-black text-slate-700 transition hover:bg-slate-200">Abrir en pestaña</a>
+                    <button type="button" @click="closeTemplateModal()" class="rounded-xl bg-slate-100 px-3 py-2 text-xs font-black text-slate-600 transition hover:bg-slate-200">Cerrar</button>
+                </div>
+            </div>
+            <iframe :src="templatePdfUrl + '#zoom=page-width'" class="h-[calc(90vh-60px)] w-full" title="Formato de secuencia didactica"></iframe>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -297,14 +438,27 @@
         Alpine.data('secuenciasDashboard', (config) => ({
             secuencias: config.secuencias,
             statusBaseUrl: config.statusBaseUrl,
+            academicStatusBaseUrl: config.academicStatusBaseUrl,
+            ocrUrl: config.ocrUrl,
+            templatePdfUrl: config.templatePdfUrl,
+            canReview: config.canReview,
             search: '',
             filterStatus: 'all',
             filterAcademicStatus: 'all',
             modalDetailOpen: false,
             modalStatusOpen: false,
+            modalAcademicStatusOpen: false,
+            modalTemplateOpen: false,
             selectedSecuencia: {},
             selectedStatusValue: 0,
             selectedStatusAction: '',
+            selectedAcademicStatusValue: 'revision',
+            selectedAcademicStatusAction: '',
+            reviewNote: '',
+            ocrFile: null,
+            ocrData: {},
+            ocrError: '',
+            ocrLoading: false,
 
             get activasCount() {
                 return this.secuencias.filter(secuencia => secuencia.status === 1).length;
@@ -375,6 +529,76 @@
             closeStatusModal() {
                 this.modalStatusOpen = false;
                 document.body.style.overflow = '';
+            },
+            openAcademicStatusModal(secuencia) {
+                this.selectedSecuencia = secuencia;
+                this.selectedAcademicStatusValue = secuencia.estatus === 'aprobada' ? 'aprobada' : 'correcciones';
+                this.selectedAcademicStatusAction = `${this.academicStatusBaseUrl}/${secuencia.id}/estatus-academico`;
+                this.reviewNote = '';
+                this.ocrFile = null;
+                this.ocrData = {};
+                this.ocrError = '';
+                this.modalAcademicStatusOpen = true;
+                document.body.style.overflow = 'hidden';
+            },
+            closeAcademicStatusModal() {
+                this.modalAcademicStatusOpen = false;
+                this.ocrLoading = false;
+                document.body.style.overflow = '';
+            },
+            openTemplateModal() {
+                this.modalTemplateOpen = true;
+                document.body.style.overflow = 'hidden';
+            },
+            closeTemplateModal() {
+                this.modalTemplateOpen = false;
+                document.body.style.overflow = '';
+            },
+            setOcrFile(event) {
+                const files = event?.target?.files || [];
+                this.ocrFile = files.length ? files[0] : null;
+                this.ocrError = '';
+            },
+            async runOcrFromFile() {
+                if (!this.ocrFile || this.ocrLoading) {
+                    return;
+                }
+
+                this.ocrLoading = true;
+                this.ocrError = '';
+
+                const formData = new FormData();
+                formData.append('caratula_file', this.ocrFile);
+
+                try {
+                    const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                    const response = await fetch(this.ocrUrl, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': csrf || '',
+                            'Accept': 'application/json',
+                        },
+                        body: formData,
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok || !data.success) {
+                        this.ocrError = data.message || 'No se pudo procesar el archivo OCR.';
+                        return;
+                    }
+
+                    this.ocrData = data.extracted_data || {};
+
+                    if (this.ocrData.competencia) {
+                        const block = `\n\nOCR competencia detectada:\n${this.ocrData.competencia}`;
+                        this.reviewNote = `${this.reviewNote}${block}`.trim();
+                    }
+                } catch (error) {
+                    this.ocrError = 'Ocurrio un error al procesar OCR.';
+                } finally {
+                    this.ocrLoading = false;
+                }
             },
         }));
     });

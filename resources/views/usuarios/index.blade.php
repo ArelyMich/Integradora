@@ -88,7 +88,7 @@
                     <p class="text-sm font-black uppercase tracking-[0.25em] text-slate-400">Directorio</p>
                     <h2 class="mt-1 text-2xl font-black text-slate-900">Gestión centralizada de accesos</h2>
                 </div>
-                <div class="grid gap-3 md:grid-cols-3">
+                <div class="grid gap-3 md:grid-cols-4">
                     <input
                         x-model="search"
                         type="text"
@@ -106,6 +106,16 @@
                         <option value="activo">Activos</option>
                         <option value="inactivo">Inactivos</option>
                     </select>
+                    @if(auth()->user()->hasPermission('usuarios.store'))
+                        <button
+                            type="button"
+                            @click="openCreateModal()"
+                            class="group inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#173C4C] via-[#326D6C] to-[#568F7C] px-4 py-3 text-sm font-black text-white shadow-lg shadow-[#173C4C]/25 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-[#173C4C]/35"
+                        >
+                            <span class="text-base leading-none">+</span>
+                            Crear usuario
+                        </button>
+                    @endif
                 </div>
             </div>
 
@@ -142,7 +152,7 @@
                                         ></span>
                                     </td>
                                     <td class="px-5 py-4 text-center">
-                                        @if(auth()->user()->hasPermission('usuarios.cambiarRol'))
+                                        @if(auth()->user()->hasPermission('usuarios.actualizarAccesos') || auth()->user()->hasPermission('usuarios.cambiarRol'))
                                             <button
                                                 @click="openAccessModal(usuario)"
                                                 class="rounded-2xl bg-[#173C4C] px-4 py-2.5 text-sm font-black text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-[#07142B]"
@@ -164,7 +174,7 @@
         </section>
     </div>
 
-    <div x-show="modalOpen" class="fixed inset-0 z-50 flex items-center justify-center px-4" style="display: none;">
+    <div x-show="modalOpen" class="fixed inset-0 z-[80] flex items-center justify-center px-4" style="display: none;">
         <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" @click="closeModal()"></div>
         <div class="relative z-10 w-full max-w-5xl rounded-[2rem] bg-white p-6 shadow-2xl">
             <div class="flex flex-col gap-4 border-b border-slate-100 pb-5 md:flex-row md:items-start md:justify-between">
@@ -262,6 +272,154 @@
             </form>
         </div>
     </div>
+
+    <div x-show="createModalOpen" class="fixed inset-0 z-[80] flex items-center justify-center px-4" style="display: none;">
+        <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" @click="closeCreateModal()"></div>
+        <div class="relative z-10 w-full max-w-3xl rounded-[2rem] bg-white p-6 shadow-2xl">
+            <div class="flex flex-col gap-3 border-b border-slate-100 pb-5 md:flex-row md:items-start md:justify-between">
+                <div>
+                    <p class="text-sm font-black uppercase tracking-[0.25em] text-slate-400">Nuevo usuario</p>
+                    <h3 class="mt-1 text-3xl font-black text-slate-900">Crear cuenta desde panel</h3>
+                    <p class="mt-2 text-sm text-slate-500">Completa todos los campos obligatorios y asigna un rol activo.</p>
+                </div>
+                <button type="button" @click="closeCreateModal()" class="self-start rounded-full bg-slate-100 px-3 py-2 text-slate-500 transition hover:bg-slate-200">×</button>
+            </div>
+
+            <form action="{{ route('usuarios.store') }}" method="POST" class="mt-6 space-y-5">
+                @csrf
+
+                <div class="grid gap-4 md:grid-cols-2">
+                    <div>
+                        <label class="text-sm font-bold text-slate-600">Nombre</label>
+                        <input
+                            type="text"
+                            name="name"
+                            value="{{ old('name') }}"
+                            required
+                            minlength="2"
+                            maxlength="255"
+                            pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$"
+                            class="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#173C4C] focus:bg-white"
+                        >
+                    </div>
+                    <div>
+                        <label class="text-sm font-bold text-slate-600">Apellido paterno</label>
+                        <input
+                            type="text"
+                            name="apellido_paterno"
+                            value="{{ old('apellido_paterno') }}"
+                            required
+                            minlength="2"
+                            maxlength="255"
+                            pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$"
+                            class="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#173C4C] focus:bg-white"
+                        >
+                    </div>
+                </div>
+
+                <div class="grid gap-4 md:grid-cols-2">
+                    <div>
+                        <label class="text-sm font-bold text-slate-600">Apellido materno</label>
+                        <input
+                            type="text"
+                            name="apellido_materno"
+                            value="{{ old('apellido_materno') }}"
+                            required
+                            minlength="2"
+                            maxlength="255"
+                            pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$"
+                            class="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#173C4C] focus:bg-white"
+                        >
+                    </div>
+                    <div>
+                        <label class="text-sm font-bold text-slate-600">Username</label>
+                        <input
+                            type="text"
+                            name="username"
+                            value="{{ old('username') }}"
+                            required
+                            minlength="3"
+                            maxlength="30"
+                            pattern="^[A-Za-z0-9_.-]+$"
+                            class="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#173C4C] focus:bg-white"
+                        >
+                    </div>
+                </div>
+
+                <div class="grid gap-4 md:grid-cols-2">
+                    <div>
+                        <label class="text-sm font-bold text-slate-600">Correo electrónico</label>
+                        <input
+                            type="email"
+                            name="email"
+                            value="{{ old('email') }}"
+                            required
+                            class="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#173C4C] focus:bg-white"
+                        >
+                    </div>
+                    <div>
+                        <label class="text-sm font-bold text-slate-600">Rol</label>
+                        <select
+                            name="role_id"
+                            required
+                            class="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#173C4C] focus:bg-white"
+                        >
+                            <option value="">Seleccione un rol</option>
+                            @foreach($roles as $rol)
+                                <option value="{{ $rol->id }}" @selected(old('role_id') == $rol->id)>{{ $rol->nombre }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid gap-4 md:grid-cols-3">
+                    <div class="md:col-span-2">
+                        <label class="text-sm font-bold text-slate-600">Contraseña</label>
+                        <input
+                            type="password"
+                            name="password"
+                            required
+                            minlength="8"
+                            pattern="^(?=.*[0-9])(?=.*[@$!%*#?&]).{8,}$"
+                            class="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#173C4C] focus:bg-white"
+                        >
+                        <p class="mt-1 text-xs font-semibold text-slate-500">Minimo 8 caracteres, al menos un numero y un caracter especial.</p>
+                    </div>
+                    <div>
+                        <label class="text-sm font-bold text-slate-600">Estado</label>
+                        <select
+                            name="status"
+                            required
+                            class="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#173C4C] focus:bg-white"
+                        >
+                            <option value="1" @selected(old('status', '1') == '1')>Activo</option>
+                            <option value="0" @selected(old('status') == '0')>Inactivo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-sm font-bold text-slate-600">Confirmar contraseña</label>
+                    <input
+                        type="password"
+                        name="password_confirmation"
+                        required
+                        minlength="8"
+                        class="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#173C4C] focus:bg-white"
+                    >
+                </div>
+
+                <div class="flex justify-end gap-3 border-t border-slate-100 pt-4">
+                    <button type="button" @click="closeCreateModal()" class="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-black text-slate-600">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="rounded-2xl bg-gradient-to-r from-[#173C4C] via-[#326D6C] to-[#568F7C] px-5 py-3 text-sm font-black text-white shadow-lg transition hover:-translate-y-0.5">
+                        Crear usuario
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -275,6 +433,7 @@
             filterRole: '',
             filterStatus: '',
             modalOpen: false,
+            createModalOpen: false,
             selectedUser: {},
             selectedRoleId: '',
             selectedPermissionIds: [],
@@ -328,6 +487,14 @@
                 this.permissionsSearch = '';
                 this.formAction = '';
             },
+            openCreateModal() {
+                this.createModalOpen = true;
+                document.body.style.overflow = 'hidden';
+            },
+            closeCreateModal() {
+                this.createModalOpen = false;
+                document.body.style.overflow = '';
+            },
             applyRolePermissions() {
                 const role = this.roles.find(item => String(item.id) === String(this.selectedRoleId));
                 this.selectedPermissionIds = role ? role.permission_ids.map(id => String(id)) : [];
@@ -335,6 +502,30 @@
         }));
     });
 </script>
+
+@if ($errors->has('name') || $errors->has('apellido_paterno') || $errors->has('apellido_materno') || $errors->has('username') || $errors->has('email') || $errors->has('password') || $errors->has('password_confirmation') || $errors->has('role_id') || $errors->has('status'))
+    <script>
+        (function openCreateModalWithErrors() {
+            const tryOpen = () => {
+                const root = document.querySelector('[x-data^="accessManager"]');
+
+                if (!root || !root.__x) {
+                    requestAnimationFrame(tryOpen);
+                    return;
+                }
+
+                root.__x.$data.createModalOpen = true;
+                document.body.style.overflow = 'hidden';
+            };
+
+            if (window.Alpine) {
+                requestAnimationFrame(tryOpen);
+            } else {
+                document.addEventListener('alpine:init', () => requestAnimationFrame(tryOpen), { once: true });
+            }
+        })();
+    </script>
+@endif
 
 <style>
     [x-cloak] { display: none !important; }

@@ -1,6 +1,10 @@
 @php
 
     $user = auth()->user();   
+    $roleIds = $user?->roles?->pluck('id')->all() ?? [];
+    $isAcademicRole = in_array(2, $roleIds, true)
+        || in_array(3, $roleIds, true)
+        || in_array(4, $roleIds, true);
 
     $currentRoute = request()->routeIs('*') ? request()->route()->getName() : '';
 
@@ -22,14 +26,14 @@
     <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center ring-2 ring-[var(--c3)] mb-3 shadow-lg">
         <i class="fas fa-user-shield text-xl text-white opacity-90"></i>
     </div>
-    <h2 class="text-xl font-extrabold tracking-wider text-white uppercase">Panel Admin</h2>
+    <h2 class="text-xl font-extrabold tracking-wider text-white uppercase">Panel {{ $user->roles?->first()?->nombre ?? 'Usuario' }}</h2>
 </div>
 
 <nav class="flex flex-col gap-1.5 overflow-y-auto max-h-[calc(100vh-160px)] pr-2">
 
     {{-- Dashboard siempre visible --}}
     <a href="{{ route('dashboard') }}" 
-       class="flex items-center gap-4 px-4 py-2.5 rounded-lg transition-all duration-300 ease-in-out {{ isActive('dashboard.index', $currentRoute, $activeBase, $inactiveBase) }}"
+         class="flex items-center gap-4 px-4 py-2.5 rounded-lg transition-all duration-300 ease-in-out {{ isActive('dashboard', $currentRoute, $activeBase, $inactiveBase) }}"
        title="Vista general del sistema">
         <div class="w-6 text-center">
             <i class="fas fa-tachometer-alt text-lg"></i>
@@ -41,7 +45,7 @@
 
 
  {{-- Materias --}}
-    @if($user->hasPermission('materias.index'))
+     @if($isAcademicRole || $user->hasPermission('materias.index'))
     <a href="{{ route('materias.index') }}" 
        class="flex items-center gap-4 px-4 py-2.5 rounded-lg transition-all duration-300 ease-in-out {{ isActive('materias.index', $currentRoute, $activeBase, $inactiveBase) }}"
        title="Gestión de Materias">
@@ -53,7 +57,7 @@
     @endif
 
     {{-- Secuencias --}}
-    @if($user->hasPermission('secuencias.index'))
+    @if($isAcademicRole || $user->hasPermission('secuencias.index'))
     <a href="{{ route('secuencias.index') }}" 
        class="flex items-center gap-4 px-4 py-2.5 rounded-lg transition-all duration-300 ease-in-out {{ isActive('secuencias.index', $currentRoute, $activeBase, $inactiveBase) }}"
        title="Gestión de Secuencias">
@@ -65,7 +69,7 @@
     @endif
 
     {{-- Carreas --}}
-    @if($user->hasPermission('carreras.index'))
+    @if($isAcademicRole || $user->hasPermission('carreras.index'))
     <a href="{{ route('carreras.index') }}" 
        class="flex items-center gap-4 px-4 py-2.5 rounded-lg transition-all duration-300 ease-in-out {{ isActive('carreras.index', $currentRoute, $activeBase, $inactiveBase) }}"
        title="Gestión de Materias">

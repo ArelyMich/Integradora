@@ -123,7 +123,7 @@
         </div>
     </div>
     
-    <form action="{{ route('secuencias.store') }}" method="POST" class="space-y-6">
+    <form action="{{ route('secuencias.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
         @csrf
 
         {{-- CONTENEDOR DE PASOS (Carrousel) --}}
@@ -235,6 +235,20 @@
                                     <option :value="tutor.id" x-text="tutor.nombre"></option>
                                 </template>
                             </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center mt-4">
+                        <label for="archivo_secuencia" class="block text-lg font-bold text-gray-800">Archivo de la secuencia:</label>
+                        <div class="col-span-2">
+                            <input
+                                id="archivo_secuencia"
+                                name="archivo_secuencia"
+                                type="file"
+                                accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                                class="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm shadow-sm focus:border-[#0C4B54] focus:outline-none focus:ring-[#0C4B54]"
+                            >
+                            <p class="mt-1 text-xs text-gray-500">Opcional. Permitidos: PDF, DOC, DOCX, PNG, JPG, JPEG (max 20MB).</p>
                         </div>
                     </div>
 
