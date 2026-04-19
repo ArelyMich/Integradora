@@ -71,7 +71,16 @@ class SecuenciaController extends Controller
             ? route('secuencias.verArchivo', $secuencia)
             : asset('docs/secuencia-didactica-uth.pdf');
 
-        return view('secuencias.editor', compact('secuencia', 'archivoUrl'));
+        $mime = strtolower((string) ($secuencia->archivo_mime ?? ''));
+        $extension = strtolower((string) pathinfo((string) $secuencia->archivo_path, PATHINFO_EXTENSION));
+
+        $pdfAvailable = ! $secuencia->archivo_path
+            || str_contains($mime, 'pdf')
+            || $extension === 'pdf';
+
+        $pdfUrl = $pdfAvailable ? $archivoUrl : null;
+
+        return view('secuencias.editor', compact('secuencia', 'archivoUrl', 'pdfUrl', 'pdfAvailable'));
     }
 
     public function ocrArchivo(Secuencia $secuencia)

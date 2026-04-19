@@ -2,23 +2,31 @@
 
 @section('content')
 @php
-    $pdfComments = $secuencia->comentarios
-        ->filter(fn ($comentario) => $comentario->page && $comentario->x !== null && $comentario->y !== null && $comentario->width !== null && $comentario->height !== null)
-        ->map(fn ($comentario) => [
-            'id' => $comentario->id,
-            'page' => (int) $comentario->page,
-            'coord_mode' => $comentario->coord_mode ?: 'percent',
-            'x' => (float) $comentario->x,
-            'y' => (float) $comentario->y,
-            'width' => (float) $comentario->width,
-            'height' => (float) $comentario->height,
-            'titulo' => $comentario->titulo,
-            'info' => $comentario->info,
-            'comentario' => $comentario->comentario,
-            'texto_seleccionado' => $comentario->texto_seleccionado,
-            'autor' => $comentario->usuario?->name ?? 'Usuario',
-        ])
-        ->values();
+$archivoUrl = $archivoUrl ?? asset('docs/secuencia-didactica-uth.pdf');
+$pdfUrl = $pdfUrl ?? null;
+$pdfAvailable = isset($pdfAvailable) ? (bool) $pdfAvailable : ($pdfUrl !== null);
+
+if ($pdfAvailable && $pdfUrl === null) {
+$pdfUrl = $archivoUrl;
+}
+
+$pdfComments = $secuencia->comentarios
+->filter(fn ($comentario) => $comentario->page && $comentario->x !== null && $comentario->y !== null && $comentario->width !== null && $comentario->height !== null)
+->map(fn ($comentario) => [
+'id' => $comentario->id,
+'page' => (int) $comentario->page,
+'coord_mode' => $comentario->coord_mode ?: 'percent',
+'x' => (float) $comentario->x,
+'y' => (float) $comentario->y,
+'width' => (float) $comentario->width,
+'height' => (float) $comentario->height,
+'titulo' => $comentario->titulo,
+'info' => $comentario->info,
+'comentario' => $comentario->comentario,
+'texto_seleccionado' => $comentario->texto_seleccionado,
+'autor' => $comentario->usuario?->name ?? 'Usuario',
+])
+->values();
 @endphp
 
 <div
@@ -28,13 +36,12 @@
         comments: @js($pdfComments),
     })"
     x-init="init()"
-    class="min-h-screen bg-slate-950 p-3 md:p-4"
->
-    <div class="mx-auto grid max-w-[1750px] gap-3 xl:grid-cols-[2.15fr_.85fr]">
+    class="min-h-screen bg-slate-950 p-2 md:p-3">
+    <div class="mx-auto grid max-w-[2200px] gap-3 xl:grid-cols-[3fr_.7fr]">
         <section class="overflow-hidden rounded-[2rem] border border-slate-800 bg-slate-900/95 shadow-2xl shadow-black/30">
             <div class="flex flex-col gap-3 border-b border-slate-800 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                    <p class="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500">Editor completo PDF</p>
+                    <p class="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500">Editor PDF</p>
                     <h1 class="mt-1 text-lg font-black text-white md:text-2xl">{{ $secuencia->materia?->nombre ?? 'Secuencia' }}</h1>
                     <p class="mt-1 text-xs font-semibold text-slate-400">
                         {{ $secuencia->carrera?->nombre_carrera ?? 'Sin carrera' }} · {{ $secuencia->periodo?->nombre ?? 'Sin periodo' }} {{ $secuencia->periodo?->anio ?? '' }}
@@ -46,14 +53,9 @@
                         type="button"
                         @click="toggleSelector()"
                         class="rounded-2xl px-4 py-2 text-xs font-black transition"
-                        :class="selectorEnabled ? 'bg-sky-600 text-white hover:bg-sky-700' : 'bg-slate-100 text-slate-900 hover:bg-white'"
-                    >
-                        <span x-text="selectorEnabled ? 'Selector activo' : 'Activar selector'"></span>
+                        :class="selectorEnabled ? 'bg-sky-600 text-white hover:bg-sky-700' : 'bg-slate-100 text-slate-900 hover:bg-white'">
+                        <span x-text="selectorEnabled ? 'Selector: ON' : 'Selector: OFF'"></span>
                     </button>
-
-                    <span class="rounded-2xl bg-emerald-600 px-4 py-2 text-xs font-black text-white shadow-[0_0_24px_rgba(22,163,74,0.22)]">
-                        Rectangulo
-                    </span>
 
                     <button type="button" @click="clearSelection()" class="rounded-2xl border border-slate-700 bg-slate-900 px-4 py-2 text-xs font-black text-slate-200 transition hover:bg-slate-800">
                         Limpiar
@@ -68,7 +70,7 @@
             <div class="grid gap-3 border-b border-slate-800 bg-slate-900/60 px-4 py-3 text-xs text-slate-300 md:grid-cols-4">
                 <div class="rounded-2xl border border-slate-800 bg-slate-950/70 px-3 py-3">
                     <p class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Modo</p>
-                    <p class="mt-1 font-semibold" x-text="selectorEnabled ? 'Marcado rectangular editable' : 'Solo lectura'"></p>
+                    <p class="mt-1 font-semibold" x-text="selectorEnabled ? 'Crear, mover y redimensionar zona' : 'Solo lectura'"></p>
                 </div>
                 <div class="rounded-2xl border border-slate-800 bg-slate-950/70 px-3 py-3">
                     <p class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Paginas</p>
@@ -85,20 +87,20 @@
             </div>
 
             @if (session('success'))
-                <div class="border-b border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-200">
-                    {{ session('success') }}
-                </div>
+            <div class="border-b border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-200">
+                {{ session('success') }}
+            </div>
             @endif
 
             @if ($errors->any())
-                <div class="border-b border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-                    <p class="font-black">Hay validaciones pendientes:</p>
-                    <ul class="mt-2 space-y-1 text-xs">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
+            <div class="border-b border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+                <p class="font-black">Hay validaciones pendientes:</p>
+                <ul class="mt-2 space-y-1 text-xs">
+                    @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
             @endif
 
             <div class="relative">
@@ -109,58 +111,74 @@
                 <div x-show="pdfError" class="border-b border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-100" x-text="pdfError" style="display: none;"></div>
 
                 @if ($pdfAvailable)
-                    <div x-ref="viewerHost" class="h-[78vh] overflow-y-auto bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.08),_transparent_22%),linear-gradient(180deg,_#020617,_#0f172a)] px-3 py-4 md:px-5"></div>
-                @else
-                    <div class="flex h-[70vh] flex-col items-center justify-center gap-3 px-6 text-center text-slate-300">
-                        <p class="text-lg font-black text-white">No hay un PDF disponible para renderizar dentro del editor.</p>
-                        <p class="max-w-xl text-sm">Puedes abrir el archivo original o subir una version en PDF para habilitar el visor completo por paginas.</p>
-                        <a href="{{ $archivoUrl }}" target="_blank" class="rounded-2xl bg-sky-600 px-4 py-2 text-xs font-black text-white hover:bg-sky-700">Abrir archivo</a>
+                <div class="relative">
+                    <div x-ref="viewerHost" class="h-[90vh] overflow-y-auto bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.08),_transparent_22%),linear-gradient(180deg,_#020617,_#0f172a)] px-2 py-3 md:px-3"></div>
+
+                    <div class="pointer-events-none absolute bottom-4 left-4 z-30 rounded-2xl border border-slate-600/60 bg-slate-950/85 px-3 py-2 text-[11px] text-slate-100 shadow-xl">
+                        <p class="font-black uppercase tracking-[0.18em] text-slate-300">Actividad</p>
+                        <p class="mt-1 font-semibold" x-text="workflowStatus"></p>
                     </div>
+                </div>
+                @else
+                <div class="flex h-[70vh] flex-col items-center justify-center gap-3 px-6 text-center text-slate-300">
+                    <p class="text-lg font-black text-white">No hay un PDF disponible para renderizar dentro del editor.</p>
+                    <p class="max-w-xl text-sm">Puedes abrir el archivo original o subir una version en PDF para habilitar el visor completo por paginas.</p>
+                    <a href="{{ $archivoUrl }}" target="_blank" class="rounded-2xl bg-sky-600 px-4 py-2 text-xs font-black text-white hover:bg-sky-700">Abrir archivo</a>
+                </div>
                 @endif
             </div>
         </section>
 
-        <aside class="space-y-3">
+        <aside class="space-y-3 xl:sticky xl:top-3 xl:max-h-[94vh] xl:overflow-y-auto xl:pr-1">
+            <section class="rounded-[2rem] border border-slate-800 bg-slate-900 p-4 text-slate-100">
+                <p class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Vista en vivo</p>
+                <h2 class="mt-1 text-base font-black text-white">Lo que estas haciendo</h2>
+
+                <div class="mt-3 rounded-2xl border border-slate-800 bg-slate-950/80 px-3 py-3">
+                    <p class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Estado</p>
+                    <p class="mt-1 text-sm font-black" :class="selection.page ? 'text-sky-200' : 'text-slate-300'" x-text="workflowStatus"></p>
+                </div>
+
+                <div class="mt-2 grid gap-2 text-xs md:grid-cols-2">
+                    <div class="rounded-xl border border-slate-800 bg-slate-950/80 px-3 py-2">
+                        <p class="font-black uppercase tracking-[0.2em] text-slate-500">Pagina</p>
+                        <p class="mt-1 font-semibold text-slate-200" x-text="selection.page || 'Ninguna'"></p>
+                    </div>
+                    <div class="rounded-xl border border-slate-800 bg-slate-950/80 px-3 py-2">
+                        <p class="font-black uppercase tracking-[0.2em] text-slate-500">Tamano</p>
+                        <p class="mt-1 font-semibold text-slate-200" x-text="selection.page ? `${selection.width.toFixed(2)}% x ${selection.height.toFixed(2)}%` : 'Sin zona'"></p>
+                    </div>
+                </div>
+
+                <p class="mt-3 text-[11px] leading-5 text-slate-400">
+                    Consejo: activa el selector, arrastra una zona clara y ajusta las esquinas para mayor precision.
+                </p>
+            </section>
+
             <section class="rounded-[2rem] border border-slate-800 bg-slate-900 p-4 text-slate-100">
                 <p class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Seleccion</p>
                 <h2 class="mt-1 text-base font-black text-white">Zona rectangular del documento</h2>
 
-                <div class="mt-4 grid gap-2 text-xs md:grid-cols-2">
+                <div class="mt-4 grid gap-2 text-xs">
                     <div class="rounded-2xl border bg-slate-950/80 px-3 py-3 transition duration-300"
                         :class="selection.page ? 'border-sky-400/60 shadow-[0_0_0_1px_rgba(56,189,248,0.25),0_0_30px_rgba(56,189,248,0.18)]' : 'border-slate-800'">
                         <p class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Pagina</p>
                         <p class="mt-1 font-semibold" x-text="selection.page || 'Sin pagina'"></p>
                     </div>
-                    <div class="rounded-2xl border bg-slate-950/80 px-3 py-3 transition duration-300"
-                        :class="selection.page ? 'border-emerald-400/60 shadow-[0_0_0_1px_rgba(52,211,153,0.24),0_0_30px_rgba(52,211,153,0.16)]' : 'border-slate-800'">
-                        <p class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Coordenadas</p>
-                        <p class="mt-1 font-semibold" x-text="selectionSummary"></p>
-                    </div>
+                </div>
+
+                <div class="mt-3 rounded-2xl border border-sky-500/25 bg-sky-500/10 px-3 py-2.5 text-[11px] text-sky-100">
+                    <p class="font-black uppercase tracking-[0.2em] text-sky-300">Mover y ajustar</p>
+                    <p class="mt-1 leading-5">Arrastra dentro del recuadro para moverlo. Usa las esquinas para redimensionarlo con precision.</p>
                 </div>
 
                 <div class="mt-3 rounded-2xl border bg-slate-950/80 p-3 transition duration-300"
                     :class="selection.page ? 'border-amber-400/50 shadow-[0_0_0_1px_rgba(251,191,36,0.18),0_0_28px_rgba(251,191,36,0.12)]' : 'border-slate-800'">
                     <div class="flex items-center justify-between gap-2">
                         <p class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Texto extraido del rectangulo</p>
-                        <button type="button" @click="useSelectedTextAsComment()" class="text-[11px] font-black text-sky-300 hover:text-sky-200">Pasar al comentario</button>
+                        <button type="button" @click="useSelectedTextAsComment()" class="text-[11px] font-black text-sky-300 hover:text-sky-200">Usar en comentario</button>
                     </div>
                     <p class="mt-2 whitespace-pre-wrap text-xs leading-5 text-slate-200" x-text="selection.text || 'Arrastra para crear un rectangulo. Cuando termines, aqui aparecera el texto detectado dentro de la zona.'"></p>
-                </div>
-
-                <div class="mt-3 rounded-2xl border bg-slate-950/80 p-3 transition duration-300"
-                    :class="selection.page ? 'border-fuchsia-400/45 shadow-[0_0_0_1px_rgba(232,121,249,0.18),0_0_28px_rgba(232,121,249,0.1)]' : 'border-slate-800'">
-                    <div class="flex items-center justify-between gap-2">
-                        <div>
-                            <p class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Resumen rapido</p>
-                            <p class="mt-1 text-sm font-black text-white" x-text="selection.page ? 'Rectangulo listo para revisar' : 'Espera una seleccion'"></p>
-                        </div>
-                        <span
-                            class="rounded-full px-3 py-1 text-[11px] font-black uppercase transition"
-                            :class="selection.page ? 'bg-sky-400/20 text-sky-200 ring-1 ring-sky-400/35' : 'bg-slate-800 text-slate-300'"
-                            x-text="'Rectangulo'"
-                        ></span>
-                    </div>
-                    <p class="mt-2 text-xs leading-5 text-slate-300" x-text="selectionHint"></p>
                 </div>
 
                 <div class="mt-4 space-y-3 rounded-[1.6rem] border p-3 transition duration-300"
@@ -186,20 +204,7 @@
                             placeholder="Escribe la observacion ligada a la zona seleccionada"></textarea>
                     </div>
 
-                    <div class="grid gap-2 text-[11px] text-slate-400 md:grid-cols-3">
-                        <div class="rounded-xl border border-slate-800 bg-slate-950/90 px-3 py-2">
-                            <p class="font-black uppercase tracking-[0.2em] text-slate-500">Estado</p>
-                            <p class="mt-1 font-semibold text-slate-200" x-text="selection.page ? 'Autorrelleno listo' : 'Sin datos de seleccion'"></p>
-                        </div>
-                        <div class="rounded-xl border border-slate-800 bg-slate-950/90 px-3 py-2">
-                            <p class="font-black uppercase tracking-[0.2em] text-slate-500">Titulo sugerido</p>
-                            <p class="mt-1 truncate font-semibold text-slate-200" x-text="draftTitle || 'Pendiente'"></p>
-                        </div>
-                        <div class="rounded-xl border border-slate-800 bg-slate-950/90 px-3 py-2">
-                            <p class="font-black uppercase tracking-[0.2em] text-slate-500">Detalle</p>
-                            <p class="mt-1 truncate font-semibold text-slate-200" x-text="draftInfo || 'Pendiente'"></p>
-                        </div>
-                    </div>
+                    <p class="text-[11px] text-slate-400" x-text="selectionHint"></p>
                 </div>
 
                 <div class="mt-4 grid gap-2">
@@ -233,52 +238,11 @@
                         <input type="hidden" name="info" :value="draftInfo">
                         <input type="hidden" name="comentario" :value="draftComment">
 
-                        <label class="mb-3 mt-3 flex items-center gap-2 rounded-2xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-300">
-                            <input type="checkbox" name="usar_ocr" value="1" class="h-4 w-4 rounded border-slate-600 text-sky-500">
-                            Adjuntar OCR del archivo actual al comentario del PDF anotado
-                        </label>
-
                         <button type="submit" class="w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-black text-white transition hover:bg-emerald-700">
                             Generar PDF anotado desde esta seleccion
                         </button>
                     </form>
                 </div>
-            </section>
-
-            <section class="rounded-[2rem] border border-slate-800 bg-slate-900 p-4 text-slate-100">
-                <p class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">OCR</p>
-                <h2 class="mt-1 text-base font-black text-white">Borrador editable</h2>
-
-                <div class="mt-3 flex gap-2">
-                    <button
-                        type="button"
-                        @click="runOcr('comment')"
-                        :disabled="ocrLoading"
-                        class="flex-1 rounded-2xl bg-amber-500 px-4 py-2.5 text-xs font-black text-slate-950 transition hover:bg-amber-400 disabled:opacity-60"
-                    >
-                        OCR a comentario
-                    </button>
-                    <button
-                        type="button"
-                        @click="runOcr('draft')"
-                        :disabled="ocrLoading"
-                        class="flex-1 rounded-2xl bg-slate-100 px-4 py-2.5 text-xs font-black text-slate-900 transition hover:bg-white disabled:opacity-60"
-                    >
-                        OCR a borrador
-                    </button>
-                </div>
-
-                <p x-show="ocrError" class="mt-2 rounded-2xl border border-rose-400/40 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-200" x-text="ocrError" style="display: none;"></p>
-                <p x-show="ocrOk" class="mt-2 rounded-2xl border border-emerald-400/40 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-200" style="display: none;">OCR cargado correctamente.</p>
-
-                <div class="mt-3">
-                    <label class="mb-1 block text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Texto editable OCR</label>
-                    <textarea x-model="ocrDraft" rows="8" class="w-full rounded-2xl border border-slate-700 bg-slate-950 px-3 py-3 text-sm text-white outline-none transition focus:border-amber-400" placeholder="Aqui aparecera el texto OCR para limpiarlo o editarlo como borrador."></textarea>
-                </div>
-
-                <button type="button" @click="appendOcrDraft()" class="mt-3 w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-xs font-black text-slate-100 hover:bg-slate-800">
-                    Insertar borrador OCR en comentario
-                </button>
             </section>
 
             <section class="rounded-[2rem] border border-slate-800 bg-slate-900 p-4 text-slate-100">
@@ -292,63 +256,62 @@
 
                 <div class="mt-4 max-h-[38vh] space-y-3 overflow-y-auto pr-1">
                     @forelse ($secuencia->comentarios as $comentario)
-                        <article class="rounded-2xl border border-slate-800 bg-slate-950/80 p-3">
-                            <div class="flex items-start justify-between gap-3">
-                                <div>
-                                    <p class="text-sm font-black text-white">{{ $comentario->usuario?->name ?? 'Usuario' }}</p>
-                                    <p class="mt-1 text-[11px] text-slate-500">
-                                        {{ optional($comentario->created_at)->format('d/m/Y H:i') }}
-                                        @if ($comentario->page)
-                                            · Pagina {{ $comentario->page }}
-                                        @endif
-                                    </p>
-                                </div>
-                                <span class="rounded-full px-2.5 py-1 text-[11px] font-black uppercase {{ $comentario->estatus === 'cerrado' ? 'bg-emerald-500/15 text-emerald-200' : ($comentario->estatus === 'respondido' ? 'bg-sky-500/15 text-sky-200' : 'bg-amber-500/15 text-amber-200') }}">
-                                    {{ $comentario->estatus }}
-                                </span>
+                    <article class="rounded-2xl border border-slate-800 bg-slate-950/80 p-3">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <p class="text-sm font-black text-white">{{ $comentario->usuario?->name ?? 'Usuario' }}</p>
+                                <p class="mt-1 text-[11px] text-slate-500">
+                                    {{ optional($comentario->created_at)->format('d/m/Y H:i') }}
+                                    @if ($comentario->page)
+                                    · Pagina {{ $comentario->page }}
+                                    @endif
+                                </p>
                             </div>
-
-                            @if ($comentario->titulo || $comentario->info)
-                                <div class="mt-3 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs text-slate-300">
-                                    @if ($comentario->titulo)
-                                        <p><span class="font-black text-white">Titulo:</span> {{ $comentario->titulo }}</p>
-                                    @endif
-                                    @if ($comentario->info)
-                                        <p class="mt-1"><span class="font-black text-white">Info:</span> {{ $comentario->info }}</p>
-                                    @endif
-                                </div>
-                            @endif
-
-                            @if ($comentario->texto_seleccionado)
-                                <div class="mt-3 rounded-xl border border-sky-500/20 bg-sky-500/10 px-3 py-2 text-xs leading-5 text-sky-100">
-                                    "{{ $comentario->texto_seleccionado }}"
-                                </div>
-                            @endif
-
-                            <p class="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-200">{{ $comentario->comentario }}</p>
-
-                            @if ($comentario->page && $comentario->x !== null && $comentario->y !== null)
-                                <button
-                                    type="button"
-                                    @click="jumpToComment({{ $comentario->id }}, {{ $comentario->page }})"
-                                    class="mt-3 rounded-xl bg-slate-100 px-3 py-2 text-[11px] font-black text-slate-900 transition hover:bg-white"
-                                >
-                                    Ir a seleccion
-                                </button>
-                            @endif
-
-                            @if ($comentario->respuesta)
-                                <div class="mt-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3">
-                                    <p class="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-200">Respuesta</p>
-                                    <p class="mt-1 whitespace-pre-wrap text-sm text-emerald-50">{{ $comentario->respuesta }}</p>
-                                    <p class="mt-1 text-[11px] text-emerald-200/80">{{ $comentario->respuestaUsuario?->name ?? 'Usuario' }}</p>
-                                </div>
-                            @endif
-                        </article>
-                    @empty
-                        <div class="rounded-2xl border border-dashed border-slate-700 bg-slate-950/70 px-4 py-8 text-center text-sm text-slate-400">
-                            Aun no hay comentarios registrados.
+                            <span class="rounded-full px-2.5 py-1 text-[11px] font-black uppercase {{ $comentario->estatus === 'cerrado' ? 'bg-emerald-500/15 text-emerald-200' : ($comentario->estatus === 'respondido' ? 'bg-sky-500/15 text-sky-200' : 'bg-amber-500/15 text-amber-200') }}">
+                                {{ $comentario->estatus }}
+                            </span>
                         </div>
+
+                        @if ($comentario->titulo || $comentario->info)
+                        <div class="mt-3 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs text-slate-300">
+                            @if ($comentario->titulo)
+                            <p><span class="font-black text-white">Titulo:</span> {{ $comentario->titulo }}</p>
+                            @endif
+                            @if ($comentario->info)
+                            <p class="mt-1"><span class="font-black text-white">Info:</span> {{ $comentario->info }}</p>
+                            @endif
+                        </div>
+                        @endif
+
+                        @if ($comentario->texto_seleccionado)
+                        <div class="mt-3 rounded-xl border border-sky-500/20 bg-sky-500/10 px-3 py-2 text-xs leading-5 text-sky-100">
+                            "{{ $comentario->texto_seleccionado }}"
+                        </div>
+                        @endif
+
+                        <p class="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-200">{{ $comentario->comentario }}</p>
+
+                        @if ($comentario->page && $comentario->x !== null && $comentario->y !== null)
+                        <button
+                            type="button"
+                            @click="jumpToComment({{ $comentario->id }}, {{ $comentario->page }})"
+                            class="mt-3 rounded-xl bg-slate-100 px-3 py-2 text-[11px] font-black text-slate-900 transition hover:bg-white">
+                            Ir a seleccion
+                        </button>
+                        @endif
+
+                        @if ($comentario->respuesta)
+                        <div class="mt-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3">
+                            <p class="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-200">Respuesta</p>
+                            <p class="mt-1 whitespace-pre-wrap text-sm text-emerald-50">{{ $comentario->respuesta }}</p>
+                            <p class="mt-1 text-[11px] text-emerald-200/80">{{ $comentario->respuestaUsuario?->name ?? 'Usuario' }}</p>
+                        </div>
+                        @endif
+                    </article>
+                    @empty
+                    <div class="rounded-2xl border border-dashed border-slate-700 bg-slate-950/70 px-4 py-8 text-center text-sm text-slate-400">
+                        Aun no hay comentarios registrados.
+                    </div>
                     @endforelse
                 </div>
             </section>
@@ -386,17 +349,50 @@
 
     .pdf-selection-box {
         position: absolute;
-        border: 2px solid rgba(56, 189, 248, 0.95);
-        background: linear-gradient(135deg, rgba(56, 189, 248, 0.34), rgba(14, 165, 233, 0.16));
+        border: 3px solid rgba(56, 189, 248, 0.98);
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.42), rgba(14, 165, 233, 0.22));
         border-radius: 12px;
-        pointer-events: none;
+        pointer-events: auto;
         z-index: 25;
+        cursor: grab;
         box-shadow:
             0 0 0 9999px rgba(2, 6, 23, 0.34),
             0 0 0 1px rgba(56, 189, 248, 0.4),
             0 0 36px rgba(56, 189, 248, 0.32),
-            inset 0 0 0 1px rgba(186, 230, 253, 0.35);
+            inset 0 0 0 1px rgba(186, 230, 253, 0.35),
+            0 8px 32px rgba(56, 189, 248, 0.25);
         animation: selectionPulse 1.35s ease-in-out infinite;
+        transition: all 0.18s ease-out;
+    }
+
+    .pdf-selection-box:hover {
+        border-color: rgba(56, 189, 248, 1);
+        box-shadow:
+            0 0 0 9999px rgba(2, 6, 23, 0.42),
+            0 0 0 1px rgba(56, 189, 248, 0.6),
+            0 0 48px rgba(56, 189, 248, 0.4),
+            inset 0 0 0 1px rgba(186, 230, 253, 0.45),
+            0 12px 48px rgba(56, 189, 248, 0.35);
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.45), rgba(14, 165, 233, 0.25));
+    }
+
+    .pdf-selection-box::after {
+        content: '';
+        position: absolute;
+        inset: 6px;
+        border-radius: 8px;
+        border: 1px dashed rgba(224, 242, 254, 0.72);
+        pointer-events: none;
+    }
+
+    .pdf-selection-box.dragging {
+        cursor: grabbing;
+        box-shadow:
+            0 0 0 9999px rgba(2, 6, 23, 0.55),
+            0 0 0 2px rgba(56, 189, 248, 0.8),
+            0 0 56px rgba(56, 189, 248, 0.5),
+            inset 0 0 0 1px rgba(186, 230, 253, 0.6),
+            0 20px 64px rgba(56, 189, 248, 0.4);
     }
 
     .pdf-selection-box::before {
@@ -418,36 +414,36 @@
 
     .pdf-selection-handle {
         position: absolute;
-        width: 14px;
-        height: 14px;
+        width: 16px;
+        height: 16px;
         border: 2px solid rgba(8, 47, 73, 0.95);
         background: #e0f2fe;
         border-radius: 999px;
         pointer-events: auto;
-        box-shadow: 0 6px 14px rgba(2, 6, 23, 0.22);
+        box-shadow: 0 8px 16px rgba(2, 6, 23, 0.28), 0 0 0 1px rgba(56, 189, 248, 0.42);
     }
 
     .pdf-selection-handle-nw {
-        top: -7px;
-        left: -7px;
+        top: -8px;
+        left: -8px;
         cursor: nwse-resize;
     }
 
     .pdf-selection-handle-ne {
-        top: -7px;
-        right: -7px;
+        top: -8px;
+        right: -8px;
         cursor: nesw-resize;
     }
 
     .pdf-selection-handle-sw {
-        bottom: -7px;
-        left: -7px;
+        bottom: -8px;
+        left: -8px;
         cursor: nesw-resize;
     }
 
     .pdf-selection-handle-se {
-        right: -7px;
-        bottom: -7px;
+        right: -8px;
+        bottom: -8px;
         cursor: nwse-resize;
     }
 
@@ -492,7 +488,9 @@
     }
 
     @keyframes selectionPulse {
-        0%, 100% {
+
+        0%,
+        100% {
             box-shadow:
                 0 0 0 9999px rgba(2, 6, 23, 0.28),
                 0 0 0 1px rgba(56, 189, 248, 0.3),
@@ -508,6 +506,7 @@
                 inset 0 0 0 1px rgba(186, 230, 253, 0.42);
         }
     }
+
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -520,15 +519,16 @@
             selectorEnabled: true,
             loading: false,
             pdfError: '',
-            ocrLoading: false,
-            ocrError: '',
-            ocrOk: false,
             totalPages: 0,
             interaction: null,
             activeCommentId: null,
             selectionGlow: false,
             selectionGlowTimer: null,
             globalListenersBound: false,
+            isInitialized: false,
+            renderSessionId: 0,
+            drawActivationThreshold: 0.35,
+            selectionMinSize: 1.2,
             pages: {},
             selection: {
                 page: null,
@@ -541,24 +541,44 @@
             draftTitle: '',
             draftInfo: '',
             draftComment: '',
-            ocrDraft: '',
-            get selectionSummary() {
-                if (!this.selection.page) {
-                    return 'Sin seleccion';
-                }
-
-                return `${this.selection.x.toFixed(2)}%, ${this.selection.y.toFixed(2)}% · ${this.selection.width.toFixed(2)}% x ${this.selection.height.toFixed(2)}%`;
-            },
             get selectionHint() {
                 if (!this.selection.page) {
                     return 'Arrastra sobre cualquier parte del PDF para crear una ventana rectangular editable.';
                 }
 
-                return this.selection.text
-                    ? `El rectangulo de la pagina ${this.selection.page} ya extrajo texto. Puedes redimensionarlo desde las esquinas.`
-                    : `El rectangulo de la pagina ${this.selection.page} esta listo. Puedes redimensionarlo desde las esquinas.`;
+                return this.selection.text ?
+                    `El rectangulo de la pagina ${this.selection.page} ya extrajo texto. Puedes moverlo y redimensionarlo desde las esquinas.` :
+                    `El rectangulo de la pagina ${this.selection.page} esta listo. Puedes moverlo y redimensionarlo desde las esquinas.`;
+            },
+            get workflowStatus() {
+                if (!this.selectorEnabled) {
+                    return 'Selector desactivado. Activalo para crear una zona.';
+                }
+
+                if (this.interaction?.type === 'draw') {
+                    return 'Trazando seleccion en el documento...';
+                }
+
+                if (this.interaction?.type === 'resize') {
+                    return 'Redimensionando seleccion actual...';
+                }
+
+                if (this.interaction?.type === 'drag') {
+                    return 'Moviendo seleccion actual...';
+                }
+
+                if (this.selection.page) {
+                    return `Zona lista en pagina ${this.selection.page}. Puedes guardar comentario o anotar PDF.`;
+                }
+
+                return 'Listo para seleccionar una zona en el documento.';
             },
             init() {
+                if (this.isInitialized) {
+                    return;
+                }
+
+                this.isInitialized = true;
                 this.bindGlobalPointerEvents();
                 this.renderPdf();
             },
@@ -584,9 +604,9 @@
                     return;
                 }
 
-                this.draftComment = this.draftComment
-                    ? `${this.draftComment}\n\nTexto seleccionado:\n${this.selection.text}`.trim()
-                    : `Texto seleccionado:\n${this.selection.text}`;
+                this.draftComment = this.draftComment ?
+                    `${this.draftComment}\n\nTexto seleccionado:\n${this.selection.text}`.trim() :
+                    `Texto seleccionado:\n${this.selection.text}`;
             },
             bindGlobalPointerEvents() {
                 if (this.globalListenersBound) {
@@ -594,7 +614,11 @@
                 }
 
                 this.globalListenersBound = true;
-
+                document.addEventListener('mouseleave', () => {
+                    if (this.interaction) {
+                        this.handleGlobalPointerUp();
+                    }
+                });
                 window.addEventListener('mousemove', (event) => {
                     this.handleGlobalPointerMove(event);
                 });
@@ -603,32 +627,23 @@
                     this.handleGlobalPointerUp();
                 });
             },
-            appendOcrDraft() {
-                if (!this.ocrDraft.trim()) {
-                    return;
-                }
-
-                this.draftComment = this.draftComment
-                    ? `${this.draftComment}\n\nOCR editable:\n${this.ocrDraft.trim()}`
-                    : `OCR editable:\n${this.ocrDraft.trim()}`;
-            },
             prefillSelectionFields(selection, options = {}) {
                 const force = options.force === true;
                 const areaLabel = `${selection.width.toFixed(2)}% x ${selection.height.toFixed(2)}%`;
                 const coordLabel = `X ${selection.x.toFixed(2)}% · Y ${selection.y.toFixed(2)}%`;
 
                 if (!this.draftTitle || force) {
-                    this.draftTitle = `Rectangulo marcado · Pagina ${selection.page}`;
+                    this.draftTitle = `Revision pagina ${selection.page}`;
                 }
 
                 if (!this.draftInfo || force) {
-                    this.draftInfo = `Pagina ${selection.page} · ${coordLabel} · ${areaLabel}`;
+                    this.draftInfo = `Pagina ${selection.page} · ${coordLabel}`;
                 }
 
                 if (!this.draftComment || force) {
-                    this.draftComment = selection.text
-                        ? `Revisar el texto extraido en la pagina ${selection.page}.`
-                        : `Revisar esta zona en la pagina ${selection.page}.`;
+                    this.draftComment = selection.text ?
+                        `Revisar texto detectado en pagina ${selection.page}.` :
+                        `Revisar esta zona en pagina ${selection.page}.`;
                 }
             },
             triggerSelectionGlow() {
@@ -642,55 +657,12 @@
                     this.selectionGlow = false;
                 }, 1800);
             },
-            async runOcr(target) {
-                if (this.ocrLoading) {
-                    return;
-                }
-
-                this.ocrLoading = true;
-                this.ocrError = '';
-                this.ocrOk = false;
-
-                try {
-                    const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-                    const response = await fetch(@js(route('secuencias.ocrArchivo', $secuencia)), {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': csrf,
-                            'Accept': 'application/json',
-                        },
-                    });
-
-                    const data = await response.json();
-
-                    if (!response.ok || !data.success) {
-                        this.ocrError = data.message || 'No fue posible ejecutar OCR.';
-                        return;
-                    }
-
-                    const baseText = (data.raw_text || data.raw_excerpt || '').trim();
-                    const competencia = (data?.extracted_data?.competencia || '').trim();
-                    const finalText = competencia ? `${competencia}\n\n${baseText}`.trim() : baseText;
-
-                    if (target === 'draft') {
-                        this.ocrDraft = finalText;
-                    } else {
-                        this.draftComment = this.draftComment
-                            ? `${this.draftComment}\n\nOCR:\n${finalText}`.trim()
-                            : `OCR:\n${finalText}`;
-                    }
-
-                    this.ocrOk = true;
-                } catch (error) {
-                    this.ocrError = 'Error de red al ejecutar OCR.';
-                } finally {
-                    this.ocrLoading = false;
-                }
-            },
             async renderPdf() {
                 if (!this.pdfUrl) {
                     return;
                 }
+
+                const sessionId = ++this.renderSessionId;
 
                 if (!window.pdfjsLib) {
                     this.pdfError = 'No fue posible cargar PDF.js en el navegador.';
@@ -706,11 +678,22 @@
                 try {
                     window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
                     const pdf = await window.pdfjsLib.getDocument(this.pdfUrl).promise;
+
+                    if (sessionId !== this.renderSessionId) {
+                        return;
+                    }
+
                     this.totalPages = pdf.numPages;
 
                     for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+                        if (sessionId !== this.renderSessionId) {
+                            return;
+                        }
+
                         const page = await pdf.getPage(pageNumber);
-                        const viewport = page.getViewport({ scale: 1.45 });
+                        const viewport = page.getViewport({
+                            scale: 1.45
+                        });
                         const wrapper = this.buildPageShell(pageNumber);
                         const surface = wrapper.querySelector('[data-role="surface"]');
                         const canvas = wrapper.querySelector('canvas');
@@ -740,6 +723,10 @@
                             await renderTextTask.promise;
                         }
 
+                        if (sessionId !== this.renderSessionId) {
+                            return;
+                        }
+
                         this.pages[pageNumber] = {
                             wrapper,
                             surface,
@@ -753,22 +740,32 @@
                         this.paintCommentBoxes(pageNumber);
                     }
 
+                    if (sessionId !== this.renderSessionId) {
+                        return;
+                    }
+
                     this.paintSelection();
                 } catch (error) {
+                    if (sessionId !== this.renderSessionId) {
+                        return;
+                    }
+
                     this.pdfError = error?.message || 'No fue posible renderizar el documento.';
                 } finally {
-                    this.loading = false;
+                    if (sessionId === this.renderSessionId) {
+                        this.loading = false;
+                    }
                 }
             },
             buildPageShell(pageNumber) {
                 const article = document.createElement('article');
-                article.className = 'mx-auto mb-5 w-full max-w-[980px]';
+                article.className = 'mb-5 w-full';
                 article.dataset.pageNumber = pageNumber;
 
                 article.innerHTML = `
                     <div class="mb-2 flex items-center justify-between px-1 text-xs text-slate-400">
                         <span class="font-black uppercase tracking-[0.2em]">Pagina ${pageNumber}</span>
-                        <span>Arrastra para crear un rectangulo</span>
+                        <span>Arrastra para crear, mover y ajustar</span>
                     </div>
                     <div class="pdf-page-surface bg-white" data-role="surface">
                         <canvas class="pdf-page-canvas"></canvas>
@@ -779,6 +776,10 @@
             },
             bindSurfaceEvents(pageNumber, surface) {
                 surface.addEventListener('mousedown', (event) => {
+                    if (event.button !== 0) {
+                        return;
+                    }
+
                     if (!this.selectorEnabled) {
                         return;
                     }
@@ -787,25 +788,48 @@
                         return;
                     }
 
+                    if (event.target.closest('[data-role="selection-box"]')) {
+                        return;
+                    }
+
+                    event.preventDefault();
+                    event.stopPropagation();
+
                     const point = this.resolvePercentPoint(surface, event);
                     this.interaction = {
                         type: 'draw',
                         page: pageNumber,
                         startPoint: point,
+                        hasMoved: false,
+                        previousSelection: {
+                            ...this.selection
+                        },
                     };
-
-                    this.applySelection({
-                        page: pageNumber,
-                        x: point.x,
-                        y: point.y,
-                        width: 0.5,
-                        height: 0.5,
-                        text: '',
-                        skipPrefill: true,
-                        skipGlow: true,
-                        skipTextExtraction: true,
-                    });
                 });
+            },
+            startDragSelection(event) {
+                if (!this.selection.page) {
+                    return;
+                }
+
+                event.preventDefault();
+                event.stopPropagation();
+
+                const page = this.pages[this.selection.page];
+                if (!page) {
+                    return;
+                }
+
+                const point = this.resolvePercentPoint(page.surface, event);
+
+                this.interaction = {
+                    type: 'drag',
+                    page: this.selection.page,
+                    baseSelection: {
+                        ...this.selection
+                    },
+                    startPoint: point,
+                };
             },
             startResizeSelection(handle, event) {
                 if (!this.selection.page) {
@@ -819,10 +843,23 @@
                     type: 'resize',
                     page: this.selection.page,
                     handle,
-                    baseSelection: { ...this.selection },
+                    baseSelection: {
+                        ...this.selection
+                    },
+                    previousSelection: {
+                        ...this.selection
+                    },
                 };
             },
             handleGlobalPointerMove(event) {
+                if (!(event.buttons & 1)) {
+                    if (this.interaction) {
+                        this.interaction = null;
+                        this.paintSelection();
+                    }
+                    return;
+                }
+
                 if (!this.interaction) {
                     return;
                 }
@@ -836,6 +873,15 @@
                 const point = this.resolvePercentPoint(page.surface, event);
 
                 if (this.interaction.type === 'draw') {
+                    const deltaX = Math.abs(point.x - this.interaction.startPoint.x);
+                    const deltaY = Math.abs(point.y - this.interaction.startPoint.y);
+
+                    if (!this.interaction.hasMoved && deltaX < this.drawActivationThreshold && deltaY < this.drawActivationThreshold) {
+                        return;
+                    }
+
+                    this.interaction.hasMoved = true;
+
                     const nextRect = this.normalizeSelectionBounds(
                         this.interaction.startPoint.x,
                         this.interaction.startPoint.y,
@@ -847,6 +893,38 @@
                         page: this.interaction.page,
                         ...nextRect,
                         text: '',
+                        skipPrefill: true,
+                        skipGlow: true,
+                        skipTextExtraction: true,
+                    });
+
+                    return;
+                }
+
+                if (this.interaction.type === 'drag') {
+                    const deltaX = point.x - this.interaction.startPoint.x;
+                    const deltaY = point.y - this.interaction.startPoint.y;
+
+                    const base = this.interaction.baseSelection;
+                    const nextRect = {
+                        x: this.clampPercent(base.x + deltaX),
+                        y: this.clampPercent(base.y + deltaY),
+                        width: base.width,
+                        height: base.height,
+                    };
+
+                    // Ensure selection stays within bounds
+                    if (nextRect.x + nextRect.width > 100) {
+                        nextRect.x = 100 - nextRect.width;
+                    }
+                    if (nextRect.y + nextRect.height > 100) {
+                        nextRect.y = 100 - nextRect.height;
+                    }
+
+                    this.applySelection({
+                        page: this.interaction.page,
+                        ...nextRect,
+                        text: this.selection.text,
                         skipPrefill: true,
                         skipGlow: true,
                         skipTextExtraction: true,
@@ -873,8 +951,41 @@
                     return;
                 }
 
-                const pageNumber = this.interaction.page;
+                const interaction = this.interaction;
+                const pageNumber = interaction.page;
                 this.interaction = null;
+
+                if (interaction.type === 'draw') {
+                    if (!interaction.hasMoved) {
+                        this.selection = interaction.previousSelection?.page ? {
+                            ...interaction.previousSelection
+                        } : {
+                            page: null,
+                            x: 0,
+                            y: 0,
+                            width: 0,
+                            height: 0,
+                            text: '',
+                        };
+                        this.paintSelection();
+                        return;
+                    }
+
+                    if (this.selection.width < this.selectionMinSize || this.selection.height < this.selectionMinSize) {
+                        this.selection = interaction.previousSelection?.page ? {
+                            ...interaction.previousSelection
+                        } : {
+                            page: null,
+                            x: 0,
+                            y: 0,
+                            width: 0,
+                            height: 0,
+                            text: '',
+                        };
+                        this.paintSelection();
+                        return;
+                    }
+                }
 
                 if (this.selection.page === pageNumber) {
                     this.finalizeSelection();
@@ -1025,11 +1136,25 @@
                 const box = document.createElement('div');
                 box.className = 'pdf-selection-box';
                 box.dataset.role = 'selection-box';
-                box.dataset.label = 'Rectangulo activo';
+                box.dataset.label = `P${this.selection.page} · ${this.selection.width.toFixed(1)}% x ${this.selection.height.toFixed(1)}%`;
                 box.style.left = `${this.selection.x}%`;
                 box.style.top = `${this.selection.y}%`;
                 box.style.width = `${Math.max(this.selection.width, 0.5)}%`;
                 box.style.height = `${Math.max(this.selection.height, 0.5)}%`;
+
+                // Add dragging class if currently dragging
+                if (this.interaction?.type === 'drag') {
+                    box.classList.add('dragging');
+                }
+
+                // Add drag functionality to the main selection box
+                box.addEventListener('mousedown', (event) => {
+                    // Only start drag if clicking on the box itself, not on handles
+                    if (event.target.dataset.role === 'selection-handle') {
+                        return;
+                    }
+                    this.startDragSelection(event);
+                });
 
                 ['nw', 'ne', 'sw', 'se'].forEach((handle) => {
                     const handleNode = document.createElement('button');
@@ -1077,7 +1202,9 @@
                         text: comment.texto_seleccionado || '',
                     };
 
-                    this.finalizeSelection({ force: true });
+                    this.finalizeSelection({
+                        force: true
+                    });
                 }
 
                 const page = this.pages[pageNumber];
