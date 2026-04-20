@@ -36,6 +36,7 @@ $pdfComments = $contextComments
 'comentario' => $comentario->comentario,
 'texto_seleccionado' => $comentario->texto_seleccionado,
 'autor' => $comentario->usuario?->name ?? 'Usuario',
+'estatus' => $comentario->estatus ?? 'pendiente',
 ])
 ->values();
 @endphp
@@ -45,6 +46,7 @@ $pdfComments = $contextComments
         pdfUrl: @js($pdfUrl),
         rawFileUrl: @js($archivoUrl),
         comments: @js($pdfComments),
+        secuenciaId: @js($secuencia->id),
     })"
     x-init="init()"
     class="min-h-screen bg-linear-to-b from-slate-50 to-slate-100 p-2 md:p-4">
@@ -267,7 +269,7 @@ $pdfComments = $contextComments
     </div>
 
     <!-- MODAL DE TODAS LAS OBSERVACIONES -->
-    <div x-show="modalTodosComentariosAbierto" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm" style="display: none;" @click.self="modalTodosComentariosAbierto = false">
+    <div x-show="modalTodosComentariosAbierto" x-cloak class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm" @click.self="modalTodosComentariosAbierto = false">
         <div class="w-full max-w-3xl mx-4 max-h-[90vh] rounded-2xl bg-white shadow-2xl flex flex-col" @click.stop>
             <!-- Header del Modal -->
             <div class="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-white to-blue-50 px-6 py-5 flex-shrink-0">
@@ -344,6 +346,22 @@ $pdfComments = $contextComments
                                     </div>
                                 </template>
 
+                                <!-- Cambiar Estado -->
+                                <div class="mb-4 rounded-lg border border-slate-200 bg-white p-3">
+                                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-600 mb-3">Cambiar Estado</p>
+                                    <div class="flex gap-2 flex-wrap">
+                                        <button type="button" @click="actualizarEstadoComentario(comentario.id, 'pendiente')" class="rounded-lg border border-amber-300 bg-amber-100 px-3 py-1.5 text-[11px] font-bold text-amber-700 transition hover:bg-amber-200">
+                                            Pendiente
+                                        </button>
+                                        <button type="button" @click="actualizarEstadoComentario(comentario.id, 'reabierto')" class="rounded-lg border border-red-300 bg-red-100 px-3 py-1.5 text-[11px] font-bold text-red-700 transition hover:bg-red-200">
+                                            Reabierto
+                                        </button>
+                                        <button type="button" @click="actualizarEstadoComentario(comentario.id, 'resuelto')" class="rounded-lg border border-emerald-300 bg-emerald-100 px-3 py-1.5 text-[11px] font-bold text-emerald-700 transition hover:bg-emerald-200">
+                                            Resuelto
+                                        </button>
+                                    </div>
+                                </div>
+
                                 <!-- Botón Ver Región -->
                                 <template x-if="comentario.page">
                                     <button
@@ -379,6 +397,10 @@ $pdfComments = $contextComments
 </div>
 
 <style>
+    [x-cloak] {
+        display: none !important;
+    }
+
     .panel-surface {
         position: relative;
     }
@@ -604,6 +626,7 @@ $pdfComments = $contextComments
             pdfUrl: config.pdfUrl,
             rawFileUrl: config.rawFileUrl,
             comments: config.comments || [],
+            secuenciaId: config.secuenciaId,
             selectorEnabled: true,
             loading: false,
             pdfError: '',
@@ -1282,6 +1305,38 @@ $pdfComments = $contextComments
                     box.style.width = `${Math.max(comment.width, 0.5)}%`;
                     box.style.height = `${Math.max(comment.height, 0.5)}%`;
                     page.surface.appendChild(box);
+                });
+            },
+            actualizarEstadoComentario(comentarioId, nuevoEstatus) {
+                const url = `/secuencias/${this.secuenciaId}/comentarios/${comentarioId}/estado`;
+                
+                fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                    },
+                    body: JSON.stringify({
+                        estatus: nuevoEstatus,
+                    }),
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Actualizar el estado del comentario en el array
+                    const comentario = this.comments.find(c => c.id === comentarioId);
+                    if (comentario) {
+                        comentario.estatus = nuevoEstatus;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error actualizando estado:', error);
+                    alert('Error al actualizar el estado: ' + error.message);
                 });
             },
             jumpToComment(commentId, pageNumber) {

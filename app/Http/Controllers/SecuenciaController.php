@@ -525,7 +525,7 @@ class SecuenciaController extends Controller
         return back()->with('success', 'Respuesta del comentario guardada correctamente.');
     }
 
-    public function actualizarEstadoComentario(Request $request, Secuencia $secuencia, SecuenciaComentario $comentario): RedirectResponse
+    public function actualizarEstadoComentario(Request $request, Secuencia $secuencia, SecuenciaComentario $comentario)
     {
         $this->authorizeSecuenciaAccess($secuencia);
 
@@ -554,6 +554,14 @@ class SecuenciaController extends Controller
         $comentario->update([
             'estatus' => $validated['estatus'],
         ]);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Estado actualizado correctamente',
+                'estatus' => $validated['estatus'],
+            ]);
+        }
 
         return back()->with('success', 'Estado del comentario actualizado correctamente.');
     }

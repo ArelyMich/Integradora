@@ -2,8 +2,8 @@
 
 @section('content')
 @php
-    $roleIds = auth()->user()?->roles?->pluck('id')->all() ?? [];
-    $isReviewer = in_array(3, $roleIds, true);
+$roleIds = auth()->user()?->roles?->pluck('id')->all() ?? [];
+$isReviewer = in_array(3, $roleIds, true);
 @endphp
 <div
     x-data="secuenciasDashboard({
@@ -90,26 +90,8 @@
         </div>
         @endif
 
-        @if ($isReviewer)
-        <section class="rounded-[2rem] border border-sky-100 bg-gradient-to-r from-sky-50 to-cyan-50 p-5 shadow-sm">
-            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                    <p class="text-xs font-black uppercase tracking-[0.25em] text-sky-600">Plantilla oficial</p>
-                    <h2 class="mt-1 text-xl font-black text-slate-900">Vista rápida del formato SECUENCIA DIDÁCTICA UTH</h2>
-                    <p class="mt-1 text-sm text-slate-600">Presiona el recuadro para abrir el PDF en un visor rápido y revisar el formato antes del dictamen.</p>
-                </div>
-                <button
-                    type="button"
-                    @click="openTemplateModal()"
-                    class="rounded-2xl bg-sky-600 px-5 py-3 text-sm font-black text-white shadow-lg transition hover:bg-sky-700"
-                >
-                    Abrir formato rápido
-                </button>
-            </div>
-        </section>
-        @endif
 
-        <section class="grid gap-6 lg:grid-cols-[1.55fr_.85fr]">
+        <section class="grid gap-6">
             <div class="rounded-[2rem] bg-white p-6 shadow-xl shadow-slate-200/60">
                 <div class="flex flex-col gap-4 border-b border-slate-100 pb-5 md:flex-row md:items-end md:justify-between">
                     <div>
@@ -139,12 +121,11 @@
                     </div>
                 </div>
 
-                <div class="mt-6 overflow-hidden rounded-[1.75rem] border border-slate-200">
+                <div class="mt-4 overflow-hidden rounded-[1.75rem] border border-slate-200">
                     <div class="overflow-x-auto">
                         <table class="min-w-full text-left">
                             <thead class="bg-slate-900 text-xs font-black uppercase tracking-[0.2em] text-white">
                                 <tr>
-                                    <th class="px-4 py-4">ID</th>
                                     <th class="px-4 py-4">Materia y carrera</th>
                                     <th class="px-4 py-4">Docente</th>
                                     <th class="px-4 py-4">Periodo</th>
@@ -156,7 +137,6 @@
                             <tbody class="divide-y divide-slate-200 bg-white">
                                 <template x-for="secuencia in filteredSecuencias" :key="secuencia.id">
                                     <tr class="align-top transition hover:bg-slate-50/80">
-                                        <td class="px-4 py-4 text-sm font-black text-slate-500" x-text="'#' + secuencia.id"></td>
                                         <td class="px-4 py-4">
                                             <p class="text-sm font-black text-slate-900" x-text="secuencia.materia"></p>
                                             <p class="mt-1 text-xs font-semibold text-slate-500" x-text="secuencia.carrera"></p>
@@ -178,8 +158,7 @@
                                                 </button>
                                                 <a
                                                     :href="`${statusBaseUrl}/${secuencia.id}`"
-                                                    class="rounded-2xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs font-black text-cyan-700 transition hover:border-cyan-300 hover:bg-cyan-100"
-                                                >
+                                                    class="rounded-2xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs font-black text-cyan-700 transition hover:border-cyan-300 hover:bg-cyan-100">
                                                     Panel
                                                 </a>
                                                 <template x-if="!canReview">
@@ -194,13 +173,6 @@
                                                         @click="openAcademicStatusModal(secuencia)"
                                                         class="rounded-2xl bg-sky-50 px-3 py-2 text-xs font-black text-sky-700 transition hover:bg-sky-100">
                                                         Emitir dictamen
-                                                    </button>
-                                                </template>
-                                                <template x-if="canReview">
-                                                    <button
-                                                        @click="openTemplateModal()"
-                                                        class="rounded-2xl bg-cyan-50 px-3 py-2 text-xs font-black text-cyan-700 transition hover:bg-cyan-100">
-                                                        Formato rápido
                                                     </button>
                                                 </template>
                                             </div>
@@ -377,33 +349,6 @@
                     <textarea name="motivo" rows="4" x-model="reviewNote" required class="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-[#0C4B54]" placeholder="Describe observaciones, correcciones o aprobacion final"></textarea>
                 </div>
 
-                <div class="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                    <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                        <div>
-                            <p class="text-sm font-black text-slate-800">Ayuda con OCR</p>
-                            <p class="text-xs text-slate-500">Sube PDF o imagen para extraer texto y apoyar tu revision.</p>
-                        </div>
-                        <div class="flex flex-wrap items-center gap-2">
-                            <input type="file" accept=".pdf,.png,.jpg,.jpeg" @change="setOcrFile($event)" class="block w-full text-xs text-slate-500 file:mr-3 file:rounded-xl file:border-0 file:bg-slate-900 file:px-3 file:py-2 file:text-xs file:font-black file:text-white md:w-auto">
-                            <button type="button" @click="runOcrFromFile()" class="rounded-2xl bg-slate-900 px-4 py-2 text-xs font-black text-white transition hover:bg-slate-700" :disabled="ocrLoading || !ocrFile">
-                                <span x-show="!ocrLoading">Extraer OCR</span>
-                                <span x-show="ocrLoading" style="display: none;">Procesando...</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <template x-if="ocrError">
-                        <p class="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700" x-text="ocrError"></p>
-                    </template>
-
-                    <template x-if="Object.keys(ocrData).length">
-                        <div class="mt-4 grid gap-2 rounded-2xl bg-white p-3 text-xs text-slate-700 md:grid-cols-2">
-                            <template x-for="entry in Object.entries(ocrData)" :key="entry[0]">
-                                <p><span class="font-black" x-text="entry[0]"></span>: <span x-text="entry[1]"></span></p>
-                            </template>
-                        </div>
-                    </template>
-                </div>
 
                 <div class="flex justify-end gap-3">
                     <button type="button" @click="closeAcademicStatusModal()" class="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-black text-slate-600">Cancelar</button>

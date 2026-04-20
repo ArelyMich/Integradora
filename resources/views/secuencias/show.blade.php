@@ -89,30 +89,7 @@
                     </div>
                 </div>
 
-                <div class="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
-                    @if ($isPreviewable)
-                        <div class="flex h-[34vh] w-full flex-col items-center justify-center gap-3 px-6 text-center">
-                            <p class="text-sm font-semibold text-slate-700">La vista embebida fue desactivada para evitar que se abra el panel de impresión del navegador.</p>
-                            <div class="flex flex-wrap items-center justify-center gap-2">
-                                <a href="{{ route('secuencias.editor', $secuencia) }}" class="rounded-2xl bg-sky-600 px-4 py-2 text-xs font-black text-white transition hover:bg-sky-700">
-                                    Abrir editor interno
-                                </a>
-                                <a href="{{ $archivoUrl }}" target="_blank" class="rounded-2xl bg-slate-900 px-4 py-2 text-xs font-black text-white transition hover:bg-slate-700">
-                                    Abrir PDF en pestaña
-                                </a>
-                            </div>
-                        </div>
-                    @else
-                        <div class="p-8 text-center">
-                            <p class="text-sm font-semibold text-slate-600">El tipo de archivo no admite vista embebida.</p>
-                            <a href="{{ $archivoUrl }}" target="_blank" class="mt-3 inline-flex rounded-2xl bg-[#0C4B54] px-4 py-2 text-xs font-black text-white">
-                                Descargar / Abrir archivo
-                            </a>
-                        </div>
-                    @endif
-                </div>
-
-                <div class="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
+                <!-- <div class="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
                     <p class="text-sm font-black text-slate-800">Editar archivo de la secuencia</p>
                     <p class="mt-1 text-xs text-slate-500">Sube una nueva versión del archivo para reemplazar la actual.</p>
 
@@ -129,78 +106,8 @@
                             Reemplazar archivo
                         </button>
                     </form>
-                </div>
+                </div> -->
 
-                <div class="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
-                    <p class="text-sm font-black text-slate-800">Editor interno PDF por recuadro</p>
-                    <p class="mt-1 text-xs text-slate-500">Genera una version anotada con Titulo, Info y Comentario. Puedes adjuntar OCR del archivo actual.</p>
-
-                    <div class="mt-3 flex flex-wrap items-center gap-2">
-                        <button
-                            type="button"
-                            @click="toggleSelector()"
-                            class="rounded-xl px-4 py-2 text-xs font-black transition"
-                            :class="selectorEnabled ? 'bg-sky-600 text-white hover:bg-sky-700' : 'bg-slate-900 text-white hover:bg-slate-700'"
-                        >
-                            <span x-text="selectorEnabled ? 'Selector activado' : 'Activar selector visual'"></span>
-                        </button>
-                        <button type="button" @click="clearSelection()" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-black text-slate-600 hover:bg-slate-50">
-                            Limpiar recuadro
-                        </button>
-                        <p class="text-xs text-slate-500">Tip: activa selector y arrastra sobre el visor PDF para autollenar coordenadas.</p>
-                    </div>
-
-                    <form action="{{ route('secuencias.anotarArchivo', $secuencia) }}" method="POST" class="mt-4 space-y-3">
-                        @csrf
-
-                        <div class="grid gap-3 md:grid-cols-5">
-                            <div>
-                                <label class="mb-1 block text-[11px] font-black uppercase text-slate-500">Pagina</label>
-                                <input type="number" name="page" min="1" value="1" required class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-[#0C4B54]">
-                            </div>
-                            <div>
-                                <label class="mb-1 block text-[11px] font-black uppercase text-slate-500">X</label>
-                                <input type="number" name="x" min="0" step="0.1" x-model="formRect.x" required class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-[#0C4B54]">
-                            </div>
-                            <div>
-                                <label class="mb-1 block text-[11px] font-black uppercase text-slate-500">Y</label>
-                                <input type="number" name="y" min="0" step="0.1" x-model="formRect.y" required class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-[#0C4B54]">
-                            </div>
-                            <div>
-                                <label class="mb-1 block text-[11px] font-black uppercase text-slate-500">Ancho</label>
-                                <input type="number" name="width" min="10" step="0.1" x-model="formRect.width" required class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-[#0C4B54]">
-                            </div>
-                            <div>
-                                <label class="mb-1 block text-[11px] font-black uppercase text-slate-500">Alto</label>
-                                <input type="number" name="height" min="10" step="0.1" x-model="formRect.height" required class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-[#0C4B54]">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="mb-1 block text-[11px] font-black uppercase text-slate-500">Titulo</label>
-                            <input type="text" name="titulo" maxlength="120" placeholder="Ej. Observacion de Revisor" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-[#0C4B54]">
-                        </div>
-
-                        <div>
-                            <label class="mb-1 block text-[11px] font-black uppercase text-slate-500">Info</label>
-                            <input type="text" name="info" maxlength="300" placeholder="Ej. Unidad 1 - Seccion apertura" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-[#0C4B54]">
-                        </div>
-
-                        <div>
-                            <label class="mb-1 block text-[11px] font-black uppercase text-slate-500">Comentario</label>
-                            <textarea name="comentario" rows="4" required class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-[#0C4B54]" placeholder="Escribe aqui el comentario que se incrustara en el recuadro del PDF"></textarea>
-                        </div>
-
-                        <label class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600">
-                            <input type="checkbox" name="usar_ocr" value="1" class="h-4 w-4 rounded border-slate-300 text-[#0C4B54] focus:ring-[#0C4B54]">
-                            Incluir OCR automatico del archivo actual dentro del comentario
-                        </label>
-
-                        <button type="submit" class="w-full rounded-2xl bg-slate-900 px-5 py-3 text-sm font-black text-white transition hover:bg-slate-700">
-                            Generar version anotada PDF
-                        </button>
-                    </form>
-                </div>
 
                 <div class="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
                     <div class="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -262,13 +169,6 @@
                     <p class="text-xs font-black uppercase tracking-[0.25em] text-slate-400">Comentarios</p>
                     <h2 class="mt-1 text-xl font-black text-slate-900">Observaciones y respuestas</h2>
 
-                    <form action="{{ route('secuencias.comentarios.guardar', $secuencia) }}" method="POST" class="mt-4 space-y-3">
-                        @csrf
-                        <textarea name="comentario" rows="3" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-[#0C4B54]" placeholder="Escribe un comentario u observación"></textarea>
-                        <button type="submit" class="w-full rounded-2xl bg-[#0C4B54] px-5 py-3 text-sm font-black text-white transition hover:bg-[#083840]">
-                            Registrar comentario
-                        </button>
-                    </form>
 
                     <div class="mt-5 space-y-4">
                         @forelse ($secuencia->comentarios as $comentario)
@@ -289,34 +189,6 @@
                                     </div>
                                 @endif
 
-                                @if ($canManageCommentState)
-                                    <div class="mt-3 flex flex-wrap gap-2">
-                                        <form action="{{ route('secuencias.comentarios.estado', [$secuencia, $comentario]) }}" method="POST">
-                                            @csrf
-                                            @method('PUT')
-                                            <input type="hidden" name="estatus" value="resuelto">
-                                            <button type="submit" class="rounded-xl bg-emerald-600 px-3 py-2 text-[11px] font-black text-white transition hover:bg-emerald-700">
-                                                Marcar resuelto
-                                            </button>
-                                        </form>
-                                        <form action="{{ route('secuencias.comentarios.estado', [$secuencia, $comentario]) }}" method="POST">
-                                            @csrf
-                                            @method('PUT')
-                                            <input type="hidden" name="estatus" value="reabierto">
-                                            <button type="submit" class="rounded-xl bg-rose-600 px-3 py-2 text-[11px] font-black text-white transition hover:bg-rose-700">
-                                                Reabrir
-                                            </button>
-                                        </form>
-                                        <form action="{{ route('secuencias.comentarios.estado', [$secuencia, $comentario]) }}" method="POST">
-                                            @csrf
-                                            @method('PUT')
-                                            <input type="hidden" name="estatus" value="pendiente">
-                                            <button type="submit" class="rounded-xl bg-amber-500 px-3 py-2 text-[11px] font-black text-white transition hover:bg-amber-600">
-                                                Pendiente
-                                            </button>
-                                        </form>
-                                    </div>
-                                @endif
 
                                 @if ($canReplyComment)
                                     <form action="{{ route('secuencias.comentarios.responder', [$secuencia, $comentario]) }}" method="POST" class="mt-3 space-y-2">
