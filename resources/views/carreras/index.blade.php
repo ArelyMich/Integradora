@@ -26,46 +26,6 @@
         ])) }},
         statusBaseUrl: '{{ url('/carreras') }}'
     })"
-    <<<<<<< HEAD
-    class="min-h-screen bg-slate-100/70 p-4 md:p-8"
-    x-cloak>
-    <div class="mx-auto max-w-7xl space-y-8">
-        <section class="overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#0C4B54] via-[#145d69] to-[#E29F33] text-white shadow-2xl shadow-slate-300/40">
-            <div class="grid gap-8 px-6 py-8 md:grid-cols-[1.4fr_.9fr] md:px-10 md:py-10">
-                <div class="space-y-4">
-                    <div>
-                        <h1 class="text-3xl font-black tracking-tight md:text-5xl">Carreras </h1>
-                    </div>
-                    <div class="flex flex-wrap gap-3">
-                        @if (Auth::user()->hasPermission('carreras.store'))
-                        <button
-                            @click="openCreateModal()"
-                            class="rounded-2xl bg-white px-5 py-3 text-sm font-black text-[#0C4B54] shadow-lg transition hover:-translate-y-0.5">
-                            Nueva carrera
-                        </button>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-4 gap-2">
-                    <div class="rounded-3xl bg-white/12 p-5 backdrop-blur-sm">
-                        <p class="text-xs font-bold uppercase tracking-[0.25em] text-white/70">Total</p>
-                        <p class="mt-3 text-4xl font-black" x-text="carreras.length"></p>
-                    </div>
-                    <div class="rounded-3xl bg-white/12 p-5 backdrop-blur-sm">
-                        <p class="text-xs font-bold uppercase tracking-[0.25em] text-white/70">Activas</p>
-                        <p class="mt-3 text-4xl font-black" x-text="activasCount"></p>
-                    </div>
-                    <div class="rounded-3xl bg-white/12 p-5 backdrop-blur-sm">
-                        <p class="text-xs font-bold uppercase tracking-[0.25em] text-white/70">Inactivas</p>
-                        <p class="mt-3 text-4xl font-black" x-text="inactivasCount"></p>
-                    </div>
-                    <div class="rounded-3xl bg-white/12 p-5 backdrop-blur-sm">
-                        <p class="text-xs font-bold uppercase tracking-[0.25em] text-white/70">Con Director</p>
-                        <p class="mt-3 text-4xl font-black" x-text="conDirectorCount"></p>
-                    </div>
-                </div>
-                =======
                 class="min-h-screen bg-gray-50 relative font-sans text-gray-700 pb-20 selection:bg-[#E6F4F2] selection:text-[#2FA69A]"
                 x-cloak
                 >
@@ -102,7 +62,6 @@
                                 Nueva Carrera
                             </button>
                             @endif
-                            >>>>>>> upstream/f/angie
                         </div>
         </section>
 
@@ -112,11 +71,6 @@
         </div>
         @endif
 
-        <<<<<<< HEAD
-            @if (session('error'))
-            <div class="rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm font-semibold text-rose-700 shadow-sm">
-            {{ session('error') }}
-            =======
             {{-- PANEL DE CONTROL (STATS & FILTERS) --}}
             <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -199,7 +153,6 @@
                             </button>
                         </div>
                     </div>
-                    >>>>>>> upstream/f/angie
                 </div>
                 @endif
 
