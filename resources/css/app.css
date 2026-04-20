@@ -10,14 +10,13 @@
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
-style{
+@layer base {
     :root {
-    --verde-claro: #85B093;
-    --verde-medio: #568F7C;
-    --verde-oscuro: #326D6C;
-    --azul-verdoso: #173C4C;
-    --azul-noche: #07142B;
-    --negro-azulado: #000009;
-}
-
+        --verde-claro: #85B093;
+        --verde-medio: #568F7C;
+        --verde-oscuro: #326D6C;
+        --azul-verdoso: #173C4C;
+        --azul-noche: #07142B;
+        --negro-azulado: #000009;
+    }
 }

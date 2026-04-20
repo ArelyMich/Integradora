@@ -4,8 +4,13 @@
 @php
     $user = auth()->user();
     $roleIds = $user?->roles?->pluck('id')->all() ?? [];
+    $isAdmin = in_array(1, $roleIds, true);
     $isReviewer = in_array(3, $roleIds, true);
     $isDocente = in_array(4, $roleIds, true);
+    $isAssignedReviewer = $isReviewer && (int) ($secuencia->revisor_id ?? 0) === (int) ($user->id ?? 0);
+    $isAssignedDocente = $isDocente && (int) ($secuencia->docente_id ?? 0) === (int) ($user->id ?? 0);
+    $canManageCommentState = $isAdmin || $isAssignedReviewer;
+    $canReplyComment = $canManageCommentState || $isAssignedDocente;
 @endphp
 
 <div x-data="pdfEditorSelector()" class="min-h-screen bg-slate-100/70 p-4 md:p-8">
@@ -86,24 +91,16 @@
 
                 <div class="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
                     @if ($isPreviewable)
-                        <div class="relative h-[70vh] w-full" x-ref="pdfCanvas" @mouseleave="finishSelection()">
-                            <iframe src="{{ $archivoUrl }}#zoom=page-width" class="h-full w-full" title="Archivo de secuencia"></iframe>
-
-                            <div
-                                x-show="selectorEnabled"
-                                class="absolute inset-0 cursor-crosshair bg-sky-500/5"
-                                @mousedown.prevent="startSelection($event)"
-                                @mousemove.prevent="moveSelection($event)"
-                                @mouseup.prevent="finishSelection()"
-                                style="display: none;"
-                            ></div>
-
-                            <div
-                                x-show="selectorEnabled && hasRect"
-                                class="pointer-events-none absolute border-2 border-sky-600 bg-sky-200/20"
-                                :style="`left:${rectPx.left}px;top:${rectPx.top}px;width:${rectPx.width}px;height:${rectPx.height}px;`"
-                                style="display: none;"
-                            ></div>
+                        <div class="flex h-[34vh] w-full flex-col items-center justify-center gap-3 px-6 text-center">
+                            <p class="text-sm font-semibold text-slate-700">La vista embebida fue desactivada para evitar que se abra el panel de impresión del navegador.</p>
+                            <div class="flex flex-wrap items-center justify-center gap-2">
+                                <a href="{{ route('secuencias.editor', $secuencia) }}" class="rounded-2xl bg-sky-600 px-4 py-2 text-xs font-black text-white transition hover:bg-sky-700">
+                                    Abrir editor interno
+                                </a>
+                                <a href="{{ $archivoUrl }}" target="_blank" class="rounded-2xl bg-slate-900 px-4 py-2 text-xs font-black text-white transition hover:bg-slate-700">
+                                    Abrir PDF en pestaña
+                                </a>
+                            </div>
                         </div>
                     @else
                         <div class="p-8 text-center">
@@ -278,8 +275,8 @@
                             <article class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                                 <div class="flex items-center justify-between gap-2">
                                     <p class="text-sm font-black text-slate-800">{{ $comentario->usuario?->name ?? 'Usuario' }}</p>
-                                    <span class="rounded-full px-2.5 py-1 text-[11px] font-black uppercase {{ $comentario->estatus === 'cerrado' ? 'bg-emerald-100 text-emerald-700' : ($comentario->estatus === 'respondido' ? 'bg-sky-100 text-sky-700' : 'bg-amber-100 text-amber-700') }}">
-                                        {{ $comentario->estatus }}
+                                    <span class="rounded-full px-2.5 py-1 text-[11px] font-black uppercase {{ $comentario->estatus === 'resuelto' ? 'bg-emerald-100 text-emerald-700' : ($comentario->estatus === 'reabierto' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700') }}">
+                                        {{ $comentario->estatus === 'resuelto' ? 'Resuelto' : ($comentario->estatus === 'reabierto' ? 'Reabierto' : 'Pendiente') }}
                                     </span>
                                 </div>
                                 <p class="mt-2 text-sm text-slate-700">{{ $comentario->comentario }}</p>
@@ -292,17 +289,48 @@
                                     </div>
                                 @endif
 
-                                @if ($isReviewer || $isDocente)
+                                @if ($canManageCommentState)
+                                    <div class="mt-3 flex flex-wrap gap-2">
+                                        <form action="{{ route('secuencias.comentarios.estado', [$secuencia, $comentario]) }}" method="POST">
+                                            @csrf
+                                            @method('PUT')
+                                            <input type="hidden" name="estatus" value="resuelto">
+                                            <button type="submit" class="rounded-xl bg-emerald-600 px-3 py-2 text-[11px] font-black text-white transition hover:bg-emerald-700">
+                                                Marcar resuelto
+                                            </button>
+                                        </form>
+                                        <form action="{{ route('secuencias.comentarios.estado', [$secuencia, $comentario]) }}" method="POST">
+                                            @csrf
+                                            @method('PUT')
+                                            <input type="hidden" name="estatus" value="reabierto">
+                                            <button type="submit" class="rounded-xl bg-rose-600 px-3 py-2 text-[11px] font-black text-white transition hover:bg-rose-700">
+                                                Reabrir
+                                            </button>
+                                        </form>
+                                        <form action="{{ route('secuencias.comentarios.estado', [$secuencia, $comentario]) }}" method="POST">
+                                            @csrf
+                                            @method('PUT')
+                                            <input type="hidden" name="estatus" value="pendiente">
+                                            <button type="submit" class="rounded-xl bg-amber-500 px-3 py-2 text-[11px] font-black text-white transition hover:bg-amber-600">
+                                                Pendiente
+                                            </button>
+                                        </form>
+                                    </div>
+                                @endif
+
+                                @if ($canReplyComment)
                                     <form action="{{ route('secuencias.comentarios.responder', [$secuencia, $comentario]) }}" method="POST" class="mt-3 space-y-2">
                                         @csrf
                                         @method('PUT')
-                                        <textarea name="respuesta" rows="2" required class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-[#0C4B54]" placeholder="Responder comentario"></textarea>
+                                        <textarea name="respuesta" rows="2" required class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-[#0C4B54]" placeholder="{{ $canManageCommentState ? 'Escribe seguimiento o veredicto de la revisión' : 'Describe qué cambio aplicaste para atender esta observación' }}"></textarea>
                                         <div class="flex gap-2">
-                                            <select name="estatus" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-[#0C4B54]">
-                                                <option value="pendiente" {{ $comentario->estatus === 'pendiente' ? 'selected' : '' }}>Pendiente</option>
-                                                <option value="respondido" {{ $comentario->estatus === 'respondido' ? 'selected' : '' }}>Respondido</option>
-                                                <option value="cerrado" {{ $comentario->estatus === 'cerrado' ? 'selected' : '' }}>Cerrado</option>
-                                            </select>
+                                            @if ($canManageCommentState)
+                                                <select name="estatus" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-[#0C4B54]">
+                                                    <option value="pendiente" {{ $comentario->estatus === 'pendiente' ? 'selected' : '' }}>Pendiente</option>
+                                                    <option value="reabierto" {{ $comentario->estatus === 'reabierto' ? 'selected' : '' }}>Reabierto</option>
+                                                    <option value="resuelto" {{ $comentario->estatus === 'resuelto' ? 'selected' : '' }}>Resuelto</option>
+                                                </select>
+                                            @endif
                                             <button type="submit" class="rounded-xl bg-slate-900 px-4 py-2 text-xs font-black text-white">Guardar</button>
                                         </div>
                                     </form>

@@ -50,6 +50,7 @@ class CheckPermission
             'secuencias.anotarArchivo',
             'secuencias.comentarios.guardar',
             'secuencias.comentarios.responder',
+            'secuencias.comentarios.estado',
             'secuencias.actualizarEstatusAcademico',
             'materias.index',
             'carreras.index',

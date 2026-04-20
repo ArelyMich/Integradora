@@ -417,7 +417,7 @@
 
     <div x-show="modalTemplateOpen" class="fixed inset-0 z-50 flex items-center justify-center px-4" style="display: none;">
         <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" @click="closeTemplateModal()"></div>
-        <div class="relative z-10 h-[90vh] w-full max-w-6xl overflow-hidden rounded-[2rem] bg-white shadow-2xl">
+        <div class="relative z-10 w-full max-w-3xl overflow-hidden rounded-[2rem] bg-white shadow-2xl">
             <div class="flex items-center justify-between border-b border-slate-200 px-5 py-3">
                 <div>
                     <p class="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Vista rápida</p>
@@ -428,7 +428,13 @@
                     <button type="button" @click="closeTemplateModal()" class="rounded-xl bg-slate-100 px-3 py-2 text-xs font-black text-slate-600 transition hover:bg-slate-200">Cerrar</button>
                 </div>
             </div>
-            <iframe :src="templatePdfUrl + '#zoom=page-width'" class="h-[calc(90vh-60px)] w-full" title="Formato de secuencia didactica"></iframe>
+            <div class="p-6 text-center">
+                <p class="text-sm font-semibold text-slate-700">La vista embebida del PDF fue desactivada para evitar aperturas no deseadas del panel de impresión.</p>
+                <p class="mt-2 text-xs text-slate-500">Usa "Abrir en pestaña" para ver el documento completo sin incrustarlo en el panel.</p>
+                <div class="mt-4 flex justify-center">
+                    <a :href="templatePdfUrl" target="_blank" class="rounded-2xl bg-slate-900 px-5 py-2.5 text-xs font-black text-white transition hover:bg-slate-700">Abrir formato</a>
+                </div>
+            </div>
         </div>
     </div>
 </div>

@@ -10,8 +10,19 @@ if ($pdfAvailable && $pdfUrl === null) {
 $pdfUrl = $archivoUrl;
 }
 
-$pdfComments = $secuencia->comentarios
-->filter(fn ($comentario) => $comentario->page && $comentario->x !== null && $comentario->y !== null && $comentario->width !== null && $comentario->height !== null)
+$contextComments = $secuencia->comentarios
+->filter(fn ($comentario) =>
+    $comentario->page &&
+    $comentario->x !== null &&
+    $comentario->y !== null &&
+    $comentario->width !== null &&
+    $comentario->height !== null &&
+    (float) $comentario->width > 0 &&
+    (float) $comentario->height > 0
+)
+->values();
+
+$pdfComments = $contextComments
 ->map(fn ($comentario) => [
 'id' => $comentario->id,
 'page' => (int) $comentario->page,
@@ -36,15 +47,15 @@ $pdfComments = $secuencia->comentarios
         comments: @js($pdfComments),
     })"
     x-init="init()"
-    class="min-h-screen bg-slate-950 p-2 md:p-3">
+    class="min-h-screen bg-linear-to-b from-slate-50 to-slate-100 p-2 md:p-4">
     <div class="mx-auto grid max-w-[2200px] gap-3 xl:grid-cols-[3fr_.7fr]">
-        <section class="overflow-hidden rounded-[2rem] border border-slate-800 bg-slate-900/95 shadow-2xl shadow-black/30">
-            <div class="flex flex-col gap-3 border-b border-slate-800 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
+        <section class="panel-surface overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+            <div class="editor-header flex flex-col gap-4 border-b border-slate-200 bg-linear-to-r from-white to-blue-50/40 px-6 py-6 lg:flex-row lg:items-center lg:justify-between shadow-sm">
                 <div>
-                    <p class="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500">Editor PDF</p>
-                    <h1 class="mt-1 text-lg font-black text-white md:text-2xl">{{ $secuencia->materia?->nombre ?? 'Secuencia' }}</h1>
-                    <p class="mt-1 text-xs font-semibold text-slate-400">
-                        {{ $secuencia->carrera?->nombre_carrera ?? 'Sin carrera' }} · {{ $secuencia->periodo?->nombre ?? 'Sin periodo' }} {{ $secuencia->periodo?->anio ?? '' }}
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Editor de Documentos PDF</p>
+                    <h1 class="mt-2.5 text-3xl font-bold text-slate-900 tracking-tight">{{ $secuencia->materia?->nombre ?? 'Secuencia' }}</h1>
+                    <p class="mt-2 text-sm font-medium text-slate-600">
+                        {{ $secuencia->carrera?->nombre_carrera ?? 'Sin Carrera' }} · {{ $secuencia->periodo?->nombre ?? 'Sin Período' }} {{ $secuencia->periodo?->anio ?? '' }}
                     </p>
                 </div>
 
@@ -52,49 +63,53 @@ $pdfComments = $secuencia->comentarios
                     <button
                         type="button"
                         @click="toggleSelector()"
-                        class="rounded-2xl px-4 py-2 text-xs font-black transition"
-                        :class="selectorEnabled ? 'bg-sky-600 text-white hover:bg-sky-700' : 'bg-slate-100 text-slate-900 hover:bg-white'">
-                        <span x-text="selectorEnabled ? 'Selector: ON' : 'Selector: OFF'"></span>
+                        class="rounded-lg px-4 py-2.5 text-sm font-semibold transition-all"
+                        :class="selectorEnabled ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'">
+                        <span x-text="selectorEnabled ? 'Selector: ACT' : 'Selector: INACT'"></span>
                     </button>
 
-                    <button type="button" @click="clearSelection()" class="rounded-2xl border border-slate-700 bg-slate-900 px-4 py-2 text-xs font-black text-slate-200 transition hover:bg-slate-800">
-                        Limpiar
+                    <button type="button" @click="clearSelection()" class="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:border-slate-400">
+                        Limpiar Zona
                     </button>
 
-                    <a href="{{ route('secuencias.show', $secuencia) }}" class="rounded-2xl bg-slate-100 px-4 py-2 text-xs font-black text-slate-900 hover:bg-white">
-                        Volver panel
+                    <button type="button" @click="modalTodosComentariosAbierto = true" class="rounded-lg bg-blue-100 px-4 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-200 shadow-sm hover:shadow-md">
+                        Ver Observaciones
+                    </button>
+
+                    <a href="{{ route('secuencias.show', $secuencia) }}" class="rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-900 transition hover:bg-slate-200">
+                        Volver al Panel
                     </a>
                 </div>
             </div>
 
-            <div class="grid gap-3 border-b border-slate-800 bg-slate-900/60 px-4 py-3 text-xs text-slate-300 md:grid-cols-4">
-                <div class="rounded-2xl border border-slate-800 bg-slate-950/70 px-3 py-3">
-                    <p class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Modo</p>
+            <div class="grid gap-3 border-b border-slate-700/80 bg-slate-900/50 px-4 py-3 text-xs text-slate-200 md:grid-cols-4">
+                <div class="rounded-2xl border border-slate-700/70 bg-slate-950/55 px-3 py-3 backdrop-blur-sm transition hover:border-cyan-400/40 hover:bg-slate-900/80">
+                    <p class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Modo de operación</p>
                     <p class="mt-1 font-semibold" x-text="selectorEnabled ? 'Crear, mover y redimensionar zona' : 'Solo lectura'"></p>
                 </div>
-                <div class="rounded-2xl border border-slate-800 bg-slate-950/70 px-3 py-3">
-                    <p class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Paginas</p>
-                    <p class="mt-1 font-semibold"><span x-text="totalPages"></span> renderizadas</p>
+                <div class="rounded-2xl border border-slate-700/70 bg-slate-950/55 px-3 py-3 backdrop-blur-sm transition hover:border-cyan-400/40 hover:bg-slate-900/80">
+                    <p class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Páginas renderizadas</p>
+                    <p class="mt-1 font-semibold"><span x-text="totalPages"></span> totales</p>
                 </div>
-                <div class="rounded-2xl border border-slate-800 bg-slate-950/70 px-3 py-3">
-                    <p class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Seleccion actual</p>
-                    <p class="mt-1 font-semibold" x-text="selection.page ? `Pagina ${selection.page}` : 'Sin seleccionar'"></p>
+                <div class="rounded-2xl border border-slate-700/70 bg-slate-950/55 px-3 py-3 backdrop-blur-sm transition hover:border-cyan-400/40 hover:bg-slate-900/80">
+                    <p class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Selección actual</p>
+                    <p class="mt-1 font-semibold" x-text="selection.page ? `Página ${selection.page}` : 'Sin seleccionar'"></p>
                 </div>
-                <div class="rounded-2xl border border-slate-800 bg-slate-950/70 px-3 py-3">
-                    <p class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Archivo</p>
-                    <a :href="rawFileUrl" target="_blank" class="mt-1 inline-flex font-semibold text-sky-300 hover:text-sky-200">Abrir archivo original</a>
+                <div class="rounded-2xl border border-slate-700/70 bg-slate-950/55 px-3 py-3 backdrop-blur-sm transition hover:border-cyan-400/40 hover:bg-slate-900/80">
+                    <p class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Archivo original</p>
+                    <a :href="rawFileUrl" target="_blank" class="mt-1 inline-flex font-semibold text-cyan-300 transition hover:text-cyan-200">Descargar archivo</a>
                 </div>
             </div>
 
             @if (session('success'))
-            <div class="border-b border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-200">
+            <div class="border-b border-emerald-300 bg-emerald-50 px-6 py-3 text-sm font-semibold text-emerald-800">
                 {{ session('success') }}
             </div>
             @endif
 
             @if ($errors->any())
-            <div class="border-b border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-                <p class="font-black">Hay validaciones pendientes:</p>
+            <div class="border-b border-red-300 bg-red-50 px-6 py-3 text-sm text-red-800">
+                <p class="font-bold">Errores de validación:</p>
                 <ul class="mt-2 space-y-1 text-xs">
                     @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -105,109 +120,83 @@ $pdfComments = $secuencia->comentarios
 
             <div class="relative">
                 <div x-show="loading" class="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/75 text-sm font-black text-white" style="display: none;">
-                    Renderizando documento completo...
+                    Renderizando documento...
                 </div>
 
                 <div x-show="pdfError" class="border-b border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-100" x-text="pdfError" style="display: none;"></div>
 
                 @if ($pdfAvailable)
                 <div class="relative">
-                    <div x-ref="viewerHost" class="h-[90vh] overflow-y-auto bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.08),_transparent_22%),linear-gradient(180deg,_#020617,_#0f172a)] px-2 py-3 md:px-3"></div>
+                    <div x-ref="viewerHost" class="h-[90vh] overflow-y-auto bg-slate-100 px-2 py-3 md:px-3"></div>
 
-                    <div class="pointer-events-none absolute bottom-4 left-4 z-30 rounded-2xl border border-slate-600/60 bg-slate-950/85 px-3 py-2 text-[11px] text-slate-100 shadow-xl">
-                        <p class="font-black uppercase tracking-[0.18em] text-slate-300">Actividad</p>
+                    <div class="pointer-events-none absolute bottom-4 left-4 z-30 rounded-lg border border-blue-300 bg-white px-3 py-2 text-[11px] text-slate-700 shadow-lg">
+                        <p class="font-bold uppercase tracking-wider text-blue-600">Estado</p>
                         <p class="mt-1 font-semibold" x-text="workflowStatus"></p>
                     </div>
                 </div>
                 @else
                 <div class="flex h-[70vh] flex-col items-center justify-center gap-3 px-6 text-center text-slate-300">
-                    <p class="text-lg font-black text-white">No hay un PDF disponible para renderizar dentro del editor.</p>
-                    <p class="max-w-xl text-sm">Puedes abrir el archivo original o subir una version en PDF para habilitar el visor completo por paginas.</p>
-                    <a href="{{ $archivoUrl }}" target="_blank" class="rounded-2xl bg-sky-600 px-4 py-2 text-xs font-black text-white hover:bg-sky-700">Abrir archivo</a>
+                    <p class="text-lg font-black text-white">No hay un documento PDF disponible en el editor.</p>
+                    <p class="max-w-xl text-sm">Puedes descargar el archivo original o subir una versión en PDF.</p>
+                    <a href="{{ $archivoUrl }}" target="_blank" class="rounded-2xl bg-sky-600 px-4 py-2 text-xs font-black text-white hover:bg-sky-700">Descargar archivo</a>
                 </div>
                 @endif
             </div>
         </section>
 
-        <aside class="space-y-3 xl:sticky xl:top-3 xl:max-h-[94vh] xl:overflow-y-auto xl:pr-1">
-            <section class="rounded-[2rem] border border-slate-800 bg-slate-900 p-4 text-slate-100">
-                <p class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Vista en vivo</p>
-                <h2 class="mt-1 text-base font-black text-white">Lo que estas haciendo</h2>
+        <aside class="editor-sidebar space-y-3 xl:sticky xl:top-3 xl:max-h-[94vh] xl:overflow-y-auto xl:pr-1">
 
-                <div class="mt-3 rounded-2xl border border-slate-800 bg-slate-950/80 px-3 py-3">
-                    <p class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Estado</p>
-                    <p class="mt-1 text-sm font-black" :class="selection.page ? 'text-sky-200' : 'text-slate-300'" x-text="workflowStatus"></p>
-                </div>
-
-                <div class="mt-2 grid gap-2 text-xs md:grid-cols-2">
-                    <div class="rounded-xl border border-slate-800 bg-slate-950/80 px-3 py-2">
-                        <p class="font-black uppercase tracking-[0.2em] text-slate-500">Pagina</p>
-                        <p class="mt-1 font-semibold text-slate-200" x-text="selection.page || 'Ninguna'"></p>
-                    </div>
-                    <div class="rounded-xl border border-slate-800 bg-slate-950/80 px-3 py-2">
-                        <p class="font-black uppercase tracking-[0.2em] text-slate-500">Tamano</p>
-                        <p class="mt-1 font-semibold text-slate-200" x-text="selection.page ? `${selection.width.toFixed(2)}% x ${selection.height.toFixed(2)}%` : 'Sin zona'"></p>
-                    </div>
-                </div>
-
-                <p class="mt-3 text-[11px] leading-5 text-slate-400">
-                    Consejo: activa el selector, arrastra una zona clara y ajusta las esquinas para mayor precision.
-                </p>
-            </section>
-
-            <section class="rounded-[2rem] border border-slate-800 bg-slate-900 p-4 text-slate-100">
-                <p class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Seleccion</p>
-                <h2 class="mt-1 text-base font-black text-white">Zona rectangular del documento</h2>
+            <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-lg">
+                <p class="text-[11px] font-bold uppercase tracking-wider text-slate-600">Herramientas de Selección</p>
+                <h2 class="mt-1 text-base font-bold text-slate-900">Región del Documento</h2>
 
                 <div class="mt-4 grid gap-2 text-xs">
-                    <div class="rounded-2xl border bg-slate-950/80 px-3 py-3 transition duration-300"
-                        :class="selection.page ? 'border-sky-400/60 shadow-[0_0_0_1px_rgba(56,189,248,0.25),0_0_30px_rgba(56,189,248,0.18)]' : 'border-slate-800'">
-                        <p class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Pagina</p>
-                        <p class="mt-1 font-semibold" x-text="selection.page || 'Sin pagina'"></p>
+                    <div class="rounded-lg border bg-white px-4 py-3 transition duration-300"
+                        :class="selection.page ? 'border-blue-300 bg-blue-50 shadow-sm' : 'border-slate-200'">
+                        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-600">Página</p>
+                        <p class="mt-1 font-semibold text-slate-800" x-text="selection.page || 'Sin página'"></p>
                     </div>
                 </div>
 
-                <div class="mt-3 rounded-2xl border border-sky-500/25 bg-sky-500/10 px-3 py-2.5 text-[11px] text-sky-100">
-                    <p class="font-black uppercase tracking-[0.2em] text-sky-300">Mover y ajustar</p>
-                    <p class="mt-1 leading-5">Arrastra dentro del recuadro para moverlo. Usa las esquinas para redimensionarlo con precision.</p>
+                <div class="mt-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-[11px] text-slate-700">
+                    <p class="font-bold uppercase tracking-wider text-blue-700">Mover y Redimensionar</p>
+                    <p class="mt-1 leading-5 text-slate-600">Arrastra dentro del recuadro para moverlo. Usa las esquinas para redimensionar con precisión.</p>
                 </div>
 
-                <div class="mt-3 rounded-2xl border bg-slate-950/80 p-3 transition duration-300"
-                    :class="selection.page ? 'border-amber-400/50 shadow-[0_0_0_1px_rgba(251,191,36,0.18),0_0_28px_rgba(251,191,36,0.12)]' : 'border-slate-800'">
+                <div class="mt-3 rounded-lg border bg-white p-4 transition duration-300"
+                    :class="selection.page ? 'border-amber-300 bg-amber-50 shadow-sm' : 'border-slate-200'">
                     <div class="flex items-center justify-between gap-2">
-                        <p class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Texto extraido del rectangulo</p>
-                        <button type="button" @click="useSelectedTextAsComment()" class="text-[11px] font-black text-sky-300 hover:text-sky-200">Usar en comentario</button>
+                        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-600">Texto Detectado</p>
+                        <button type="button" @click="useSelectedTextAsComment()" class="text-[11px] btn btn-blue-600  font-bold text-blue-600 transition hover:text-blue-700">Copiar al Comentario</button>
                     </div>
-                    <p class="mt-2 whitespace-pre-wrap text-xs leading-5 text-slate-200" x-text="selection.text || 'Arrastra para crear un rectangulo. Cuando termines, aqui aparecera el texto detectado dentro de la zona.'"></p>
+                    <p class="mt-2 whitespace-pre-wrap text-xs leading-5 text-slate-700" x-text="selection.text || 'Arrastra para crear un rectángulo. Cuando termines, aquí aparecerá el texto detectado.'"></p>
                 </div>
 
-                <div class="mt-4 space-y-3 rounded-[1.6rem] border p-3 transition duration-300"
-                    :class="selectionGlow ? 'border-sky-400/55 bg-sky-500/8 shadow-[0_0_0_1px_rgba(56,189,248,0.2),0_0_40px_rgba(56,189,248,0.12)]' : 'border-slate-800 bg-transparent'">
+                <div class="mt-4 space-y-3 rounded-lg border p-4 transition duration-300 bg-white"
+                    :class="selectionGlow ? 'border-blue-300 shadow-md ring-1 ring-blue-100' : 'border-slate-200'">
                     <div>
-                        <label class="mb-1 block text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Titulo</label>
+                        <label class="mb-2 block text-[11px] font-bold uppercase tracking-wider text-slate-700">Título</label>
                         <input type="text" x-model="draftTitle" maxlength="120"
-                            class="w-full rounded-2xl border bg-slate-950 px-3 py-2.5 text-sm text-white outline-none transition"
-                            :class="selectionGlow ? 'border-sky-400/70 shadow-[0_0_0_1px_rgba(56,189,248,0.24)] focus:border-sky-300' : 'border-slate-700 focus:border-sky-500'"
-                            placeholder="Ej. Correccion de formato">
+                            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                            placeholder="Ej. Corrección de formato">
                     </div>
 
                     <div>
-                        <label class="mb-1 block text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Info adicional</label>
-                        <input type="text" x-model="draftInfo" maxlength="300" class="w-full rounded-2xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-white outline-none transition focus:border-sky-500" placeholder="Ej. Unidad 2 · Apertura">
+                        <label class="mb-2 block text-[11px] font-bold uppercase tracking-wider text-slate-700">Info adicional</label>
+                        <input type="text" x-model="draftInfo" maxlength="300" class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" placeholder="Ej. Unidad 2 · Apertura">
                     </div>
 
                     <div>
-                        <label class="mb-1 block text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Comentario</label>
+                        <label class="mb-2 block text-[11px] font-bold uppercase tracking-wider text-slate-700">Comentario</label>
                         <textarea x-model="draftComment" rows="6"
-                            class="w-full rounded-2xl border bg-slate-950 px-3 py-3 text-sm text-white outline-none transition"
-                            :class="selectionGlow ? 'border-amber-400/65 shadow-[0_0_0_1px_rgba(251,191,36,0.22)] focus:border-amber-300' : 'border-slate-700 focus:border-sky-500'"
-                            placeholder="Escribe la observacion ligada a la zona seleccionada"></textarea>
+                            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                            placeholder="Escribe la observación ligada a la zona seleccionada"></textarea>
                     </div>
 
-                    <p class="text-[11px] text-slate-400" x-text="selectionHint"></p>
+                    <p class="text-[11px] text-slate-600 font-medium" x-text="selectionHint"></p>
                 </div>
 
-                <div class="mt-4 grid gap-2">
+                <div class="mt-5 grid gap-3">
                     <form id="selection-comment-form" action="{{ route('secuencias.comentarios.guardar', $secuencia) }}" method="POST">
                         @csrf
                         <input type="hidden" name="coord_mode" value="percent">
@@ -221,105 +210,204 @@ $pdfComments = $secuencia->comentarios
                         <input type="hidden" name="texto_seleccionado" :value="selection.text">
                         <input type="hidden" name="comentario" :value="draftComment">
 
-                        <button type="submit" class="w-full rounded-2xl bg-sky-600 px-4 py-3 text-sm font-black text-white transition hover:bg-sky-700">
-                            Guardar comentario contextual
-                        </button>
-                    </form>
-
-                    <form id="selection-annotate-form" action="{{ route('secuencias.anotarArchivo', $secuencia) }}" method="POST">
-                        @csrf
-                        <input type="hidden" name="coord_mode" value="percent">
-                        <input type="hidden" name="page" :value="selection.page || ''">
-                        <input type="hidden" name="x" :value="selection.page ? selection.x : ''">
-                        <input type="hidden" name="y" :value="selection.page ? selection.y : ''">
-                        <input type="hidden" name="width" :value="selection.page ? selection.width : ''">
-                        <input type="hidden" name="height" :value="selection.page ? selection.height : ''">
-                        <input type="hidden" name="titulo" :value="draftTitle">
-                        <input type="hidden" name="info" :value="draftInfo">
-                        <input type="hidden" name="comentario" :value="draftComment">
-
-                        <button type="submit" class="w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-black text-white transition hover:bg-emerald-700">
-                            Generar PDF anotado desde esta seleccion
+                        <button type="submit" :disabled="!hasValidSelection" class="w-full rounded-lg bg-linear-to-r from-blue-600 via-blue-600 to-blue-700 px-4 py-3 text-sm font-semibold text-white transition shadow-lg hover:shadow-xl hover:from-blue-700 hover:via-blue-700 hover:to-blue-800 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:from-slate-400 disabled:to-slate-400">
+                            Guardar Observación
                         </button>
                     </form>
                 </div>
             </section>
 
-            <section class="rounded-[2rem] border border-slate-800 bg-slate-900 p-4 text-slate-100">
-                <div class="flex items-center justify-between gap-2">
+            <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-lg">
+                <div class="flex items-center justify-between gap-3 pb-4 border-b border-slate-100">
                     <div>
-                        <p class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Comentarios</p>
-                        <h2 class="mt-1 text-base font-black text-white">Observaciones del documento</h2>
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Observaciones del Documento</p>
+                        <h2 class="mt-2.5 text-xl font-bold text-slate-900">Comentarios y Retroalimentación</h2>
                     </div>
-                    <span class="rounded-full bg-slate-950 px-3 py-1 text-[11px] font-black text-slate-300">{{ $secuencia->comentarios->count() }}</span>
+                    <span class="rounded-full bg-linear-to-br from-blue-100 to-blue-50 px-3.5 py-1.5 text-[11px] font-bold text-blue-700 border border-blue-200 shadow-sm">{{ $contextComments->count() }}</span>
                 </div>
 
                 <div class="mt-4 max-h-[38vh] space-y-3 overflow-y-auto pr-1">
-                    @forelse ($secuencia->comentarios as $comentario)
-                    <article class="rounded-2xl border border-slate-800 bg-slate-950/80 p-3">
+                    @forelse ($contextComments as $comentario)
+                    <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-300 hover:shadow-md">
                         <div class="flex items-start justify-between gap-3">
                             <div>
-                                <p class="text-sm font-black text-white">{{ $comentario->usuario?->name ?? 'Usuario' }}</p>
-                                <p class="mt-1 text-[11px] text-slate-500">
-                                    {{ optional($comentario->created_at)->format('d/m/Y H:i') }}
+                                <p class="text-sm font-bold text-slate-900">{{ $comentario->usuario?->name ?? 'Usuario' }}</p>
+                                <p class="mt-1 text-[11px] text-slate-500 font-medium">
+                                    {{ optional($comentario->created_at)->format('d/m/Y — H:i') }}
                                     @if ($comentario->page)
-                                    · Pagina {{ $comentario->page }}
+                                    • Página {{ $comentario->page }}
                                     @endif
                                 </p>
                             </div>
-                            <span class="rounded-full px-2.5 py-1 text-[11px] font-black uppercase {{ $comentario->estatus === 'cerrado' ? 'bg-emerald-500/15 text-emerald-200' : ($comentario->estatus === 'respondido' ? 'bg-sky-500/15 text-sky-200' : 'bg-amber-500/15 text-amber-200') }}">
-                                {{ $comentario->estatus }}
+                            <span class="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wide {{ $comentario->estatus === 'resuelto' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : ($comentario->estatus === 'reabierto' ? 'bg-red-100 text-red-800 border border-red-200' : 'bg-amber-100 text-amber-800 border border-amber-200') }}">
+                                <span class="inline-block w-2.5 h-2.5 rounded-full {{ $comentario->estatus === 'resuelto' ? 'bg-emerald-600' : ($comentario->estatus === 'reabierto' ? 'bg-red-600' : 'bg-amber-600') }}"></span>
+                                {{ $comentario->estatus === 'resuelto' ? 'Resuelto' : ($comentario->estatus === 'reabierto' ? 'Reabierto' : 'Pendiente') }}
                             </span>
                         </div>
 
-                        @if ($comentario->titulo || $comentario->info)
-                        <div class="mt-3 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs text-slate-300">
-                            @if ($comentario->titulo)
-                            <p><span class="font-black text-white">Titulo:</span> {{ $comentario->titulo }}</p>
-                            @endif
-                            @if ($comentario->info)
-                            <p class="mt-1"><span class="font-black text-white">Info:</span> {{ $comentario->info }}</p>
-                            @endif
-                        </div>
-                        @endif
+                        <p class="mt-3 text-sm text-slate-700">{{ $comentario->comentario }}</p>
 
-                        @if ($comentario->texto_seleccionado)
-                        <div class="mt-3 rounded-xl border border-sky-500/20 bg-sky-500/10 px-3 py-2 text-xs leading-5 text-sky-100">
-                            "{{ $comentario->texto_seleccionado }}"
-                        </div>
-                        @endif
-
-                        <p class="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-200">{{ $comentario->comentario }}</p>
-
-                        @if ($comentario->page && $comentario->x !== null && $comentario->y !== null)
                         <button
                             type="button"
-                            @click="jumpToComment({{ $comentario->id }}, {{ $comentario->page }})"
-                            class="mt-3 rounded-xl bg-slate-100 px-3 py-2 text-[11px] font-black text-slate-900 transition hover:bg-white">
-                            Ir a seleccion
+                            @click="jumpToComment({{ $comentario->id }}, {{ $comentario->page ?? 1 }})"
+                           
+                            class="mt-3 rounded-lg bg-blue-100 px-3 py-2 text-[11px] font-bold text-blue-700 transition hover:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                            Ver Región
                         </button>
-                        @endif
-
-                        @if ($comentario->respuesta)
-                        <div class="mt-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3">
-                            <p class="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-200">Respuesta</p>
-                            <p class="mt-1 whitespace-pre-wrap text-sm text-emerald-50">{{ $comentario->respuesta }}</p>
-                            <p class="mt-1 text-[11px] text-emerald-200/80">{{ $comentario->respuestaUsuario?->name ?? 'Usuario' }}</p>
-                        </div>
-                        @endif
                     </article>
                     @empty
-                    <div class="rounded-2xl border border-dashed border-slate-700 bg-slate-950/70 px-4 py-8 text-center text-sm text-slate-400">
-                        Aun no hay comentarios registrados.
+                    <div class="mt-4 rounded-lg border border-dashed border-slate-300 bg-linear-to-br from-slate-50 to-white px-6 py-12 text-center">
+                        <p class="text-sm text-slate-600 font-semibold">Sin observaciones aún</p>
+                        <p class="text-xs text-slate-500 mt-1.5 leading-5">Selecciona regiones en el PDF y añade observaciones. Aparecerán aquí.</p>
                     </div>
                     @endforelse
                 </div>
             </section>
         </aside>
     </div>
+
+    <!-- MODAL DE TODAS LAS OBSERVACIONES -->
+    <div x-show="modalTodosComentariosAbierto" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm" style="display: none;" @click.self="modalTodosComentariosAbierto = false">
+        <div class="w-full max-w-3xl mx-4 max-h-[90vh] rounded-2xl bg-white shadow-2xl flex flex-col" @click.stop>
+            <!-- Header del Modal -->
+            <div class="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-white to-blue-50 px-6 py-5 flex-shrink-0">
+                <div>
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Panel de Observaciones</p>
+                    <h3 class="mt-2 text-xl font-bold text-slate-900">Todas las Observaciones</h3>
+                </div>
+                <button type="button" @click="modalTodosComentariosAbierto = false" class="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 flex-shrink-0">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Contenido - Lista de Comentarios -->
+            <div class="overflow-y-auto flex-1 p-6 space-y-4">
+                <template x-if="comments.length > 0">
+                    <div class="space-y-4">
+                        <template x-for="comentario in comments" :key="comentario.id">
+                            <article class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md hover:border-blue-300">
+                                <!-- Header del comentario -->
+                                <div class="flex items-start justify-between gap-4 mb-4">
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-900" x-text="comentario.usuario"></p>
+                                        <p class="mt-1 text-[11px] text-slate-500 font-medium" x-text="comentario.fecha"></p>
+                                    </div>
+                                    <span class="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wide flex-shrink-0" x-bind:class="comentario.estatus === 'resuelto' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : (comentario.estatus === 'reabierto' ? 'bg-red-100 text-red-800 border border-red-200' : 'bg-amber-100 text-amber-800 border border-amber-200')">
+                                        <span class="inline-block w-2.5 h-2.5 rounded-full" x-bind:class="comentario.estatus === 'resuelto' ? 'bg-emerald-600' : (comentario.estatus === 'reabierto' ? 'bg-red-600' : 'bg-amber-600')"></span>
+                                        <span x-text="comentario.estatus === 'resuelto' ? 'Resuelto' : (comentario.estatus === 'reabierto' ? 'Reabierto' : 'Pendiente')"></span>
+                                    </span>
+                                </div>
+
+                                <!-- Título y Contexto -->
+                                <template x-if="comentario.titulo || comentario.info">
+                                    <div class="mb-4 rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-2 text-xs">
+                                        <template x-if="comentario.titulo">
+                                            <div>
+                                                <p class="font-bold text-slate-600">Título:</p>
+                                                <p class="text-slate-800" x-text="comentario.titulo"></p>
+                                            </div>
+                                        </template>
+                                        <template x-if="comentario.info">
+                                            <div>
+                                                <p class="font-bold text-slate-600">Contexto:</p>
+                                                <p class="text-slate-800" x-text="comentario.info"></p>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+
+                                <!-- Texto Seleccionado -->
+                                <template x-if="comentario.texto">
+                                    <div class="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-3">
+                                        <p class="text-[10px] font-bold uppercase tracking-widest text-blue-600 mb-2">Texto Detectado</p>
+                                        <p class="text-sm text-blue-900 font-medium italic" x-text="comentario.texto"></p>
+                                    </div>
+                                </template>
+
+                                <!-- Comentario -->
+                                <div class="mb-4 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-600 mb-2">Observación</p>
+                                    <p class="whitespace-pre-wrap text-sm text-slate-800 leading-6" x-text="comentario.comentario"></p>
+                                </div>
+
+                                <!-- Respuesta -->
+                                <template x-if="comentario.respuesta">
+                                    <div class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <div class="w-1 h-4 bg-emerald-600 rounded"></div>
+                                            <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-700">Respuesta del Docente</p>
+                                        </div>
+                                        <p class="whitespace-pre-wrap text-sm text-emerald-800 leading-6" x-text="comentario.respuesta"></p>
+                                        <p class="mt-2 text-[11px] text-emerald-700 font-semibold" x-text="'— ' + comentario.respuesta_usuario"></p>
+                                    </div>
+                                </template>
+
+                                <!-- Botón Ver Región -->
+                                <template x-if="comentario.page">
+                                    <button
+                                        type="button"
+                                        @click="jumpToComment(comentario.id, comentario.page); modalTodosComentariosAbierto = false;"
+                                        class="inline-flex rounded-lg bg-blue-100 px-3.5 py-2.5 text-sm font-bold text-blue-700 transition hover:bg-blue-200">
+                                        <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 20h10a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v14a1 1 0 001 1z"></path>
+                                        </svg>
+                                        Ver en PDF
+                                    </button>
+                                </template>
+                            </article>
+                        </template>
+                    </div>
+                </template>
+                <template x-if="comments.length === 0">
+                    <div class="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center">
+                        <p class="text-sm font-semibold text-slate-600">Sin observaciones aún</p>
+                        <p class="text-xs text-slate-500 mt-2">No hay observaciones registradas en este documento.</p>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Footer -->
+            <div class="border-t border-slate-200 bg-slate-50 px-6 py-4 flex-shrink-0">
+                <button type="button" @click="modalTodosComentariosAbierto = false" class="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 shadow-md hover:shadow-lg">
+                    Cerrar Panel
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <style>
+    .panel-surface {
+        position: relative;
+    }
+
+    .editor-sidebar {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(59, 130, 246, 0.4) rgba(226, 232, 240, 0.6);
+    }
+
+    .editor-sidebar::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .editor-sidebar::-webkit-scrollbar-track {
+        background: rgba(241, 245, 249, 0.5);
+        border-radius: 999px;
+    }
+
+    .editor-sidebar::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, rgba(59, 130, 246, 0.5), rgba(29, 78, 216, 0.6));
+        border-radius: 999px;
+        border: 2px solid transparent;
+        background-clip: padding-box;
+    }
+
+    .editor-sidebar::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(37, 99, 235, 0.7);
+    }
+
     .pdf-page-surface {
         position: relative;
         border-radius: 24px;
@@ -541,6 +629,7 @@ $pdfComments = $secuencia->comentarios
             draftTitle: '',
             draftInfo: '',
             draftComment: '',
+            modalTodosComentariosAbierto: false,
             get selectionHint() {
                 if (!this.selection.page) {
                     return 'Arrastra sobre cualquier parte del PDF para crear una ventana rectangular editable.';
@@ -549,6 +638,13 @@ $pdfComments = $secuencia->comentarios
                 return this.selection.text ?
                     `El rectangulo de la pagina ${this.selection.page} ya extrajo texto. Puedes moverlo y redimensionarlo desde las esquinas.` :
                     `El rectangulo de la pagina ${this.selection.page} esta listo. Puedes moverlo y redimensionarlo desde las esquinas.`;
+            },
+            get hasValidSelection() {
+                return Boolean(
+                    this.selection.page &&
+                    this.selection.width >= this.selectionMinSize &&
+                    this.selection.height >= this.selectionMinSize
+                );
             },
             get workflowStatus() {
                 if (!this.selectorEnabled) {
@@ -1193,6 +1289,27 @@ $pdfComments = $secuencia->comentarios
                 const comment = this.comments.find((item) => item.id === commentId);
 
                 if (comment) {
+                    const hasValidRect =
+                        Number(comment.page) > 0 &&
+                        Number(comment.x) >= 0 &&
+                        Number(comment.y) >= 0 &&
+                        Number(comment.width) > 0 &&
+                        Number(comment.height) > 0;
+
+                    if (!hasValidRect) {
+                        const page = this.pages[pageNumber];
+
+                        if (page) {
+                            page.wrapper.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'center',
+                            });
+                        }
+
+                        this.paintSelection();
+                        return;
+                    }
+
                     this.selection = {
                         page: comment.page,
                         x: Number(comment.x),

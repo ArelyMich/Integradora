@@ -448,12 +448,30 @@ class SecuenciaController extends Controller
         $this->authorizeSecuenciaAccess($secuencia);
 
         $validated = $request->validate([
+            'coord_mode' => 'required|in:percent',
+            'page' => 'required|integer|min:1|max:500',
+            'x' => 'required|numeric|min:0|max:100',
+            'y' => 'required|numeric|min:0|max:100',
+            'width' => 'required|numeric|min:0.5|max:100',
+            'height' => 'required|numeric|min:0.5|max:100',
+            'titulo' => 'nullable|string|max:120',
+            'info' => 'nullable|string|max:300',
+            'texto_seleccionado' => 'nullable|string|max:5000',
             'comentario' => 'required|string|min:5|max:1500',
         ]);
 
         SecuenciaComentario::create([
             'secuencia_id' => $secuencia->id,
             'user_id' => Auth::id(),
+            'coord_mode' => $validated['coord_mode'],
+            'page' => (int) $validated['page'],
+            'x' => (float) $validated['x'],
+            'y' => (float) $validated['y'],
+            'width' => (float) $validated['width'],
+            'height' => (float) $validated['height'],
+            'titulo' => trim((string) ($validated['titulo'] ?? '')),
+            'info' => trim((string) ($validated['info'] ?? '')),
+            'texto_seleccionado' => trim((string) ($validated['texto_seleccionado'] ?? '')),
             'comentario' => $validated['comentario'],
             'estatus' => 'pendiente',
         ]);
@@ -469,18 +487,75 @@ class SecuenciaController extends Controller
             abort(404);
         }
 
+        $user = Auth::user();
+
+        if (! $user instanceof User) {
+            abort(403);
+        }
+
+        $roleIds = $this->getRoleIds($user);
+        $isAdmin = in_array(1, $roleIds, true);
+        $isReviewer = in_array(3, $roleIds, true) && (int) $secuencia->revisor_id === (int) $user->id;
+        $isDocente = in_array(4, $roleIds, true) && (int) $secuencia->docente_id === (int) $user->id;
+
+        if (! $isAdmin && ! $isReviewer && ! $isDocente) {
+            abort(403, 'No tienes permisos para responder comentarios en esta secuencia.');
+        }
+
         $validated = $request->validate([
             'respuesta' => 'required|string|min:2|max:1500',
-            'estatus' => 'required|in:pendiente,respondido,cerrado',
+            'estatus' => 'nullable|in:pendiente,reabierto,resuelto',
         ]);
+
+        $nuevoEstatus = $comentario->estatus;
+
+        if ($isReviewer || $isAdmin) {
+            $nuevoEstatus = $validated['estatus'] ?? $comentario->estatus;
+        } elseif ($isDocente) {
+            // El docente notifica correccion y deja la observacion para nueva revision.
+            $nuevoEstatus = 'pendiente';
+        }
 
         $comentario->update([
             'respuesta' => $validated['respuesta'],
-            'estatus' => $validated['estatus'],
-            'respuesta_user_id' => Auth::id(),
+            'estatus' => $nuevoEstatus,
+            'respuesta_user_id' => $user->id,
         ]);
 
         return back()->with('success', 'Respuesta del comentario guardada correctamente.');
+    }
+
+    public function actualizarEstadoComentario(Request $request, Secuencia $secuencia, SecuenciaComentario $comentario): RedirectResponse
+    {
+        $this->authorizeSecuenciaAccess($secuencia);
+
+        if ((int) $comentario->secuencia_id !== (int) $secuencia->id) {
+            abort(404);
+        }
+
+        $user = Auth::user();
+
+        if (! $user instanceof User) {
+            abort(403);
+        }
+
+        $roleIds = $this->getRoleIds($user);
+        $isAdmin = in_array(1, $roleIds, true);
+        $isReviewer = in_array(3, $roleIds, true) && (int) $secuencia->revisor_id === (int) $user->id;
+
+        if (! $isAdmin && ! $isReviewer) {
+            abort(403, 'Solo el revisor asignado puede actualizar el estado de la observacion.');
+        }
+
+        $validated = $request->validate([
+            'estatus' => 'required|in:pendiente,reabierto,resuelto',
+        ]);
+
+        $comentario->update([
+            'estatus' => $validated['estatus'],
+        ]);
+
+        return back()->with('success', 'Estado del comentario actualizado correctamente.');
     }
 
     public function cambiarEstado(Request $request, Secuencia $secuencia): RedirectResponse
