@@ -21,12 +21,12 @@
         // Pasamos tu validación de seguridad a JS
         canView: {{ Auth()->user()->hasPermission('permisos.view') ? 'true' : 'false' }}
     })"
-    class="p-8 min-h-screen bg-gray-100 font-sans"
+    class="p-8 min-h-screen bg-[#F3F4F6] font-sans"
     x-cloak
 >
 
     <div class="mb-8" x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0 translate-y-2">
-        <h1 class="text-4xl font-bold text-[#0C4B54]">Permisos del Sistema</h1>
+        <h1 class="text-4xl font-bold text-[#2FA69A]">Permisos del Sistema</h1>
         <p class="text-gray-600 mt-1">Administración centralizada de accesos y controles</p>
     </div>
 
@@ -39,7 +39,7 @@
                 @input="page = 1"
                 type="text"
                 placeholder="Nombre o ruta..."
-                class="w-full mt-1 px-4 py-2 border rounded-xl shadow-sm focus:ring-2 focus:ring-[#0C4B54]"
+                class="w-full mt-1 px-4 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-[#2FA69A]"
             >
         </div>
 
@@ -48,7 +48,7 @@
             <select 
                 x-model="filtroEstado"
                 @change="page = 1"
-                class="mt-1 px-4 py-2 border rounded-xl shadow-sm focus:ring-2 focus:ring-[#0C4B54]"
+                class="mt-1 px-4 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-[#2FA69A]"
             >
                 <option value="">Todos</option>
                 <option value="activo">Activo</option>
@@ -61,7 +61,7 @@
         <div class="ml-auto">
             <button 
                 @click="openModal = true"
-                class="bg-[#0C4B54] text-white px-5 py-2 rounded-xl shadow hover:bg-[#093D45] transition flex items-center gap-2"
+                class="bg-[#2FA69A] text-white px-5 py-2 rounded-lg shadow hover:bg-[#23877E] transition flex items-center gap-2"
             >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -76,7 +76,7 @@
     <div class="bg-white rounded-2xl shadow overflow-hidden">
 
         <table class="min-w-full text-left">
-            <thead class="bg-[#0C4B54] text-white">
+            <thead class="bg-[#2FA69A] text-white">
                 <tr>
                     <th class="px-6 py-3">ID</th>
                     <th class="px-6 py-3">Nombre</th>
@@ -111,7 +111,7 @@
                                         :checked="permiso.status == 1" 
                                         @change="$el.closest('form').submit()"
                                     >
-                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#0C4B54]/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#0C4B54]"></div>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#2FA69A]/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2FA69A]"></div>
                                     <span class="ml-3 text-sm font-medium text-gray-900" x-text="permiso.status == 1 ? 'Activo' : 'Inactivo'"></span>
                                 </label>
                             </form>
@@ -170,28 +170,28 @@
             x-transition:enter-start="opacity-0 scale-90 translate-y-4"
             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
             @click.outside="openModal = false"
-            class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-lg relative"
+            class="bg-white rounded-2xl shadow-lg p-8 w-full max-w-lg relative"
         >
 
-            <h2 class="text-3xl font-bold text-[#0C4B54] mb-6">Crear Permiso</h2>
+            <h2 class="text-3xl font-bold text-[#2FA69A] mb-6">Crear Permiso</h2>
 
             <form action="{{ route('permisos.store') }}" method="POST">
                 @csrf
                 <label class="block font-semibold text-gray-700 mb-1">Nombre del Permiso</label>
-                <input type="text" name="sitio" class="w-full px-4 py-3 mb-5 rounded-xl border bg-gray-50 focus:ring-2 focus:ring-[#0C4B54]">
+                <input type="text" name="sitio" class="w-full px-4 py-3 mb-5 rounded-lg border bg-gray-50 focus:ring-2 focus:ring-[#2FA69A]">
 
                 <label class="block font-semibold text-gray-700 mb-1">Ruta del permiso</label>
-                <input type="text" name="ruta" class="w-full px-4 py-3 mb-5 rounded-xl border bg-gray-50 focus:ring-2 focus:ring-[#0C4B54]">
+                <input type="text" name="ruta" class="w-full px-4 py-3 mb-5 rounded-lg border bg-gray-50 focus:ring-2 focus:ring-[#2FA69A]">
 
                 <label class="block font-semibold text-gray-700 mb-1">Estado</label>
-                <select name="status" class="w-full px-4 py-3 mb-5 rounded-xl border bg-gray-50 focus:ring-2 focus:ring-[#0C4B54]">
+                <select name="status" class="w-full px-4 py-3 mb-5 rounded-lg border bg-gray-50 focus:ring-2 focus:ring-[#2FA69A]">
                     <option value="1">Activo</option>
                     <option value="0">Inactivo</option>
                 </select>
 
                 <div class="flex justify-end gap-3">
                     <button type="button" @click="openModal = false" class="px-5 py-2 rounded-xl bg-gray-300 hover:bg-gray-400 transition">Cancelar</button>
-                    <button type="submit" class="px-6 py-2 rounded-xl bg-[#0C4B54] text-white font-semibold hover:bg-[#093D45] transition shadow">Guardar</button>
+                    <button type="submit" class="px-6 py-2 rounded-lg bg-[#2FA69A] text-white font-semibold hover:bg-[#23877E] transition shadow-sm">Guardar</button>
                 </div>
             </form>
         </div>

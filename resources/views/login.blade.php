@@ -14,13 +14,13 @@
         
         /* Paleta de colores - Usuario */
         :root {
-            --color-light: #85B093;      /* Verde claro */
-            --color-accent: #568F7C;     /* Verde medio */
-            --color-secondary: #326D6C;  /* Verde azulado oscuro */
-            --color-primary: #173C4C;    /* Azul verdoso muy oscuro */
-            --color-dark: #07142B;       /* Azul noche oscuro */
-            --color-darker: #000009;     /* Casi negro azulado */
-            --color-glow: rgba(133, 176, 147, 0.4);
+            --color-light: #E5E7EB;      /* Gris claro */
+            --color-accent: #2FA69A;     /* Verde primario */
+            --color-secondary: #23877E;  /* Verde hover */
+            --color-primary: #6B7280;    /* Gris medio */
+            --color-dark: #374151;       /* Gris oscuro */
+            --color-darker: #1F2937;     /* Gris más oscuro */
+            --color-glow: rgba(47, 166, 154, 0.4);
         }
         
         /* Animaciones mejoradas */
@@ -56,7 +56,7 @@
         
         /* Gradientes mejorados */
         .bg-gradient-primary {
-            background: linear-gradient(135deg, #000009 0%, #07142B 30%, #173C4C 100%);
+            background: linear-gradient(135deg, #1F2937 0%, #374151 30%, #6B7280 100%);
             position: relative;
             overflow: hidden;
         }
@@ -68,7 +68,7 @@
             left: -50%;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle, rgba(133, 176, 147, 0.1) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(47, 166, 154, 0.1) 0%, transparent 70%);
             animation: rotate 20s linear infinite;
         }
         
@@ -78,11 +78,11 @@
         }
         
         .bg-gradient-secondary {
-            background: linear-gradient(135deg, #326D6C 0%, #568F7C 50%, #85B093 100%);
+            background: linear-gradient(135deg, #23877E 0%, #2FA69A 50%, #E5E7EB 100%);
         }
         
         .bg-gradient-light {
-            background: linear-gradient(135deg, #568F7C 0%, #85B093 100%);
+            background: linear-gradient(135deg, #2FA69A 0%, #E5E7EB 100%);
         }
         
         /* Efectos de vidrio mejorados */
@@ -116,11 +116,11 @@
         
         /* Botones mejorados */
         .btn-primary {
-            background: linear-gradient(135deg, #568F7C 0%, #85B093 100%);
+            background: linear-gradient(135deg, #2FA69A 0%, #23877E 100%);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(86, 143, 124, 0.3);
+            box-shadow: 0 4px 15px rgba(47, 166, 154, 0.3);
         }
         
         .btn-primary::before {
@@ -140,23 +140,23 @@
         
         .btn-primary:hover {
             transform: translateY(-3px);
-            box-shadow: 0 12px 24px rgba(86, 143, 124, 0.4);
+            box-shadow: 0 12px 24px rgba(47, 166, 154, 0.4);
         }
         
         .btn-primary:active {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(86, 143, 124, 0.3);
+            box-shadow: 0 4px 12px rgba(47, 166, 154, 0.3);
         }
         
         .btn-secondary {
-            background: linear-gradient(135deg, #326D6C 0%, #568F7C 100%);
+            background: linear-gradient(135deg, #23877E 0%, #2FA69A 100%);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 15px rgba(50, 109, 108, 0.3);
+            box-shadow: 0 4px 15px rgba(35, 135, 126, 0.3);
         }
         
         .btn-secondary:hover {
             transform: translateY(-3px);
-            box-shadow: 0 12px 24px rgba(50, 109, 108, 0.4);
+            box-shadow: 0 12px 24px rgba(35, 135, 126, 0.4);
         }
         
         .btn-secondary:active {
@@ -220,8 +220,8 @@
         }
         
         .loading-spinner {
-            border: 4px solid rgba(133, 176, 147, 0.3);
-            border-top: 4px solid #85B093;
+            border: 4px solid rgba(47, 166, 154, 0.3);
+            border-top: 4px solid #2FA69A;
             border-radius: 50%;
             width: 50px;
             height: 50px;
@@ -372,7 +372,7 @@
                         MODAL DE REGISTRO
     ==================================================== --}}
     <div id="modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="bg-gradient-secondary rounded-2xl shadow-2xl w-full max-w-md p-8 relative fade-in text-white modal-container">
+        <div class="bg-gradient-secondary rounded-2xl shadow-lg w-full max-w-md p-8 relative fade-in text-white modal-container">
             {{-- BOTÓN CERRAR --}}
             <button onclick="closeModal()"
                 class="absolute top-4 right-4 text-white/70 hover:text-white text-2xl transition-colors">&times;</button>

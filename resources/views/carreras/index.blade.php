@@ -23,37 +23,39 @@
         directores: {{ Js::from($directores) }},
         docentes: {{ Js::from($docentes) }} 
     })"
-    class="min-h-screen bg-gray-50 relative font-sans text-gray-700 pb-20 selection:bg-[#E8F549] selection:text-[#0C4B54]"
+    class="min-h-screen bg-gray-50 relative font-sans text-gray-700 pb-20 selection:bg-[#E6F4F2] selection:text-[#2FA69A]"
     x-cloak
 >
     {{-- FONDO DECORATIVO SUTIL --}}
     <div class="absolute inset-0 z-0 opacity-[0.03] pointer-events-none" 
-         style="background-image: radial-gradient(#0C4B54 1px, transparent 1px); background-size: 24px 24px;">
+         style="background-image: radial-gradient(#2FA69A 1px, transparent 1px); background-size: 24px 24px;">
     </div>
 
     {{-- HEADER PRINCIPAL --}}
-    <div class="relative z-10 max-w-7xl mx-auto pt-10 pb-8 px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 border-b border-gray-200 pb-6">
+    <div class="relative z-10 max-w-7xl mx-auto pt-6 pb-6 px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 border-b border-slate-200 pb-6">
             
             <div class="flex-1">
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="px-2.5 py-0.5 rounded-md bg-blue-50 text-blue-600 text-xs font-bold uppercase tracking-wider">Administración</span>
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#2FA69A] to-[#23877E] flex items-center justify-center shadow-lg">
+                        <i class="fas fa-graduation-cap text-white text-lg"></i>
+                    </div>
+                    <span class="px-2.5 py-0.5 rounded-md bg-[#2FA69A]/10 text-[#2FA69A] text-xs font-bold uppercase tracking-wider">Administración</span>
                 </div>
-                <h1 class="text-4xl font-black text-[#0C4B54] tracking-tight">
+                <h1 class="text-3xl font-bold text-slate-800">
                     Gestión de Carreras
-                    <span class="text-[#E8F549] inline-block transform translate-y-1">.</span>
                 </h1>
-                <p class="text-gray-500 mt-2 text-lg max-w-2xl">Administra la oferta académica, supervisa asignaciones y controla el flujo directivo.</p>
+                <p class="text-slate-500 mt-2 text-base">Administra la oferta académica, supervisa asignaciones y controla el flujo directivo.</p>
             </div>
 
             <div class="flex flex-wrap items-center gap-3">
-                <button class="group px-4 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl font-semibold text-sm flex items-center gap-2 hover:border-[#0C4B54] hover:text-[#0C4B54] transition-all shadow-sm">
-                    <svg class="w-4 h-4 text-gray-400 group-hover:text-[#0C4B54]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z"></path></svg>
+                <button class="group px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl font-semibold text-sm flex items-center gap-2 hover:border-[#2FA69A] hover:text-[#2FA69A] transition-all shadow-sm">
+                    <i class="fas fa-chart-bar text-slate-400 group-hover:text-[#2FA69A]"></i>
                     <span>Estadísticas</span>
                 </button>
                 @if (Auth::User()->hasPermission('carreras.store'))
-                    <button @click="openCreateModal()" class="px-6 py-2.5 bg-[#0C4B54] text-white rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-[#0a3f47] transition shadow-lg shadow-[#0C4B54]/20 hover:-translate-y-0.5">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                    <button @click="openCreateModal()" class="px-6 py-2.5 bg-[#2FA69A] text-white rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-[#23877E] transition shadow-lg shadow-[#2FA69A]/20 hover:-translate-y-0.5">
+                        <i class="fas fa-plus"></i>
                         Nueva Carrera
                     </button>
                 @endif
@@ -62,56 +64,64 @@
     </div>
 
     {{-- PANEL DE CONTROL (STATS & FILTERS) --}}
-    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
-            <div class="lg:col-span-4 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-center relative overflow-hidden group">
-                <div class="absolute right-0 top-0 w-32 h-32 bg-gray-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+            <div class="lg:col-span-4 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col justify-center relative overflow-hidden group">
+                <div class="absolute right-0 top-0 w-32 h-32 bg-[#2FA69A]/5 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
                 
-                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-6 relative z-10">Resumen General</h3>
-                <div class="space-y-5 relative z-10">
-                    <div class="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition">
+                <div class="flex items-center gap-2 mb-4 relative z-10">
+                    <i class="fas fa-chart-pie text-[#2FA69A]"></i>
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider">Resumen General</h3>
+                </div>
+                <div class="space-y-4 relative z-10">
+                    <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                            <div class="w-10 h-10 rounded-lg bg-[#2FA69A]/10 text-[#2FA69A] flex items-center justify-center">
+                                <i class="fas fa-graduation-cap"></i>
                             </div>
-                            <span class="font-medium text-gray-600">Total Carreras</span>
+                            <span class="font-medium text-slate-600">Total Carreras</span>
                         </div>
-                        <span class="text-2xl font-black text-gray-800" x-text="carreras.length"></span>
+                        <span class="text-2xl font-bold text-slate-800" x-text="carreras.length"></span>
                     </div>
                     
-                    <div class="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition">
+                    <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                                <i class="fas fa-user-check"></i>
                             </div>
-                            <span class="font-medium text-gray-600">Asignadas</span>
+                            <span class="font-medium text-slate-600">Asignadas</span>
                         </div>
-                        <span class="text-2xl font-black text-gray-800" x-text="carreras.filter(c => c.has_director).length"></span>
+                        <span class="text-2xl font-bold text-slate-800" x-text="carreras.filter(c => c.has_director).length"></span>
                     </div>
                 </div>
             </div>
 
-            <div class="lg:col-span-8 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between">
+            <div class="lg:col-span-8 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col justify-between">
                 <div>
-                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Filtrado Inteligente</h3>
+                    <div class="flex items-center gap-2 mb-4">
+                        <i class="fas fa-filter text-[#2FA69A]"></i>
+                        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider">Filtrado Inteligente</h3>
+                    </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="relative group">
-                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[#0C4B54] transition">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#2FA69A] transition">
+                                <i class="fas fa-search"></i>
+                            </span>
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                             </span>
                             <input 
                                 x-model="search"
                                 type="text" 
                                 placeholder="Buscar carrera, director..." 
-                                class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#0C4B54] focus:border-transparent focus:bg-white transition"
+                                class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#2FA69A] focus:border-transparent focus:bg-white transition"
                             >
                         </div>
                         
                         <div class="relative">
                             <select 
                                 x-model="filterStatus"
-                                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#0C4B54] focus:border-transparent focus:bg-white transition cursor-pointer appearance-none"
+                                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#2FA69A] focus:border-transparent focus:bg-white transition cursor-pointer appearance-none"
                             >
                                 <option value="all">Ver todas las carreras</option>
                                 <option value="assigned">Con Director Asignado</option>
@@ -128,7 +138,7 @@
                     <p class="text-xs text-gray-400">Mostrando resultados en tiempo real</p>
                     <button 
                         @click="search = ''; filterStatus = 'all'"
-                        class="text-sm text-[#0C4B54] font-bold hover:underline decoration-2 underline-offset-4"
+                        class="text-sm text-[#2FA69A] font-bold hover:underline decoration-2 underline-offset-4"
                     >
                         Limpiar Filtros
                     </button>
@@ -143,9 +153,9 @@
             <template x-for="item in filteredCarreras" :key="item.id">
                 
                 {{-- CARD INDIVIDUAL --}}
-                <div class="group relative bg-white rounded-2xl shadow-sm hover:shadow-2xl hover:shadow-gray-200/50 transition-all duration-300 hover:-translate-y-1 overflow-hidden border border-gray-100 flex flex-col">
+                <div class="group relative bg-white rounded-2xl shadow-sm hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300 hover:-translate-y-1 overflow-hidden border border-gray-100 flex flex-col">
                     
-                    <div class="h-24 w-full relative overflow-hidden" :class="item.has_director ? 'bg-[#0C4B54]' : 'bg-orange-500'">
+                    <div class="h-24 w-full relative overflow-hidden" :class="item.has_director ? 'bg-[#2FA69A]' : 'bg-orange-500'">
                         <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
                         <div class="absolute -bottom-1 left-0 right-0 h-6 bg-white rounded-t-[50%] scale-150"></div>
                     </div>
@@ -154,7 +164,7 @@
                         
                         <div class="relative -mt-12 mb-4 self-center">
                             <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-black shadow-lg border-4 border-white transition-transform group-hover:scale-105"
-                                 :class="item.has_director ? 'bg-[#E8F549] text-[#0C4B54]' : 'bg-white text-gray-300'">
+                                 :class="item.has_director ? 'bg-[#E6F4F2] text-[#2FA69A]' : 'bg-white text-gray-300'">
                                 <span x-text="item.nombre.charAt(0)"></span>
                             </div>
                             <div class="absolute -bottom-2 -right-2 w-8 h-8 rounded-full border-4 border-white flex items-center justify-center shadow-sm"
@@ -193,8 +203,8 @@
                                     @click="openAssignModal(item)"
                                     class="py-2.5 rounded-xl font-bold text-xs transition-all duration-300 flex items-center justify-center gap-1.5 shadow-sm hover:shadow-md border"
                                     :class="item.has_director 
-                                        ? 'bg-white border-gray-200 text-gray-600 hover:border-[#0C4B54] hover:text-[#0C4B54]' 
-                                        : 'bg-[#0C4B54] border-[#0C4B54] text-white hover:bg-[#093D45]'"
+                                        ? 'bg-white border-gray-200 text-gray-600 hover:border-[#2FA69A] hover:text-[#2FA69A]' 
+                                        : 'bg-[#2FA69A] border-[#2FA69A] text-white hover:bg-[#23877E]'"
                                 >
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                                     <span x-text="item.has_director ? 'Director' : 'Asignar'"></span>
@@ -220,7 +230,7 @@
             </div>
             <h3 class="text-xl font-bold text-gray-900">No hay carreras visibles</h3>
             <p class="text-gray-500 mt-2 max-w-sm mx-auto">No pudimos encontrar coincidencias con los filtros actuales. Intenta una búsqueda diferente.</p>
-            <button @click="search = ''; filterStatus = 'all'" class="mt-6 text-[#0C4B54] font-bold hover:underline">Restablecer todo</button>
+            <button @click="search = ''; filterStatus = 'all'" class="mt-6 text-[#2FA69A] font-bold hover:underline">Restablecer todo</button>
         </div>
     </div>
 
@@ -232,9 +242,9 @@
              x-transition:enter="ease-out duration-300"
              x-transition:enter-start="opacity-0 translate-y-8 scale-95"
              x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-             class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative z-10"
+             class="bg-white rounded-2xl shadow-lg w-full max-w-md overflow-hidden relative z-10"
         >
-            <div class="bg-gradient-to-r from-[#0C4B54] to-[#0F5E69] p-6 text-white relative overflow-hidden">
+            <div class="bg-gradient-to-r from-[#2FA69A] to-[#2FA69A] p-6 text-white relative overflow-hidden">
                 <div class="relative z-10">
                     <h3 class="font-bold text-xl">Asignar Director</h3>
                     <p class="text-blue-100 text-sm mt-1" x-text="selectedCarreraNombre"></p>
@@ -248,7 +258,7 @@
                 
                 <div class="mb-6">
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Director Académico</label>
-                    <select name="director_id" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#0C4B54] outline-none transition font-medium text-gray-700">
+                    <select name="director_id" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#2FA69A] outline-none transition font-medium text-gray-700">
                         <option value="" disabled selected>Seleccione un profesional...</option>
                         <template x-for="director in directores" :key="director.id">
                             <option :value="director.id" x-text="`${director.name} ${director.apellido_paterno} ${director.apellido_materno || ''}`"></option>
@@ -258,7 +268,7 @@
 
                 <div class="flex gap-3">
                     <button type="button" @click="closeAssignModal()" class="flex-1 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition">Cancelar</button>
-                    <button type="submit" class="flex-1 py-3 bg-[#E8F549] text-[#0C4B54] font-bold rounded-xl hover:bg-[#dce940] shadow-md transition">Guardar</button>
+                    <button type="submit" class="flex-1 py-3 bg-[#E6F4F2] text-[#2FA69A] font-bold rounded-xl hover:bg-[#dce940] shadow-md transition">Guardar</button>
                 </div>
             </form>
         </div>
@@ -272,9 +282,9 @@
              x-transition:enter="ease-out duration-300"
              x-transition:enter-start="opacity-0 translate-y-8 scale-95"
              x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-             class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden relative z-10"
+             class="bg-white rounded-2xl shadow-lg w-full max-w-lg overflow-hidden relative z-10"
         >
-            <div class="bg-gradient-to-r from-indigo-600 to-blue-600 p-6 text-white relative overflow-hidden">
+            <div class="bg-gradient-to-r from-[#2FA69A] to-[#23877E] p-6 text-white relative overflow-hidden">
                 <div class="relative z-10">
                     <h3 class="font-bold text-xl">Claustro de Profesores</h3>
                     <p class="text-indigo-100 text-sm mt-1" x-text="selectedCarreraNombre"></p>
@@ -333,11 +343,11 @@
              x-transition:enter="ease-out duration-300"
              x-transition:enter-start="opacity-0 translate-y-8 scale-95"
              x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-             class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden relative z-10"
+             class="bg-white rounded-2xl shadow-lg w-full max-w-lg overflow-hidden relative z-10"
         >
             <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-[#E8F549] flex items-center justify-center text-[#0C4B54]">
+                    <div class="w-10 h-10 rounded-full bg-[#E6F4F2] flex items-center justify-center text-[#2FA69A]">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                     </div>
                     <h3 class="text-xl font-bold text-gray-800">Nueva Carrera</h3>
@@ -350,15 +360,15 @@
                     @csrf
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-1">Nombre Oficial</label>
-                        <input type="text" name="nombre_carrera" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#0C4B54] focus:bg-white transition" placeholder="Ej. Licenciatura en Derecho">
+                        <input type="text" name="nombre_carrera" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#2FA69A] focus:bg-white transition" placeholder="Ej. Licenciatura en Derecho">
                     </div>
 
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-1">Descripción</label>
-                        <textarea name="descripcion" rows="3" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#0C4B54] focus:bg-white transition" placeholder="Detalles del programa..."></textarea>
+                        <textarea name="descripcion" rows="3" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#2FA69A] focus:bg-white transition" placeholder="Detalles del programa..."></textarea>
                     </div>
                     
-                    <button type="submit" class="w-full py-4 bg-[#0C4B54] text-white font-bold rounded-xl shadow-lg hover:bg-[#093D45] transition flex items-center justify-center gap-2 group">
+                    <button type="submit" class="w-full py-4 bg-[#2FA69A] text-white font-bold rounded-xl shadow-lg hover:bg-[#23877E] transition flex items-center justify-center gap-2 group">
                         <span>Registrar Carrera</span>
                         <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
                     </button>

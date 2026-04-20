@@ -7,13 +7,13 @@
         // Obtenemos los IDs de los docentes que YA están asignados para marcarlos en el modal
         selectedDocentes: @js($carrera->docentes->pluck('id')->toArray()) 
     }" 
-    class="p-8 min-h-screen bg-gray-100"
+    class="p-8 min-h-screen bg-[#F3F4F6]"
 >
 
     {{-- HEADER --}}
     <div class="mb-8 flex items-center justify-between">
         <div>
-            <h1 class="text-4xl font-bold text-[#0C4B54]">Detalle de Carrera</h1>
+            <h1 class="text-4xl font-bold text-[#2FA69A]">Detalle de Carrera</h1>
             <p class="text-gray-600">Gestión académica y claustro de profesores.</p>
         </div>
         <a href="{{ route('carreras.index') }}" 
@@ -28,8 +28,8 @@
     {{-- ****************************************************** --}}
     {{-- 1. DETALLE DE LA CARRERA (INFO + DIRECTOR) --}}
     {{-- ****************************************************** --}}
-    <div class="bg-white p-6 rounded-2xl shadow mb-8 border-l-4 border-[#0C4B54]">
-        <h2 class="text-2xl font-semibold text-[#0C4B54] mb-4">Información General</h2>
+    <div class="bg-white p-6 rounded-2xl shadow-sm mb-8 border-l-4 border-[#2FA69A]">
+        <h2 class="text-2xl font-semibold text-[#2FA69A] mb-4">Información General</h2>
         
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             
@@ -44,7 +44,7 @@
                 <p class="text-xs font-bold uppercase text-gray-400 tracking-wider mb-1">Director Académico</p>
                 <div class="flex items-center gap-3">
                     @if($carrera->director)
-                        <div class="w-10 h-10 rounded-full bg-[#0C4B54] text-white flex items-center justify-center font-bold text-lg">
+                        <div class="w-10 h-10 rounded-full bg-[#2FA69A] text-white flex items-center justify-center font-bold text-lg">
                             {{ strtoupper(substr($carrera->director->name, 0, 1)) }}
                         </div>
                         <div>
@@ -82,7 +82,7 @@
             {{-- BOTÓN PARA ABRIR MODAL DE ASIGNACIÓN --}}
             <button 
                 @click="openModal = true"
-                class="bg-[#0C4B54] text-white px-5 py-2 rounded-xl shadow hover:bg-[#093D45] transition flex items-center gap-2 text-sm font-bold"
+                class="bg-[#2FA69A] text-white px-5 py-2 rounded-lg shadow-sm hover:bg-[#23877E] transition flex items-center gap-2 text-sm font-bold"
             >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -153,10 +153,10 @@
             x-transition:enter-start="opacity-0 scale-95 translate-y-4"
             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
             @click.outside="openModal = false"
-            class="bg-white rounded-3xl shadow-2xl p-0 w-full max-w-2xl relative overflow-hidden max-h-[90vh] flex flex-col"
+            class="bg-white rounded-2xl shadow-lg p-0 w-full max-w-2xl relative overflow-hidden max-h-[90vh] flex flex-col"
         >
             {{-- Header Modal --}}
-            <div class="bg-[#0C4B54] p-6 text-white">
+            <div class="bg-[#2FA69A] p-6 text-white">
                 <h2 class="text-2xl font-bold">Gestión de Claustro</h2>
                 <p class="text-blue-100 text-sm mt-1">Marca los profesores que impartirán clases en esta carrera.</p>
             </div>
@@ -175,8 +175,8 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         @forelse($todosLosDocentes as $docente)
                         <label 
-                            class="flex items-start p-3 bg-white border border-gray-200 rounded-xl cursor-pointer hover:border-[#0C4B54] hover:shadow-md transition group relative"
-                            :class="selectedDocentes.includes({{ $docente->id }}) ? 'border-[#0C4B54] ring-1 ring-[#0C4B54] bg-blue-50/30' : ''"
+                            class="flex items-start p-3 bg-white border border-gray-200 rounded-xl cursor-pointer hover:border-[#2FA69A] hover:shadow-md transition group relative"
+                            :class="selectedDocentes.includes({{ $docente->id }}) ? 'border-[#2FA69A] ring-1 ring-[#2FA69A] bg-[#2FA69A]/5' : ''"
                         >
                             <div class="flex items-center h-5 mt-1">
                                 <input 
@@ -184,18 +184,18 @@
                                     name="profesores[]" 
                                     value="{{ $docente->id }}" 
                                     x-model="selectedDocentes"
-                                    class="w-4 h-4 text-[#0C4B54] border-gray-300 rounded focus:ring-[#0C4B54] transition"
+                                    class="w-4 h-4 text-[#2FA69A] border-gray-300 rounded focus:ring-[#2FA69A] transition"
                                 >
                             </div>
                             <div class="ml-3">
-                                <span class="block text-sm font-bold text-gray-800 group-hover:text-[#0C4B54] transition">
+                                <span class="block text-sm font-bold text-gray-800 group-hover:text-[#2FA69A] transition">
                                     {{ $docente->name }} {{ $docente->apellido_paterno }}
                                 </span>
                                 <span class="block text-xs text-gray-500">{{ $docente->email }}</span>
                             </div>
                             
                             {{-- Check visual (icono) --}}
-                            <div x-show="selectedDocentes.includes({{ $docente->id }})" class="absolute top-2 right-2 text-[#0C4B54]">
+                            <div x-show="selectedDocentes.includes({{ $docente->id }})" class="absolute top-2 right-2 text-[#2FA69A]">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                             </div>
                         </label>
@@ -216,7 +216,7 @@
                     </button>
 
                     <button type="submit"
-                        class="px-8 py-2.5 rounded-xl bg-[#0C4B54] text-white font-bold hover:bg-[#093D45] shadow-lg shadow-[#0C4B54]/20 transition hover:-translate-y-0.5">
+                        class="px-8 py-2.5 rounded-lg bg-[#2FA69A] text-white font-bold hover:bg-[#23877E] shadow-sm shadow-[#2FA69A]/20 transition hover:-translate-y-0.5">
                         Guardar Asignaciones
                     </button>
                 </div>

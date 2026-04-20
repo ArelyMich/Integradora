@@ -18,7 +18,7 @@
 <body class="min-h-screen flex items-center justify-center bg-gray-900 text-white">
 
     <form method="POST" action="/2fa"
-        class="bg-gray-800 p-8 rounded-xl shadow-xl w-full max-w-sm space-y-4">
+        class="bg-gray-800 p-8 rounded-xl shadow-md w-full max-w-sm space-y-4">
         @csrf
 
         <h2 class="text-xl font-bold text-center">Verificación en dos pasos</h2>

@@ -6,35 +6,38 @@
     -----------------------------------------------------------------------------------------------------------
     PANEL DE GESTIÓN DE SECUENCIAS ACADÉMICAS
     Reemplaza el dashboard principal con una vista de administración detallada.
-    Colores principales: #0C4B54 (Azul Primario), #F59E0B (Naranja Acento), #10B981 (Verde).
+    Colores principales: #2FA69A (Verde Primario), #F59E0B (Naranja Acento), #10B981 (Verde).
     -----------------------------------------------------------------------------------------------------------
 --}}
 
 {{-- Wrapper principal con Alpine.js para control de modales --}}
 <div 
     x-data="{ openModal: false }"
-    class="w-full p-8 space-y-8 min-h-screen bg-gray-50"
+    class="w-full p-6 space-y-6 min-h-screen bg-slate-50"
 >
 
     {{-- TÍTULO Y BARRA DE ACCIONES SUPERIORES --}}
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-        <div>
-            <h1 class="text-4xl font-extrabold text-[#0C4B54] border-l-4 border-[#0C4B54] pl-3">
-                Gestión de Secuencias
-            </h1>
-            <p class="text-gray-500 mt-1 text-base">Administración centralizada de todas las secuencias académicas del sistema.</p>
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#2FA69A] to-[#23877E] flex items-center justify-center shadow-lg">
+                <i class="fas fa-clipboard-list text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800">Gestión de Secuencias</h1>
+                <p class="text-slate-500 text-sm">Administración centralizada de todas las secuencias académicas del sistema.</p>
+            </div>
         </div>
 
         <div class="flex items-center gap-3 mt-4 sm:mt-0">
             
             <!-- Botón Gráficas -->
-            <button class="px-4 py-2 rounded-xl bg-[#0C4B54] text-white shadow hover:bg-[#103a42] transition flex items-center gap-2 text-sm font-semibold">
+            <button class="px-4 py-2 rounded-lg bg-[#2FA69A] text-white shadow-sm hover:bg-[#23877E] transition flex items-center gap-2 text-sm font-semibold">
                 <i class="fas fa-chart-bar"></i> Ver Estadísticas
             </button>
 
             <!-- Botón Imprimir -->
-            <button class="px-4 py-2 rounded-xl bg-gray-400 text-white shadow hover:bg-gray-500 transition flex items-center gap-2 text-sm font-semibold">
-                <i class="fas fa-print"></i> Imprimir Reporte
+            <button class="px-4 py-2 rounded-xl bg-slate-400 text-white shadow hover:bg-slate-500 transition flex items-center gap-2 text-sm font-semibold">
+                <i class="fas fa-print"></i> Imprimir
             </button>
 
             <!-- Botón Crear -->
@@ -43,7 +46,7 @@
                     <button 
                         class="px-5 py-2.5 rounded-xl bg-[#F59E0B] text-white font-semibold shadow-lg hover:bg-[#e0900a] transition text-sm"
                     >
-                        <i class="fas fa-plus-circle mr-1"></i> Nueva Secuencia
+                        <i class="fas fa-plus mr-1"></i> Nueva Secuencia
                     </button>
                 </a>
             @endif
@@ -57,46 +60,57 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {{-- WIDGET 1: ESTADO DE SECUENCIAS --}}
-        <div class="bg-white p-6 rounded-2xl shadow-xl border-t-4 border-[#0C4B54]">
-            <h2 class="text-xl font-bold text-gray-700 mb-4 border-b pb-2">Resumen Rápido</h2>
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 border-t-4 border-[#2FA69A]">
+            <div class="flex items-center gap-2 mb-4">
+                <i class="fas fa-chart-pie text-[#2FA69A]"></i>
+                <h2 class="text-lg font-bold text-slate-800">Resumen Rápido</h2>
+            </div>
             <div class="space-y-3">
                 
-                <div class="flex justify-between items-center text-gray-800 border-b pb-2">
-                    <span class="font-semibold flex items-center"><i class="fas fa-list-ul mr-2 text-[#0C4B54]"></i> Total Registradas</span>
-                    <span class="text-2xl font-extrabold text-[#0C4B54]">158</span>
+                <div class="flex justify-between items-center text-slate-800 pb-2 border-b border-slate-100">
+                    <span class="font-medium flex items-center"><i class="fas fa-list-ul mr-2 text-[#2FA69A]"></i> Total Registradas</span>
+                    <span class="text-2xl font-bold text-[#2FA69A]">158</span>
                 </div>
 
-                <div class="flex justify-between items-center text-gray-800 border-b pb-2">
-                    <span class="font-semibold flex items-center"><i class="fas fa-toggle-on mr-2 text-[#10B981]"></i> Secuencias Activas</span>
-                    <span class="text-2xl font-extrabold text-[#10B981]">145</span>
+                <div class="flex justify-between items-center text-slate-800 pb-2 border-b border-slate-100">
+                    <span class="font-medium flex items-center"><i class="fas fa-check-circle mr-2 text-emerald-500"></i> Activas</span>
+                    <span class="text-2xl font-bold text-emerald-600">145</span>
                 </div>
 
-                <div class="flex justify-between items-center text-gray-800">
-                    <span class="font-semibold flex items-center"><i class="fas fa-toggle-off mr-2 text-red-500"></i> Secuencias Inactivas</span>
-                    <span class="text-2xl font-extrabold text-red-500">13</span>
+                <div class="flex justify-between items-center text-slate-800">
+                    <span class="font-medium flex items-center"><i class="fas fa-clock mr-2 text-amber-500"></i> Pendientes</span>
+                    <span class="text-2xl font-bold text-amber-600">13</span>
                 </div>
             </div>
         </div>
 
         {{-- WIDGET 2: FILTROS DE BÚSQUEDA AVANZADA --}}
-        <div class="bg-white p-6 rounded-2xl shadow-xl border-t-4 border-[#F59E0B]">
-            <h2 class="text-xl font-bold text-gray-700 mb-4 border-b pb-2">Filtros de Búsqueda</h2>
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 border-t-4 border-[#2FA69A]">
+            <div class="flex items-center gap-2 mb-4">
+                <i class="fas fa-filter text-[#2FA69A]"></i>
+                <h2 class="text-lg font-bold text-slate-800">Filtros de Búsqueda</h2>
+            </div>
             <div class="space-y-4">
                  
                  <!-- Buscador -->
                 <div>
-                    <label class="text-sm font-semibold text-gray-700">Buscar por nombre</label>
-                    <input 
-                        type="text"
-                        placeholder="Escribe el nombre o ID..."
-                        class="w-full px-3 py-2 rounded-lg border border-gray-300 outline-none focus:ring-2 focus:ring-[#F59E0B] transition"
-                    >
+                    <label class="text-sm font-semibold text-slate-700">Buscar por nombre</label>
+                    <div class="relative mt-1">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input 
+                            type="text"
+                            placeholder="Escribe el nombre o ID..."
+                            class="w-full pl-10 pr-3 py-2 rounded-lg border border-slate-300 bg-white outline-none focus:ring-2 focus:ring-[#2FA69A] focus:border-[#2FA69A] transition"
+                        >
+                    </div>
                 </div>
 
                 <!-- Estado -->
                 <div>
-                    <label class="text-sm font-semibold text-gray-700">Filtrar por Estado</label>
-                    <select class="w-full px-3 py-2 rounded-lg border border-gray-300 outline-none focus:ring-2 focus:ring-[#F59E0B] transition">
+                    <label class="text-sm font-semibold text-slate-700">Filtrar por Estado</label>
+                    <select class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white outline-none focus:ring-2 focus:ring-[#2FA69A] focus:border-[#2FA69A] transition">
                         <option value="">Mostrar todos los estados</option>
                         <option value="1">Activas (Producción)</option>
                         <option value="0">Inactivas (Borrador)</option>
@@ -106,14 +120,14 @@
         </div>
         
         {{-- WIDGET 3: ORDENAR Y APLICAR --}}
-        <div class="bg-white p-6 rounded-2xl shadow-xl border-t-4 border-[#10B981]">
-            <h2 class="text-xl font-bold text-gray-700 mb-4 border-b pb-2">Ordenamiento y Acciones</h2>
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 border-t-4 border-[#2FA69A]">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Ordenamiento y Acciones</h2>
             <div class="space-y-4">
                 
                 <!-- Orden -->
                 <div>
                     <label class="text-sm font-semibold text-gray-700">Criterio de Ordenamiento</label>
-                    <select class="w-full px-3 py-2 rounded-lg border border-gray-300 outline-none focus:ring-2 focus:ring-[#10B981] transition">
+                    <select class="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white outline-none focus:ring-2 focus:ring-[#2FA69A] focus:border-[#2FA69A] transition">
                         <option value="pred">Más reciente</option>
                         <option value="nombre_asc">Nombre A-Z</option>
                         <option value="nombre_desc">Nombre Z-A</option>
@@ -135,16 +149,16 @@
     {{-- ****************************************************** --}}
     {{-- TABLA PRINCIPAL DE SECUENCIAS --}}
     {{-- ****************************************************** --}}
-    <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
 
         <!-- Encabezado de la Tarjeta de Tabla -->
         <div class="flex items-center gap-4 p-6 border-b border-gray-100 bg-gray-50">
-            <div class="w-12 h-12 rounded-full bg-[#0C4B54] flex items-center justify-center text-white text-xl shadow-md">
+            <div class="w-12 h-12 rounded-full bg-[#2FA69A] flex items-center justify-center text-white text-xl shadow-sm">
                 <i class="fas fa-clipboard-list"></i>
             </div>
 
             <div>
-                <h2 class="text-2xl font-semibold text-[#0C4B54]">Listado General de Secuencias</h2>
+                <h2 class="text-2xl font-bold text-gray-800">Listado General de Secuencias</h2>
                 <p class="text-gray-500 text-sm">Organiza, edita y controla tus secuencias activas.</p>
             </div>
         </div>
@@ -154,7 +168,7 @@
         <div class="overflow-x-auto">
             <table class="w-full border-collapse">
                 <thead>
-                    <tr class="bg-[#0C4B54] text-white text-xs uppercase tracking-wider">
+                    <tr class="bg-[#2FA69A] text-white text-xs uppercase tracking-wider">
                         <th class="p-3 text-left w-[5%]">ID</th>
                         <th class="p-3 text-left w-[40%]">Nombre de la Secuencia</th>
                         <th class="p-3 text-left w-[15%]">Fecha Creación</th>
@@ -189,7 +203,7 @@
                         <td class="p-3">
                             <span class="px-3 py-1 text-xs font-bold rounded-full
                                 {{ $item->activo 
-                                    ? 'bg-[#10B981]/20 text-[#0C4B54]' // Verde Acento
+                                    ? 'bg-[#10B981]/20 text-[#2FA69A]' // Verde Acento
                                     : 'bg-red-500/20 text-red-700' }}">
                                 {{ $item->activo ? 'ACTIVO' : 'BORRADOR' }}
                             </span>
@@ -208,7 +222,7 @@
                             <!-- Editar -->
                             <a 
                                 href="#"
-                                class="px-3 py-1.5 text-xs rounded-lg bg-[#0C4B54] text-white hover:bg-[#103a42] transition font-medium"
+                                class="px-3 py-1.5 text-xs rounded-lg bg-[#2FA69A] text-white hover:bg-[#23877E] transition font-medium"
                             >
                                 Editar
                             </a>
@@ -268,9 +282,9 @@
         <div 
             @click.outside="openModal = false"
             x-transition
-            class="bg-white border border-gray-200 w-full max-w-lg rounded-2xl shadow-2xl p-8"
+            class="bg-white border border-gray-200 w-full max-w-lg rounded-2xl shadow-lg p-8"
         >
-            <h2 class="text-3xl font-bold text-[#0C4B54] mb-6 border-b pb-2">Crear Nueva Secuencia</h2>
+            <h2 class="text-3xl font-bold text-[#2FA69A] mb-6 border-b pb-2">Crear Nueva Secuencia</h2>
 
             <form action="#" method="POST">
                 @csrf
