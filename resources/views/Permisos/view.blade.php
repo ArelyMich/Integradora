@@ -10,12 +10,12 @@
         // Almacena los IDs de los roles actualmente seleccionados (asignados)
         selectedRoles: @js($permiso->roles->pluck('id')->toArray()) 
     }" 
-    class="p-8 min-h-screen bg-gray-100"
+    class="p-8 min-h-screen bg-[#F3F4F6]"
 >
 
     <div class="mb-8 flex items-center justify-between">
         <div>
-            <h1 class="text-4xl font-bold text-[#0C4B54]">Detalle del Permiso: {{ $permiso->sitio }}</h1>
+            <h1 class="text-4xl font-bold text-[#2FA69A]">Detalle del Permiso: {{ $permiso->sitio }}</h1>
             <p class="text-gray-600">Información básica y roles asignados a esta funcionalidad.</p>
         </div>
         <a href="{{ route('permisos.index') }}" 
@@ -30,8 +30,8 @@
     {{-- ****************************************************** --}}
     {{-- 1. DETALLE DEL PERMISO --}}
     {{-- ****************************************************** --}}
-    <div class="bg-white p-6 rounded-2xl shadow mb-8 border-l-4 border-[#0C4B54]">
-        <h2 class="text-2xl font-semibold text-[#0C4B54] mb-4">Información del Permiso</h2>
+    <div class="bg-white p-6 rounded-2xl shadow-sm mb-8 border-l-4 border-[#2FA69A]">
+        <h2 class="text-2xl font-semibold text-[#2FA69A] mb-4">Información del Permiso</h2>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             
@@ -80,7 +80,7 @@
             {{-- BOTÓN PARA ABRIR MODAL --}}
             <button 
                 @click="openModal = true"
-                class="bg-[#0C4B54] text-white px-5 py-2 rounded-xl shadow hover:bg-[#093D45] transition flex items-center gap-2 text-sm font-medium"
+                class="bg-[#2FA69A] text-white px-5 py-2 rounded-lg shadow-sm hover:bg-[#23877E] transition flex items-center gap-2 text-sm font-medium"
             >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -163,9 +163,9 @@
         <div 
             x-transition.scale
             @click.outside="openModal = false"
-            class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-xl relative max-h-[90vh] overflow-y-auto">
+            class="bg-white rounded-2xl shadow-lg p-8 w-full max-w-xl relative max-h-[90vh] overflow-y-auto">
 
-            <h2 class="text-3xl font-bold text-[#0C4B54] mb-6 border-b pb-3">Asignar Roles al Permiso</h2>
+            <h2 class="text-3xl font-bold text-[#2FA69A] mb-6 border-b pb-3">Asignar Roles al Permiso</h2>
             <p class="text-gray-600 mb-4">Selecciona los roles que deben tener acceso a la funcionalidad: <strong>{{ $permiso->sitio }}</strong>.</p>
             
             
@@ -187,7 +187,7 @@
                             name="roles[]" 
                             id="role_{{ $role->id }}" 
                             value="{{ $role->id }}" 
-                            class="h-5 w-5 text-[#0C4B54] border-gray-300 rounded focus:ring-[#0C4B54]"
+                            class="h-5 w-5 text-[#2FA69A] border-gray-300 rounded focus:ring-[#2FA69A]"
                             x-bind:checked="selectedRoles.includes({{ $role->id }})"
                         >
                     </div>
@@ -227,7 +227,7 @@
         <div 
             x-transition.scale
             @click.outside="openDeleteModal = false"
-            class="bg-white rounded-3xl shadow-2xl p-6 w-full max-w-sm relative"
+            class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-sm relative">
         >
 
             <div class="text-center">

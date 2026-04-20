@@ -9,7 +9,7 @@
     $currentRoute = request()->routeIs('*') ? request()->route()->getName() : '';
 
 
-    $activeBase = 'bg-white/20 border-l-4 border-[var(--c2)] text-white font-semibold shadow-md';
+    $activeBase = 'bg-white/20 border-l-4 border-white text-white font-semibold shadow-md';
  
     $inactiveBase = 'opacity-85 hover:opacity-100 hover:bg-white/10 text-white';
 
@@ -22,8 +22,8 @@
     }
 @endphp
 
-<div class="flex flex-col items-center justify-center pt-2 pb-6 mb-8 border-b border-white/10">
-    <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center ring-2 ring-[var(--c3)] mb-3 shadow-lg">
+<div class="flex flex-col items-center justify-center pt-2 pb-6 mb-8 border-b border-white/20">
+    <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center ring-2 ring-white/30 mb-3 shadow-lg">
         <i class="fas fa-user-shield text-xl text-white opacity-90"></i>
     </div>
     <h2 class="text-xl font-extrabold tracking-wider text-white uppercase">Panel {{ $user->roles?->first()?->nombre ?? 'Usuario' }}</h2>

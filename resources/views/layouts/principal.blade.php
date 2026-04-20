@@ -12,25 +12,23 @@
 
     <style>
         :root {
-            --c1: #BDDIBD;
-            --c2: #85B093;
-            --c3: #568F7C;
-            --c4: #326D6C;
-            --c5: #173C4C;
-            --c6: #07142B;
-            --c7: #000009;
+            --primary: #2FA69A;
+            --primary-dark: #23877E;
+            --primary-light: #E6F4F2;
+            --slate-900: #0f172a;
+            --slate-800: #1e293b;
         }
 
         body {
             font-family: "Segoe UI", sans-serif;
-            background: linear-gradient(135deg, var(--c1), var(--c2));
+            background: linear-gradient(135deg, #E6F4F2 0%, #d0e8e5 50%, #b8ddd6 100%);
             min-height: 100vh;
             display: flex;
         }
 
         .sidebar {
             width: 260px;
-            background: var(--c6);
+            background: linear-gradient(180deg, #2FA69A 0%, #23877E 100%);
             height: 100vh;
             color: white;
             padding: 25px 20px;
@@ -38,7 +36,7 @@
             left: 0;
             top: 0;
             transition: 0.3s ease;
-            box-shadow: 5px 0 15px rgba(0,0,0,0.2);
+            box-shadow: 5px 0 15px rgba(47, 166, 154, 0.3);
             z-index: 50;
         }
         .sidebar-hidden { transform: translateX(-260px); }
@@ -47,8 +45,8 @@
         .topbar {
             width: calc(100% - 260px);
             height: 60px;
-            background: var(--c6);
-            color: white;
+            background: white;
+            color: var(--slate-800);
             position: fixed;
             top: 0;
             left: 260px;
@@ -58,12 +56,13 @@
             padding: 0 20px;
             z-index: 60;
             transition: left 0.3s ease, width 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         .topbar.shifted { left: 0; width: 100%; }
         .main { margin-left: 260px; padding: 80px 25px; width: 100%; transition: margin-left 0.3s ease; }
         .main.expanded { margin-left: 0; }
         .topbar-icon-btn { padding: 8px; border-radius: 9999px; transition: background-color 0.2s; }
-        .topbar-icon-btn:hover { background-color: var(--c5); }
+        .topbar-icon-btn:hover { background-color: #E6F4F2; }
 
         @media (max-width: 768px) {
             body { display: block; }
@@ -87,47 +86,47 @@
     <!-- TOPBAR -->
     <div id="topbar" class="topbar" :class="open && window.innerWidth >= 768 ? '' : 'shifted'" role="navigation">
         <div class="flex items-center gap-4">
-            <button @click="open = !open" class="text-white text-xl topbar-icon-btn">
+            <button @click="open = !open" class="text-[#2FA69A] text-xl topbar-icon-btn hover:bg-[#2FA69A]/10">
                 <i class="fas fa-bars"></i>
             </button>
-            <span class="font-bold text-white tracking-wider">Panel Administrativo</span>
+            <span class="font-bold text-slate-800 tracking-wider">Panel Administrativo</span>
         </div>
 
         <div class="flex items-center gap-6">
-            <span class="hidden md:inline text-white font-semibold tracking-wide text-sm">
+            <span class="hidden md:inline text-slate-600 font-semibold tracking-wide text-sm">
                 {{ Auth::user()->name }} [{{ Auth::user()->roles?->first()?->nombre ?? "S/A" }}]
             </span>
 
-            <a href="#" class="text-xl text-white hover:text-[var(--c2)] transition topbar-icon-btn">
+            <a href="#" class="text-xl text-slate-600 hover:text-[#2FA69A] transition topbar-icon-btn">
                 <i class="fa-solid fa-gear"></i>
             </a>
 
             <!-- Notificaciones -->
             <div class="relative" @click="notif = !notif">
-                <button class="text-xl text-white topbar-icon-btn relative"><i class="fa-regular fa-bell"></i></button>
+                <button class="text-xl text-slate-600 hover:text-[#2FA69A] topbar-icon-btn relative"><i class="fa-regular fa-bell"></i></button>
                 <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white animate-pulse"></span>
                 <div x-show="notif" @click.outside="notif = false" x-transition
-                     class="absolute right-0 mt-3 w-64 bg-white text-[var(--c6)] rounded-xl shadow-2xl p-4 border border-gray-100 z-50">
+                     class="absolute right-0 mt-3 w-64 bg-white text-slate-700 rounded-xl shadow-2xl p-4 border border-gray-100 z-50">
                     <p class="text-sm font-bold">Notificaciones</p>
                     <p class="text-xs opacity-70">No tienes notificaciones nuevas.</p>
-                    <a href="#" class="mt-2 block text-xs text-[var(--c3)] hover:text-[var(--c4)] font-semibold">Ver todas</a>
+                    <a href="#" class="mt-2 block text-xs text-[#2FA69A] hover:text-[#23877E] font-semibold">Ver todas</a>
                 </div>
             </div>
 
             <!-- Perfil -->
             <div class="relative">
-                <button @click="userMenu = !userMenu" class="w-10 h-10 rounded-full bg-[var(--c4)] text-white flex items-center justify-center shadow-md">
+                <button @click="userMenu = !userMenu" class="w-10 h-10 rounded-full bg-[#2FA69A] text-white flex items-center justify-center shadow-md hover:bg-[#23877E] transition">
                     <i class="fa-solid fa-user"></i>
                 </button>
 
                 <div x-show="userMenu" @click.outside="userMenu = false" x-transition
                      class="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 py-1 z-50">
-                    <div class="px-4 py-2 text-sm text-gray-700 border-b">
+                    <div class="px-4 py-2 text-sm text-slate-700 border-b">
                         <p class="font-semibold">{{ Auth::user()->name }} {{ Auth::user()->apellido_paterno }}</p>
                         <p class="text-xs opacity-70">Miembro</p>
                     </div>
                     <a href="#" @click.prevent="perfilModal = true; userMenu = false"
-                       class="block px-4 py-2 text-sm text-gray-700 border-t hover:bg-[var(--c1)]">
+                       class="block px-4 py-2 text-sm text-slate-700 border-t hover:bg-[#E6F4F2]">
                         Ver mis datos
                     </a>
                     <a href="{{ route('logout') }}" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 border-t mt-1 pt-2">

@@ -5,7 +5,7 @@
 {{--
     ***********************************************************************************************************
     VISTA DE CREACIÓN DE SECUENCIAS: Formulario Multi-Paso (Stepper) con Modal de Subida de Documentos
-    Colores principales: #0C4B54 (Azul Primario), #F59E0B (Naranja Acento para progreso)
+    Colores principales: #2FA69A (Verde Primario), #F59E0B (Naranja Acento para progreso)
     ***********************************************************************************************************
 --}}
 
@@ -77,13 +77,13 @@
 >
 
     {{-- ENCABEZADO Y BOTÓN DE RETORNO --}}
-    <div class="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between border-b border-[#0C4B54]/10 pb-4">
+    <div class="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between border-b border-[#2FA69A]/10 pb-4">
         <div class="flex items-center gap-3">
-            <div class="p-3 bg-[#0C4B54] rounded-xl shadow-lg">
+            <div class="p-3 bg-[#2FA69A] rounded-lg shadow-sm">
                 <i class="fas fa-file-alt text-white text-2xl"></i>
             </div>
             <div>
-                <h1 class="text-4xl font-extrabold text-[#0C4B54]">Creación de Secuencia Didáctica</h1>
+                <h1 class="text-4xl font-extrabold text-[#2FA69A]">Creación de Secuencia Didáctica</h1>
                 <p class="text-gray-600 mt-1" x-text="'Paso ' + currentStep + ': ' + steps.find(s => s.id === currentStep).title"></p>
             </div>
         </div>
@@ -111,7 +111,7 @@
                 <button
                     @click="goToStep(step.id)"
                     :class="{ 
-                        'bg-[#0C4B54] text-white shadow-xl transform scale-105': currentStep === step.id,
+                        'bg-[#2FA69A] text-white shadow-sm transform scale-105': currentStep === step.id,
                         'bg-gray-100 text-gray-700 hover:bg-gray-200': currentStep !== step.id
                     }"
                     class="flex-1 px-4 py-3 rounded-xl font-semibold transition-all duration-300 ease-in-out whitespace-nowrap text-sm flex items-center justify-center gap-2"
@@ -127,7 +127,7 @@
         @csrf
 
         {{-- CONTENEDOR DE PASOS (Carrousel) --}}
-        <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-10 border border-gray-100 overflow-hidden relative">
+        <div class="bg-white rounded-2xl shadow-lg p-6 md:p-10 border border-gray-100 overflow-hidden relative">
             
             {{-- Indicador de cabecera --}}
             <div class="bg-green-600 text-white font-extrabold text-2xl p-4 rounded-t-xl absolute top-0 left-0 w-full mb-6 shadow-md uppercase tracking-wider" x-text="steps.find(s => s.id === currentStep).title">
@@ -144,7 +144,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center border-b pb-4">
                         <label for="carrera" class="block text-lg font-bold text-gray-800">Carrera:</label>
                         <div class="col-span-2">
-                            <select id="carrera" name="carrera_id" required class="w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm focus:ring-[#0C4B54] focus:border-[#0C4B54] transition bg-white">
+                            <select id="carrera" name="carrera_id" required class="w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:ring-[#2FA69A] focus:border-[#2FA69A] transition bg-white">
                                 <option value="" disabled selected>Seleccione la Carrera</option>
                                 <template x-for="carrera in carrerasDisponibles" :key="carrera.id">
                                     <option :value="carrera.id" x-text="carrera.nombre"></option>
@@ -157,7 +157,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center border-b pb-4 mt-4">
                         <label for="asignatura" class="block text-lg font-bold text-gray-800">Asignatura:</label>
                         <div class="col-span-2">
-                            <select id="asignatura" name="materia_id" required class="w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm focus:ring-[#0C4B54] focus:border-[#0C4B54] transition bg-white">
+                            <select id="asignatura" name="materia_id" required class="w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:ring-[#2FA69A] focus:border-[#2FA69A] transition bg-white">
                                 <option value="" disabled selected>Seleccione la Asignatura</option>
                                 <template x-for="materia in materiasDisponibles" :key="materia.id">
                                     <option :value="materia.id" x-text="materia.nombre"></option>
@@ -176,7 +176,7 @@
                                 rows="4" 
                                 required 
                                 placeholder="Escriba la competencia principal de la asignatura..."
-                                class="w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm focus:ring-[#0C4B54] focus:border-[#0C4B54] transition resize-y"
+                                class="w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:ring-[#2FA69A] focus:border-[#2FA69A] transition resize-y"
                             >Construir soluciones de software y sistemas inteligentes mediante la gestión de proyectos...</textarea>
                         </div>
                     </div>
@@ -204,7 +204,7 @@
                                     x-model="selectedDocente"
                                     @change="setDocenteEmail($event.target.value)"
                                     required 
-                                    class="w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm focus:ring-[#0C4B54] focus:border-[#0C4B54] transition bg-white"
+                                    class="w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:ring-[#2FA69A] focus:border-[#2FA69A] transition bg-white"
                                 >
                                     <option value="" disabled selected>Seleccione el Docente</option>
                                     <template x-for="docente in docentesDisponibles" :key="docente.id">
@@ -229,7 +229,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center mt-4">
                         <label for="tutor" class="block text-lg font-bold text-gray-800">Tutor(a) de grupo:</label>
                         <div class="col-span-2">
-                            <select id="tutor" name="tutor_id" x-model="selectedTutor" @change="setTutorEmail($event.target.value)" class="w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm focus:ring-[#0C4B54] focus:border-[#0C4B54] transition bg-white">
+                            <select id="tutor" name="tutor_id" x-model="selectedTutor" @change="setTutorEmail($event.target.value)" class="w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:ring-[#2FA69A] focus:border-[#2FA69A] transition bg-white">
                                 <option value="" disabled selected>Seleccione el Tutor (Opcional)</option>
                                 <template x-for="tutor in docentesDisponibles" :key="tutor.id">
                                     <option :value="tutor.id" x-text="tutor.nombre"></option>
@@ -276,7 +276,7 @@
                         </div>
                         <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
                              <label class="block text-sm font-bold text-gray-700 mb-2">Actividades de Aprendizaje</label>
-                             <textarea name="unidad1_actividades" rows="4" placeholder="Lista de actividades (ej: Mapas mentales, Debate, Proyecto)..." class="w-full px-4 py-3 rounded-xl border-gray-300 focus:ring-[#0C4B54] transition resize-y"></textarea>
+                             <textarea name="unidad1_actividades" rows="4" placeholder="Lista de actividades (ej: Mapas mentales, Debate, Proyecto)..." class="w-full px-4 py-3 rounded-lg border-gray-300 focus:ring-[#2FA69A] transition resize-y"></textarea>
                         </div>
                     </div>
 
@@ -347,7 +347,7 @@
                 <button 
                     type="submit"
                     x-show="currentStep === maxStep"
-                    class="px-8 py-3 rounded-xl bg-[#0C4B54] hover:bg-[#093D45] text-white font-bold transition shadow-lg"
+                    class="px-8 py-3 rounded-lg bg-[#2FA69A] hover:bg-[#23877E] text-white font-bold transition shadow-sm"
                 >
                     <i class="fas fa-save"></i> Guardar Secuencia
                 </button>
@@ -377,7 +377,7 @@
             {{-- Contenedor del Modal --}}
             <div 
                 x-show="showUploadModal" 
-                class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+                class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-lg transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
                 x-transition:enter="ease-out duration-300"
                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
@@ -387,8 +387,8 @@
             >
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <div class="sm:flex sm:items-start">
-                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-[#0C4B54]/10 sm:mx-0 sm:h-10 sm:w-10">
-                            <i class="fas fa-file-upload text-[#0C4B54] text-xl"></i>
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-[#2FA69A]/10 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas fa-file-upload text-[#2FA69A] text-xl"></i>
                         </div>
                         <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                             <h3 class="text-2xl leading-6 font-extrabold text-gray-900" id="modal-title">
@@ -409,11 +409,11 @@
                         {{-- Campo de archivo con estilo Drag & Drop --}}
                         <div>
                             <label for="file-upload" class="block text-sm font-medium text-gray-700">Seleccionar Archivo</label>
-                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer hover:border-[#0C4B54] transition-colors duration-200">
+                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:border-[#2FA69A] transition-colors duration-200">
                                 <div class="space-y-1 text-center">
                                     <i class="fas fa-file-pdf text-4xl text-gray-400"></i>
                                     <div class="flex text-sm text-gray-600">
-                                        <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-[#F59E0B] hover:text-[#e0900a] focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-[#0C4B54] transition">
+                                        <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-[#2FA69A] hover:text-[#23877E] focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-[#2FA69A] transition">
                                             <span>Sube un archivo</span>
                                             <input id="file-upload" name="documento_secuencia" type="file" class="sr-only" accept=".pdf,.doc,.docx">
                                         </label>
@@ -429,7 +429,7 @@
                         {{-- Opciones adicionales (opcional) --}}
                         <div class="pt-4 border-t border-gray-100">
                             <label for="tipo-documento" class="block text-sm font-medium text-gray-700">Tipo de Documento</label>
-                            <select id="tipo-documento" name="tipo_documento" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#0C4B54] focus:border-[#0C4B54] sm:text-sm rounded-md">
+                            <select id="tipo-documento" name="tipo_documento" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#2FA69A] focus:border-[#2FA69A] sm:text-sm rounded-md">
                                 <option>Secuencia Didáctica Oficial</option>
                                 <option>Esquema de Planeación</option>
                             </select>
@@ -438,7 +438,7 @@
 
                 </div>
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                    <button type="submit" form="upload-form" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-6 py-3 bg-[#0C4B54] text-base font-medium text-white hover:bg-[#093D45] sm:ml-3 sm:w-auto sm:text-sm transition">
+                    <button type="submit" form="upload-form" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-6 py-3 bg-[#2FA69A] text-base font-medium text-white hover:bg-[#23877E] sm:ml-3 sm:w-auto sm:text-sm transition">
                         Procesar y Llenar
                     </button>
                     <button @click="showUploadModal = false" type="button" class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-6 py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm transition">

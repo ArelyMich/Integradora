@@ -44,134 +44,22 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="rounded-3xl bg-white/12 p-5 backdrop-blur-sm">
-                        <p class="text-xs font-bold uppercase tracking-[0.25em] text-white/60">Usuarios</p>
-                        <p class="mt-3 text-4xl font-black" x-text="usuarios.length"></p>
-                    </div>
-                    <div class="rounded-3xl bg-white/12 p-5 backdrop-blur-sm">
-                        <p class="text-xs font-bold uppercase tracking-[0.25em] text-white/60">Activos</p>
-                        <p class="mt-3 text-4xl font-black" x-text="usuariosActivos"></p>
-                    </div>
-                    <div class="rounded-3xl bg-white/12 p-5 backdrop-blur-sm">
-                        <p class="text-xs font-bold uppercase tracking-[0.25em] text-white/60">Roles</p>
-                        <p class="mt-3 text-4xl font-black" x-text="roles.length"></p>
-                    </div>
-                    <div class="rounded-3xl bg-white/12 p-5 backdrop-blur-sm">
-                        <p class="text-xs font-bold uppercase tracking-[0.25em] text-white/60">Permisos</p>
-                        <p class="mt-3 text-4xl font-black" x-text="permisos.length"></p>
-                    </div>
-                </div>
-            </div>
-        </section>
+<div 
+    x-data="{
+        search: '',
+        filtroRol: '',
+        filtroEstado: ''}" 
+    class="p-6 min-h-screen bg-slate-50">
 
-        @if (session('success'))
-            <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-semibold text-emerald-700 shadow-sm">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        @if ($errors->any())
-            <div class="rounded-2xl border border-rose-200 bg-white px-5 py-4 shadow-sm">
-                <p class="text-sm font-black text-rose-700">Hay validaciones pendientes:</p>
-                <ul class="mt-2 space-y-1 text-sm text-slate-600">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        <section class="rounded-[2rem] bg-white p-6 shadow-xl shadow-slate-200/60">
-            <div class="flex flex-col gap-4 border-b border-slate-100 pb-5 md:flex-row md:items-end md:justify-between">
-                <div>
-                    <p class="text-sm font-black uppercase tracking-[0.25em] text-slate-400">Directorio</p>
-                    <h2 class="mt-1 text-2xl font-black text-slate-900">Gestión centralizada de accesos</h2>
-                </div>
-                <div class="grid gap-3 md:grid-cols-4">
-                    <input
-                        x-model="search"
-                        type="text"
-                        placeholder="Buscar usuario o correo"
-                        class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#173C4C] focus:bg-white"
-                    >
-                    <select x-model="filterRole" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#173C4C]">
-                        <option value="">Todos los roles</option>
-                        <template x-for="rol in roles" :key="rol.id">
-                            <option :value="rol.nombre" x-text="rol.nombre"></option>
-                        </template>
-                    </select>
-                    <select x-model="filterStatus" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#173C4C]">
-                        <option value="">Todos los estados</option>
-                        <option value="activo">Activos</option>
-                        <option value="inactivo">Inactivos</option>
-                    </select>
-                    @if(auth()->user()->hasPermission('usuarios.store'))
-                        <button
-                            type="button"
-                            @click="openCreateModal()"
-                            class="group inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#173C4C] via-[#326D6C] to-[#568F7C] px-4 py-3 text-sm font-black text-white shadow-lg shadow-[#173C4C]/25 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-[#173C4C]/35"
-                        >
-                            <span class="text-base leading-none">+</span>
-                            Crear usuario
-                        </button>
-                    @endif
-                </div>
-            </div>
-
-            <div class="mt-6 overflow-hidden rounded-[1.75rem] border border-slate-200">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full text-left">
-                        <thead class="bg-slate-900 text-xs font-black uppercase tracking-[0.2em] text-white">
-                            <tr>
-                                <th class="px-5 py-4">Usuario</th>
-                                <th class="px-5 py-4">Correo</th>
-                                <th class="px-5 py-4">Rol</th>
-                                <th class="px-5 py-4">Permisos</th>
-                                <th class="px-5 py-4">Estado</th>
-                                <th class="px-5 py-4 text-center">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-200 bg-white">
-                            <template x-for="usuario in filteredUsuarios" :key="usuario.id">
-                                <tr class="transition hover:bg-slate-50/80">
-                                    <td class="px-5 py-4">
-                                        <p class="text-sm font-black text-slate-900" x-text="usuario.nombre"></p>
-                                        <p class="mt-1 text-xs font-semibold text-slate-400" x-text="'ID #' + usuario.id"></p>
-                                    </td>
-                                    <td class="px-5 py-4 text-sm font-semibold text-slate-700" x-text="usuario.email"></td>
-                                    <td class="px-5 py-4">
-                                        <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-700" x-text="usuario.role_name"></span>
-                                    </td>
-                                    <td class="px-5 py-4 text-sm font-semibold text-slate-600" x-text="usuario.permission_ids.length + ' permisos'"></td>
-                                    <td class="px-5 py-4">
-                                        <span
-                                            class="rounded-full px-3 py-1 text-xs font-black uppercase tracking-[0.2em]"
-                                            :class="usuario.status ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'"
-                                            x-text="usuario.status ? 'Activo' : 'Inactivo'"
-                                        ></span>
-                                    </td>
-                                    <td class="px-5 py-4 text-center">
-                                        @if(auth()->user()->hasPermission('usuarios.actualizarAccesos') || auth()->user()->hasPermission('usuarios.cambiarRol'))
-                                            <button
-                                                @click="openAccessModal(usuario)"
-                                                class="rounded-2xl bg-[#173C4C] px-4 py-2.5 text-sm font-black text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-[#07142B]"
-                                            >
-                                                Gestionar accesos
-                                            </button>
-                                        @endif
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div x-show="filteredUsuarios.length === 0" class="px-6 py-12 text-center text-sm font-semibold text-slate-500" style="display: none;">
-                    No hay usuarios que coincidan con los filtros actuales.
-                </div>
-            </div>
-        </section>
+    <!-- TÍTULO -->
+    <div class="mb-6 flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#2FA69A] to-[#23877E] flex items-center justify-center shadow-lg">
+            <i class="fas fa-users text-white text-lg"></i>
+        </div>
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Usuarios</h1>
+            <p class="text-slate-500 text-sm">Administración de usuarios, roles y estado</p>
+        </div>
     </div>
 
     <div x-show="modalOpen" class="fixed inset-0 z-[80] flex items-center justify-center px-4" style="display: none;">
@@ -189,57 +77,147 @@
                 <button @click="closeModal()" class="self-start rounded-full bg-slate-100 px-3 py-2 text-slate-500 transition hover:bg-slate-200">×</button>
             </div>
 
-            <form :action="formAction" method="POST" class="mt-6 space-y-6">
-                @csrf
+    <!-- BARRA DE FILTROS -->
+    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-wrap items-end gap-4">
 
-                <div class="grid gap-6 lg:grid-cols-[0.95fr_1.45fr]">
-                    <section class="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-5">
-                        <p class="text-sm font-black uppercase tracking-[0.25em] text-slate-400">Rol</p>
-                        <h4 class="mt-1 text-xl font-black text-slate-900">Configuración principal</h4>
+        <!-- BUSCADOR -->
+        <div class="flex-1 min-w-[200px]">
+            <label class="text-sm font-semibold text-slate-700">Buscar usuario</label>
+            <div class="relative mt-1">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                    <i class="fas fa-search"></i>
+                </span>
+                <input 
+                    x-model="search"
+                    type="text"
+                    placeholder="Nombre o correo..."
+                    class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2FA69A] focus:border-[#2FA69A]"
+                >
+            </div>
+        </div>
 
-                        <div class="mt-5 space-y-4">
-                            <div>
-                                <label class="text-sm font-bold text-slate-600">Rol del usuario</label>
-                                <select
-                                    name="role_id"
-                                    x-model="selectedRoleId"
-                                    @change="applyRolePermissions()"
-                                    class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-[#173C4C]"
-                                >
-                                    <option value="">Seleccione un rol</option>
-                                    <template x-for="rol in roles" :key="rol.id">
-                                        <option :value="rol.id" x-text="rol.nombre"></option>
-                                    </template>
-                                </select>
-                            </div>
+        <!-- FILTRO POR ROL -->
+        <div>
+            <label class="text-sm font-semibold text-slate-700">Rol</label>
+            <select 
+                x-model="filtroRol"
+                class="mt-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2FA69A] focus:border-[#2FA69A]"
+            >
+                <option value="">Todos</option>
+                @foreach($roles as $rol)
+                    <option value="{{ strtolower($rol->nombre) }}">{{ $rol->nombre }}</option>
+                @endforeach
+            </select>
+        </div>
 
-                            <div class="rounded-2xl bg-white p-4 shadow-sm">
-                                <p class="text-xs font-black uppercase tracking-[0.25em] text-slate-400">Resumen del rol</p>
-                                <p class="mt-2 text-sm font-semibold text-slate-700">
-                                    Permisos marcados:
-                                    <span class="font-black text-slate-900" x-text="selectedPermissionIds.length"></span>
-                                </p>
-                            </div>
+        <!-- FILTRO POR ESTADO -->
+        <div>
+            <label class="text-sm font-semibold text-slate-700">Estado</label>
+            <select 
+                x-model="filtroEstado"
+                class="mt-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2FA69A] focus:border-[#2FA69A]"
+            >
+                <option value="">Todos</option>
+                <option value="activo">Activo</option>
+                <option value="inactivo">Inactivo</option>
+            </select>
+        </div>
 
-                            <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-                                Al guardar, este usuario recibirá el rol seleccionado y la lista de permisos se sincronizará sobre ese rol.
-                            </div>
-                        </div>
-                    </section>
+    </div>
+@if(session('success'))
+    <div class="mb-4 p-4 rounded-lg bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
+        <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
+    </div>
+@endif
 
-                    <section class="rounded-[1.75rem] border border-slate-200 bg-white p-5">
-                        <div class="flex flex-col gap-3 border-b border-slate-100 pb-4 md:flex-row md:items-center md:justify-between">
-                            <div>
-                                <p class="text-sm font-black uppercase tracking-[0.25em] text-slate-400">Permisos</p>
-                                <h4 class="mt-1 text-xl font-black text-slate-900">Lista completa</h4>
-                            </div>
-                            <input
-                                x-model="permissionsSearch"
-                                type="text"
-                                placeholder="Filtrar permisos"
-                                class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#173C4C] focus:bg-white"
+
+    <!-- TABLA -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <table class="min-w-full text-left">
+            
+            <thead class="bg-gradient-to-r from-[#2FA69A] to-[#23877E] text-white">
+                <tr>
+                    <th class="px-6 py-3">Nombre</th>
+                    <th class="px-6 py-3">Correo</th>
+                    <th class="px-6 py-3">Rol</th>
+                    <th class="px-6 py-3">Estado</th>
+                    <th class="px-6 py-3 text-right">Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                @foreach($usuarios as $usuario)
+
+                <tr 
+                    class="border-b border-slate-100 hover:bg-[#2FA69A]/5 transition"
+                    x-show="
+                        ( '{{ strtolower($usuario->name) }}'.includes(search.toLowerCase()) ||
+                          '{{ strtolower($usuario->email) }}'.includes(search.toLowerCase()) ) &&
+
+                        ( filtroRol === '' || 
+                        filtroRol === '{{ strtolower($usuario->first_role) }}') &&
+
+                        ( filtroEstado === '' ||
+                          filtroEstado === '{{ $usuario->activo ? 'activo' : 'inactivo' }}' )
+                    "
+                >
+
+                    <td class="px-6 py-4 font-semibold text-slate-800">
+                        {{ $usuario->name }} {{ $usuario->apellido_paterno }} {{ $usuario->apellido_materno }}
+                    </td>
+
+                    <td class="px-6 py-4 text-slate-600">{{ $usuario->email }}</td>
+
+                    <td class="px-6 py-4">
+                        @if(auth()->user()->hasPermission('usuarios.cambiarRol'))
+    <form action="{{ route('usuarios.cambiarRol', $usuario->id) }}" method="POST">
+        @csrf
+        <select 
+            name="role_id"
+            onchange="this.form.submit()"
+            class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-medium cursor-pointer focus:ring-2 focus:ring-[#2FA69A] focus:border-[#2FA69A]"
+        >
+            @foreach($roles as $rol)
+                <option 
+                    value="{{ $rol->id }}"
+                    @if($usuario->roles->first()?->id == $rol->id) selected @endif
+                >
+                    {{ $rol->nombre }}
+                </option>
+            @endforeach
+        </select>
+    </form>
+    @endif
+</td>
+
+
+                    <!-- ESTADO -->
+                    <td class="px-6 py-4">
+                        <span class="px-3 py-1 rounded-full text-sm font-medium
+                            {{ $usuario->activo ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-red-100 text-red-700 border border-red-200' }}">
+
+                            {{ $usuario->activo ? 'Activo' : 'Inactivo' }}
+                        </span>
+                    </td>
+
+                    <td class="px-6 py-4 text-right space-x-2">
+                        <a href="#" class="text-[#2FA69A] hover:text-[#23877E] font-medium inline-flex items-center gap-1">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+
+                        <form action="#" method="POST" class="inline">
+                            @csrf
+                            @method('DELETE')
+
+                            <button 
+                                class="text-red-500 hover:text-red-700 font-medium inline-flex items-center gap-1"
+                                onclick="return confirm('¿Eliminar usuario?')"
                             >
-                        </div>
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </form>
+                    </td>
 
                         <div class="mt-5 grid max-h-[24rem] gap-3 overflow-y-auto pr-2 md:grid-cols-2">
                             <template x-for="permiso in filteredPermissions" :key="permiso.id">

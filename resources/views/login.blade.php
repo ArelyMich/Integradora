@@ -13,17 +13,51 @@
         }
 
         :root {
-            --color-light: #85B093;
-            --color-accent: #568F7C;
-            --color-secondary: #326D6C;
-            --color-primary: #173C4C;
-            --color-dark: #07142B;
-            --color-darker: #000009;
+            --color-light: #E5E7EB;      /* Gris claro */
+            --color-accent: #2FA69A;     /* Verde primario */
+            --color-secondary: #23877E;  /* Verde hover */
+            --color-primary: #6B7280;    /* Gris medio */
+            --color-dark: #374151;       /* Gris oscuro */
+            --color-darker: #1F2937;     /* Gris más oscuro */
+            --color-glow: rgba(47, 166, 154, 0.4);
         }
-
-        body {
-            background: linear-gradient(135deg, #000009 0%, #07142B 30%, #173C4C 100%);
-            min-height: 100vh;
+        
+        /* Animaciones mejoradas */
+        .fade-in {
+            animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                transform: scale(0.9) translateY(20px);
+            }
+            to { 
+                opacity: 1; 
+                transform: scale(1) translateY(0);
+            }
+        }
+        
+        .slide-up {
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Animación de pulsación para el botón */
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(133, 176, 147, 0.2); }
+            50% { box-shadow: 0 0 30px rgba(133, 176, 147, 0.4); }
+        }
+        
+        /* Gradientes mejorados */
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #1F2937 0%, #374151 30%, #6B7280 100%);
+            position: relative;
+            overflow: hidden;
         }
 
         .bg-orbit {
@@ -37,9 +71,12 @@
         .bg-orbit::after {
             content: '';
             position: absolute;
-            border-radius: 9999px;
-            filter: blur(14px);
-            opacity: 0.35;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(47, 166, 154, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
         }
 
         .bg-orbit::before {
@@ -49,16 +86,17 @@
             right: -4rem;
             background: radial-gradient(circle, rgba(133, 176, 147, 0.75) 0%, transparent 70%);
         }
-
-        .bg-orbit::after {
-            width: 20rem;
-            height: 20rem;
-            bottom: -4rem;
-            left: -3rem;
-            background: radial-gradient(circle, rgba(86, 143, 124, 0.55) 0%, transparent 70%);
+        
+        .bg-gradient-secondary {
+            background: linear-gradient(135deg, #23877E 0%, #2FA69A 50%, #E5E7EB 100%);
         }
-
-        .glass-panel {
+        
+        .bg-gradient-light {
+            background: linear-gradient(135deg, #2FA69A 0%, #E5E7EB 100%);
+        }
+        
+        /* Efectos de vidrio mejorados */
+        .glass-effect {
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(20px) saturate(160%);
             border: 1px solid rgba(255, 255, 255, 0.12);
@@ -79,24 +117,109 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #568F7C 0%, #85B093 100%);
-            color: var(--color-darker);
-            box-shadow: 0 12px 24px rgba(86, 143, 124, 0.28);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            background: linear-gradient(135deg, #2FA69A 0%, #23877E 100%);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(47, 166, 154, 0.3);
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 18px 28px rgba(86, 143, 124, 0.36);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(47, 166, 154, 0.4);
         }
-
+        
+        .btn-primary:active {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(47, 166, 154, 0.3);
+        }
+        
         .btn-secondary {
-            background: linear-gradient(135deg, #326D6C 0%, #568F7C 100%);
-            color: white;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            background: linear-gradient(135deg, #23877E 0%, #2FA69A 100%);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(35, 135, 126, 0.3);
         }
 
         .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(35, 135, 126, 0.4);
+        }
+        
+        .btn-secondary:active {
+            transform: translateY(-1px);
+        }
+        
+        /* Indicador de fuerza de contraseña */
+        .password-strength {
+            height: 4px;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+        
+        .password-weak {
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+            width: 25%;
+        }
+        
+        .password-medium {
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+            width: 50%;
+        }
+        
+        .password-strong {
+            background: linear-gradient(90deg, #10b981, #059669);
+            width: 100%;
+        }
+        
+        /* Spinner de carga */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #ffffff;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Overlay de carga */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 1rem;
+            z-index: 10;
+        }
+        
+        .loading-spinner {
+            border: 4px solid rgba(47, 166, 154, 0.3);
+            border-top: 4px solid #2FA69A;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        
+        /* Efectos hover mejorados */
+        .hover-lift {
+            transition: transform 0.3s ease;
+        }
+        
+        .hover-lift:hover {
             transform: translateY(-2px);
             box-shadow: 0 14px 24px rgba(50, 109, 108, 0.32);
         }
@@ -187,12 +310,29 @@
             </button>
         </form>
 
-        <section id="recoveryPanel" class="recovery-panel mt-5 hidden rounded-[1.6rem] p-5">
-            <div class="mb-4">
-                <h2 class="text-lg font-semibold">Recuperar acceso</h2>
-                <p class="mt-1 text-sm text-white/72">
-                    Escribe tu correo institucional y te enviaremos un código para continuar con el cambio de contraseña.
-                </p>
+        <div class="mt-8 pt-6 border-t border-white/20">
+            <p class="text-center text-white/80">
+                ¿No tienes cuenta?
+                <button onclick="openModal()" class="text-highlight font-semibold hover:text-light transition-colors ml-1">
+                    Crear una aquí
+                </button>
+            </p>
+        </div>
+    </div>
+{{--  AQUI SE INYECTA EL MODAL DE VERIFICACIÓN --}}
+<x-verify-email-modal :show="session('showVerifyModal')" />
+    {{-- ====================================================
+                        MODAL DE REGISTRO
+    ==================================================== --}}
+    <div id="modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-gradient-secondary rounded-2xl shadow-lg w-full max-w-md p-8 relative fade-in text-white modal-container">
+            {{-- BOTÓN CERRAR --}}
+            <button onclick="closeModal()"
+                class="absolute top-4 right-4 text-white/70 hover:text-white text-2xl transition-colors">&times;</button>
+
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold">Crear cuenta</h2>
+                <p class="text-white/70 mt-2">Completa el formulario para registrarte</p>
             </div>
 
             @if (session('success'))

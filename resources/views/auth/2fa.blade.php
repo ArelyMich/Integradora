@@ -23,20 +23,34 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
 
-    <div class="w-full max-w-md bg-white p-8 sm:p-10 rounded-2xl shadow-2xl transition duration-300">
-        
-        <!-- Encabezado -->
-        <div class="text-center mb-8">
-            <div class="flex items-center justify-center mb-4">
-                <svg class="w-12 h-12 text-uth-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                </svg>
-            </div>
-            <h1 class="text-3xl font-extrabold text-gray-900">Verificación en Dos Pasos</h1>
-            <p class="text-gray-500 mt-3 text-sm">
-                Ingresa el código de 6 dígitos que hemos enviado a tu correo electrónico
+<body class="min-h-screen flex items-center justify-center bg-gray-900 text-white">
+
+    <form method="POST" action="/2fa"
+        class="bg-gray-800 p-8 rounded-xl shadow-md w-full max-w-sm space-y-4">
+        @csrf
+
+        <h2 class="text-xl font-bold text-center">Verificación en dos pasos</h2>
+        <p class="text-center text-gray-400 text-sm">
+            Ingresa el código que se generó para tu cuenta
+        </p>
+
+        <input 
+            type="text" 
+            name="code" 
+            placeholder="Código de 6 dígitos"
+            class="w-full px-4 py-3 rounded bg-gray-700 text-white outline-none"
+            required>
+
+        <button 
+            type="submit" 
+            class="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded font-bold">
+            Verificar
+        </button>
+
+        @if ($errors->any())
+            <p class="text-red-500 text-center">
+                {{ $errors->first() }}
             </p>
         </div>
 

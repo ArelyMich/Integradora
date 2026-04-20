@@ -5,18 +5,18 @@
     <!-- TÍTULO -->
     <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
         <div class="flex items-center gap-3">
-            <div class="bg-[#173C4C] p-2 rounded-lg">
+            <div class="bg-[#2FA69A] p-2 rounded-lg">
                 <i class="fas fa-user-shield text-white text-xl"></i>
             </div>
             <div>
-                <h1 class="text-2xl md:text-3xl font-bold text-[#07142B]">Gestión de Roles</h1>
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Gestión de Roles</h1>
                 <p class="text-gray-600 text-sm">Administra los roles y permisos del sistema</p>
             </div>
         </div>
 
         @if(Auth()->user()->hasPermission('roles.store'))
         <button onclick="openModal('modalCrear')"
-            class="bg-[#568F7C] hover:bg-[#326D6C] text-white px-4 py-3 rounded-lg shadow-lg transition-all duration-300 hover:scale-105 flex items-center gap-2 w-full md:w-auto justify-center">
+            class="bg-[#2FA69A] hover:bg-[#23877E] text-white px-4 py-3 rounded-lg shadow-sm transition-all duration-300 hover:scale-105 flex items-center gap-2 w-full md:w-auto justify-center">
             <i class="fas fa-plus"></i>
             <span>Nuevo Rol</span>
         </button>
@@ -25,12 +25,12 @@
 
     <!-- MENSAJES -->
     @if(session('success'))
-        <div class="bg-[#85B093] border border-[#568F7C] text-[#07142B] px-4 py-3 rounded-lg mb-6 shadow-lg animate-fade-in flex items-center justify-between">
+        <div class="bg-[#E5E7EB] border border-[#2FA69A] text-gray-700 px-4 py-3 rounded-lg mb-6 shadow-sm animate-fade-in flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <i class="fas fa-check-circle"></i>
                 <span>{{ session('success') }}</span>
             </div>
-            <button onclick="this.parentElement.remove()" class="text-[#173C4C] hover:text-[#000009] transition-colors">
+            <button onclick="this.parentElement.remove()" class="text-gray-600 hover:text-gray-900 transition-colors">
                 <i class="fas fa-times"></i>
             </button>
         </div>
@@ -49,10 +49,10 @@
     @endif
 
     <!-- TABLA -->
-    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-[#173C4C]/20 animate-fade-in">
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-[#2FA69A]/20 animate-fade-in">
         <div class="overflow-x-auto">
-            <table class="min-w-full text-[#07142B]">
-                <thead class="bg-[#173C4C] text-white">
+            <table class="min-w-full text-gray-700">
+                <thead class="bg-[#2FA69A] text-white">
                     <tr>
                         <th class="px-4 py-3 text-left font-semibold">
                             <div class="flex items-center gap-2">
@@ -82,17 +82,17 @@
                 </thead>
                 <tbody>
                     @forelse ($roles as $r)
-                    <tr class="border-t border-[#173C4C]/10 transition-all duration-300 hover:bg-[#85B093]/10 hover:scale-[1.01]">
+                    <tr class="border-t border-[#2FA69A]/10 transition-all duration-300 hover:bg-[#2FA69A]/5 hover:scale-[1.01]">
                         <td class="px-4 py-3 font-medium">{{ $r->id }}</td>
                         <td class="px-4 py-3 font-semibold">
                             <div class="flex items-center gap-2">
-                                <i class="fas fa-user-tag text-[#568F7C]"></i>
+                                <i class="fas fa-user-tag text-[#2FA69A]"></i>
                                 <span>{{ $r->nombre }}</span>
                             </div>
                         </td>
                         <td class="px-4 py-3 text-center">
                             @if ($r->status)
-                                <span class="px-3 py-1 bg-[#85B093] text-[#07142B] rounded-full text-sm font-bold inline-flex items-center gap-1 transition-all duration-300 hover:scale-105">
+                                <span class="px-3 py-1 bg-[#E5E7EB] text-gray-700 rounded-full text-sm font-bold inline-flex items-center gap-1 transition-all duration-300 hover:scale-105">
                                     <i class="fas fa-check-circle"></i>
                                     <span>Activo</span>
                                 </span>
@@ -108,7 +108,7 @@
                             @if(auth()->user()->hasPermission('roles.update'))
                             <button
                                 onclick="openEditModal({{ $r->id }}, '{{ $r->nombre }}', {{ $r->status }})"
-                                class="px-3 py-2 bg-[#326D6C] hover:bg-[#173C4C] text-white rounded-lg shadow transition-all duration-300 hover:scale-105 flex items-center gap-2 group">
+                                class="px-3 py-2 bg-[#2FA69A] hover:bg-[#23877E] text-white rounded-lg shadow-sm transition-all duration-300 hover:scale-105 flex items-center gap-2 group">
                                 <i class="fas fa-edit group-hover:rotate-12 transition-transform"></i>
                                 <span class="hidden sm:inline">Editar</span>
                             </button>
@@ -134,11 +134,11 @@
                     <tr>
                         <td colspan="4" class="px-4 py-8 text-center">
                             <div class="p-8 text-center">
-                                <i class="fas fa-inbox text-[#568F7C] text-5xl mb-4 animate-pulse"></i>
-                                <h3 class="text-xl font-semibold text-[#07142B] mb-2">No hay roles registrados</h3>
+                                <i class="fas fa-inbox text-[#2FA69A] text-5xl mb-4 animate-pulse"></i>
+                                <h3 class="text-xl font-semibold text-gray-700 mb-2">No hay roles registrados</h3>
                                 <p class="text-gray-600 mb-4">Comienza creando tu primer rol en el sistema</p>
                                 <button onclick="openModal('modalCrear')"
-                                    class="bg-[#568F7C] hover:bg-[#326D6C] text-white px-4 py-2 rounded-lg shadow-lg transition-all duration-300 hover:scale-105 flex items-center gap-2 mx-auto animate-bounce">
+                                    class="bg-[#2FA69A] hover:bg-[#23877E] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 hover:scale-105 flex items-center gap-2 mx-auto animate-bounce">
                                     <i class="fas fa-plus"></i>
                                     <span>Crear primer rol</span>
                                 </button>
@@ -161,7 +161,7 @@
                 <i class="fas fa-chevron-left"></i>
             </span>
             @else
-            <a href="{{ $roles->previousPageUrl() }}" class="px-3 py-1 bg-[#85B093] text-[#07142B] rounded hover:bg-[#568F7C] transition-all duration-300 hover:scale-105">
+            <a href="{{ $roles->previousPageUrl() }}" class="px-3 py-1 bg-[#E5E7EB] text-gray-700 rounded hover:bg-[#2FA69A] hover:text-white transition-all duration-300 hover:scale-105">
                 <i class="fas fa-chevron-left"></i>
             </a>
             @endif
@@ -175,7 +175,7 @@
             @endphp
             
             @if($start > 1)
-                <a href="{{ $roles->url(1) }}" class="px-3 py-1 text-[#07142B] rounded hover:bg-[#85B093] transition-all duration-300 hover:scale-105">1</a>
+                <a href="{{ $roles->url(1) }}" class="px-3 py-1 text-gray-700 rounded hover:bg-[#2FA69A] hover:text-white transition-all duration-300 hover:scale-105">1</a>
                 @if($start > 2)
                 <span class="px-2 text-gray-400">...</span>
                 @endif
@@ -183,9 +183,9 @@
             
             @for ($i = $start; $i <= $end; $i++)
                 @if($i == $current)
-                <span class="px-3 py-1 bg-[#173C4C] text-white rounded transition-all duration-300">{{ $i }}</span>
+                <span class="px-3 py-1 bg-[#2FA69A] text-white rounded transition-all duration-300">{{ $i }}</span>
                 @else
-                <a href="{{ $roles->url($i) }}" class="px-3 py-1 text-[#07142B] rounded hover:bg-[#85B093] transition-all duration-300 hover:scale-105">{{ $i }}</a>
+                <a href="{{ $roles->url($i) }}" class="px-3 py-1 text-gray-700 rounded hover:bg-[#2FA69A] hover:text-white transition-all duration-300 hover:scale-105">{{ $i }}</a>
                 @endif
             @endfor
             
@@ -193,12 +193,12 @@
                 @if($end < $last - 1)
                 <span class="px-2 text-gray-400">...</span>
                 @endif
-                <a href="{{ $roles->url($last) }}" class="px-3 py-1 text-[#07142B] rounded hover:bg-[#85B093] transition-all duration-300 hover:scale-105">{{ $last }}</a>
+                <a href="{{ $roles->url($last) }}" class="px-3 py-1 text-gray-700 rounded hover:bg-[#2FA69A] hover:text-white transition-all duration-300 hover:scale-105">{{ $last }}</a>
             @endif
             
             <!-- Botón Siguiente -->
             @if($roles->hasMorePages())
-            <a href="{{ $roles->nextPageUrl() }}" class="px-3 py-1 bg-[#85B093] text-[#07142B] rounded hover:bg-[#568F7C] transition-all duration-300 hover:scale-105">
+            <a href="{{ $roles->nextPageUrl() }}" class="px-3 py-1 bg-[#E5E7EB] text-gray-700 rounded hover:bg-[#2FA69A] hover:text-white transition-all duration-300 hover:scale-105">
                 <i class="fas fa-chevron-right"></i>
             </a>
             @else
@@ -215,14 +215,14 @@
 <div id="modalCrear"
     class="hidden fixed inset-0 bg-[#000009]/70 flex items-center justify-center backdrop-blur-sm z-50 p-4 animate-fade-in">
 
-    <div class="bg-white p-6 rounded-xl w-full max-w-md shadow-2xl border border-[#173C4C] animate-slide-up">
+    <div class="bg-white p-6 rounded-xl w-full max-w-md shadow-lg border border-[#2FA69A] animate-slide-up">
         <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl font-bold text-[#07142B] flex items-center gap-2">
-                <i class="fas fa-plus-circle text-[#568F7C]"></i>
+            <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <i class="fas fa-plus-circle text-[#2FA69A]"></i>
                 Crear Rol
             </h2>
             <button onclick="closeModal('modalCrear')"
-                class="text-gray-500 hover:text-[#173C4C] transition-colors duration-300 hover:scale-110">
+                class="text-gray-500 hover:text-[#2FA69A] transition-colors duration-300 hover:scale-110">
                 <i class="fas fa-times text-xl"></i>
             </button>
         </div>
@@ -231,11 +231,11 @@
             @csrf
 
             <label class="block mb-4">
-                <span class="text-[#07142B] font-medium mb-2 block">Nombre del Rol</span>
+                <span class="text-gray-700 font-medium mb-2 block">Nombre del Rol</span>
                 <div class="relative">
-                    <i class="fas fa-tag absolute left-3 top-1/2 transform -translate-y-1/2 text-[#568F7C]"></i>
+                    <i class="fas fa-tag absolute left-3 top-1/2 transform -translate-y-1/2 text-[#2FA69A]"></i>
                     <input type="text" name="nombre"
-                        class="w-full border border-[#173C4C]/30 rounded-lg pl-10 pr-3 py-3 focus:ring-2 focus:ring-[#568F7C] focus:border-[#568F7C] bg-white transition-all duration-300"
+                        class="w-full border border-gray-300 rounded-lg pl-10 pr-3 py-3 focus:ring-2 focus:ring-[#2FA69A] focus:border-[#2FA69A] bg-white transition-all duration-300"
                         placeholder="Ingresa el nombre del rol" required>
                 </div>
             </label>
@@ -248,7 +248,7 @@
                     Cancelar
                 </button>
 
-                <button class="px-4 py-2 bg-[#568F7C] hover:bg-[#326D6C] text-white rounded-lg transition-all duration-300 hover:scale-105 flex items-center gap-2 animate-pulse">
+                <button class="px-4 py-2 bg-[#2FA69A] hover:bg-[#23877E] text-white rounded-lg transition-all duration-300 hover:scale-105 flex items-center gap-2 animate-pulse">
                     <i class="fas fa-save"></i>
                     Guardar
                 </button>
@@ -261,14 +261,14 @@
 <div id="modalEditar"
     class="hidden fixed inset-0 bg-[#000009]/70 flex items-center justify-center backdrop-blur-sm z-50 p-4 animate-fade-in">
 
-    <div class="bg-white p-6 rounded-xl w-full max-w-md shadow-2xl border border-[#173C4C] animate-slide-up">
+    <div class="bg-white p-6 rounded-xl w-full max-w-md shadow-lg border border-[#2FA69A] animate-slide-up">
         <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl font-bold text-[#07142B] flex items-center gap-2">
-                <i class="fas fa-edit text-[#326D6C]"></i>
+            <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <i class="fas fa-edit text-[#2FA69A]"></i>
                 Editar Rol
             </h2>
             <button onclick="closeModal('modalEditar')"
-                class="text-gray-500 hover:text-[#173C4C] transition-colors duration-300 hover:scale-110">
+                class="text-gray-500 hover:text-[#2FA69A] transition-colors duration-300 hover:scale-110">
                 <i class="fas fa-times text-xl"></i>
             </button>
         </div>
@@ -278,25 +278,25 @@
             @method('PUT')
 
             <label class="block mb-4">
-                <span class="text-[#07142B] font-medium mb-2 block">Nombre del Rol</span>
+                <span class="text-gray-700 font-medium mb-2 block">Nombre del Rol</span>
                 <div class="relative">
-                    <i class="fas fa-tag absolute left-3 top-1/2 transform -translate-y-1/2 text-[#568F7C]"></i>
+                    <i class="fas fa-tag absolute left-3 top-1/2 transform -translate-y-1/2 text-[#2FA69A]"></i>
                     <input id="editNombre" type="text" name="nombre"
-                        class="w-full border border-[#173C4C]/30 rounded-lg pl-10 pr-3 py-3 focus:ring-2 focus:ring-[#326D6C] focus:border-[#326D6C] bg-white transition-all duration-300"
+                        class="w-full border border-gray-300 rounded-lg pl-10 pr-3 py-3 focus:ring-2 focus:ring-[#2FA69A] focus:border-[#2FA69A] bg-white transition-all duration-300"
                         required>
                 </div>
             </label>
 
             <label class="block mb-4">
-                <span class="text-[#07142B] font-medium mb-2 block">Status</span>
+                <span class="text-gray-700 font-medium mb-2 block">Status</span>
                 <div class="relative">
-                    <i class="fas fa-toggle-on absolute left-3 top-1/2 transform -translate-y-1/2 text-[#568F7C]"></i>
+                    <i class="fas fa-toggle-on absolute left-3 top-1/2 transform -translate-y-1/2 text-[#2FA69A]"></i>
                     <select id="editStatus" name="status"
-                        class="w-full border border-[#173C4C]/30 rounded-lg pl-10 pr-3 py-3 focus:ring-2 focus:ring-[#326D6C] focus:border-[#326D6C] bg-white appearance-none transition-all duration-300">
+                        class="w-full border border-gray-300 rounded-lg pl-10 pr-3 py-3 focus:ring-2 focus:ring-[#2FA69A] focus:border-[#2FA69A] bg-white appearance-none transition-all duration-300">
                         <option value="1">Activo</option>
                         <option value="0">Inactivo</option>
                     </select>
-                    <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-[#568F7C] pointer-events-none"></i>
+                    <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-[#2FA69A] pointer-events-none"></i>
                 </div>
             </label>
 
@@ -308,7 +308,7 @@
                     Cancelar
                 </button>
 
-                <button class="px-4 py-2 bg-[#326D6C] hover:bg-[#173C4C] text-white rounded-lg transition-all duration-300 hover:scale-105 flex items-center gap-2">
+                <button class="px-4 py-2 bg-[#2FA69A] hover:bg-[#23877E] text-white rounded-lg transition-all duration-300 hover:scale-105 flex items-center gap-2">
                     <i class="fas fa-sync-alt"></i>
                     Actualizar
                 </button>
