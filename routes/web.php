@@ -62,11 +62,13 @@ Route::post('/email/verification-notification', function (Request $request) {
     return back()->with('status', 'Correo reenviado.');
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
     // ================================
-    // REGISTER (PÚBLICO)
+    // REGISTER (PÚBLICO) - DESHABILITADO TEMPORALMENTE
     // ================================
+    /*
     Route::get('/register', function () {
         return view('register');
     })->name('register.view');
+    */
 
 // ================================
 // LOGOUT
@@ -100,9 +102,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/eventos', [CalendarController::class, 'index']);
     Route::post('/eventos', [CalendarController::class, 'store']);
 });
+    // REGISTER POST - DESHABILITADO TEMPORALMENTE
+    /*
     Route::post('/register', [AuthController::class, 'register'])
         ->name('register.process');
-    //restablecer contraseña
+    */
+    //restablecer contraseña - DESHABILITADO (USAR NUEVO FLUJO /password-recovery)
+    /*
     // Form enviar correo con código
     Route::get('/forgot-password', function() {
         return view('auth.forgot-password');
@@ -118,6 +124,22 @@ Route::middleware(['auth'])->group(function () {
 
     // Enviar el formulario
     Route::post('/reset-password-code', [AuthController::class, 'resetPasswordWithCode'])->name('password.update.code');
+    */
+
+    // ================================
+    // NUEVO FLUJO: RECUPERACIÓN DE CONTRASEÑA (3 PASOS)
+    // ================================
+    // Paso 1: Solicitar Email
+    Route::get('/password-recovery', [AuthController::class, 'showPasswordRecovery'])->name('password.recovery.email');
+    Route::post('/password-recovery', [AuthController::class, 'sendPasswordRecoveryCode'])->name('password.recovery.send');
+    
+    // Paso 2: Verificar Código
+    Route::get('/password-recovery/verify-code', [AuthController::class, 'showVerifyCode'])->name('password.recovery.verify');
+    Route::post('/password-recovery/verify-code', [AuthController::class, 'verifyRecoveryCode'])->name('password.recovery.verify.post');
+    
+    // Paso 3: Nueva Contraseña
+    Route::get('/password-recovery/new-password', [AuthController::class, 'showNewPassword'])->name('password.recovery.new');
+    Route::post('/password-recovery/new-password', [AuthController::class, 'updateRecoveryPassword'])->name('password.recovery.update');
 
     // ================================
     // LOGOUT
