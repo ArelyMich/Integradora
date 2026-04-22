@@ -24,6 +24,36 @@ use App\Http\Controllers\PerfilController;
     // ================================
     Route::get('/', [AuthController::class, 'showLogin'])->name('login');
 
+    Route::post(
+    '/secuencias/upload',
+    [SecuenciaController::class, 'uploadAndExtract']
+)->name('secuencias.upload');
+
+Route::post('/insertarSecuencia',[secuenciaController::class,'uploadAndExtract'])
+->name('secuencias.uploadAndExtract');  
+
+Route::post(
+    '/secuencias/{id}/status',
+    [SecuenciaController::class, 'updateStatus']
+)->name('secuencias.updateStatus');
+
+Route::get(
+    '/secuencias',
+    [SecuenciaController::class,'index']
+)->name('secuencias.index');
+
+Route::get(
+    '/secuencias/create',
+    [SecuenciaController::class,'create']
+)->name('secuencias.create');
+
+Route::get(
+    '/secuencias/create/{id}',
+    [SecuenciaController::class,'createView']
+)->name('secuencias.edit');
+
+
+
 
     Route::post('/login',[AuthController::class,'login'])
         ->name('login.process');
@@ -78,8 +108,7 @@ Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'inde
     ->name('dashboard')
     ->middleware('auth');
 
-Route::post('/insertarSecuencia',[secuenciaController::class,'uploadAndExtract'])
-->name('secuencias.uploadAndExtract');    
+  
 /*
 | Rutas del Dashboard (Gráficas + Calendario)
 | Solo requieren auth, NO check.permission
@@ -119,6 +148,10 @@ Route::middleware(['auth'])->group(function () {
     // Enviar el formulario
     Route::post('/reset-password-code', [AuthController::class, 'resetPasswordWithCode'])->name('password.update.code');
 
+    Route::get(
+    '/secuencias/create/{id?}',
+    [SecuenciaController::class, 'createView']
+)->name('secuencias.create');
     // ================================
     // LOGOUT
     // ================================
@@ -226,6 +259,8 @@ Route::middleware(['auth'])->group(function () {
 
         Route::put('/roles/delete/{id}', [RoleController::class, 'destroy'])
             ->name('roles.desactivate');
+
+
     
     });
         
