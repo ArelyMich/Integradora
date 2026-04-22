@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Carga de Alpine.js para interactividad (mostrar/ocultar contraseña) -->
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Google reCAPTCHA v2 -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <style>
         /* Fuente principal del proyecto */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
@@ -30,7 +32,7 @@
 <body class="min-h-screen flex items-center justify-center p-4">
 
     <!-- Contenedor Central del Formulario -->
-    <div class="w-full max-w-md bg-white p-8 sm:p-10 rounded-2xl shadow-2xl transition duration-300">
+    <div class="w-full max-w-lg bg-white p-8 sm:p-10 rounded-2xl shadow-2xl transition duration-300">
         
         <!-- Encabezado del Formulario -->
         <header class="text-center mb-8">
@@ -60,9 +62,21 @@
             </div>
         @endif --}}
 
+        <!-- Mostrar errores de validación -->
+        @if ($errors->any())
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 text-sm" role="alert">
+                <strong class="font-bold">Error:</strong>
+                <ul class="mt-2">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <!-- Formulario de Login -->
         <!-- x-data inicia Alpine.js con una variable de estado para la contraseña -->
-        <form method="POST" action="{{ route('login.post') }}" x-data="{ showPassword: false }">
+        <form method="POST" action="{{ route('login.process') }}" x-data="{ showPassword: false }">
             <!-- @csrf es el token de seguridad de Laravel -->
             @csrf
 
@@ -109,6 +123,11 @@
                 </div>
             </div>
 
+            <!-- Google reCAPTCHA v2 -->
+            <div style="margin-bottom: 1.5rem; display: flex; justify-content: center;">
+                <div class="g-recaptcha" data-sitekey="{{ $recaptcha_key }}"></div>
+            </div>
+
             <!-- Botón Principal de Login -->
             <button type="submit" 
                 class="w-full uth-blue text-white font-bold py-3 rounded-xl shadow-lg transition duration-300 transform hover:bg-uth-blue-hover hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-uth-blue focus:ring-opacity-50">
@@ -118,7 +137,7 @@
 
         <!-- Opciones Adicionales (Recuperación de Contraseña) -->
         <div class="mt-6 text-center">
-            <a href="{{ route('password.request') }}" class="text-sm font-medium text-uth-blue hover:text-blue-700 transition duration-150">
+            <a href="{{ route('password.recovery.email') }}" class="text-sm font-medium text-uth-blue hover:text-blue-700 transition duration-150">
                 ¿Olvidaste tu contraseña?
             </a>
         </div>

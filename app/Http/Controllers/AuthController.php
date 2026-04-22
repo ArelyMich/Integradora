@@ -27,8 +27,10 @@ class AuthController extends Controller
         return redirect('/dashboard');
     }
 
-    // Mostrar el formulario de login
-    return view('login');
+    // Mostrar el formulario de login con la clave pública de reCAPTCHA
+    return view('login', [
+        'recaptcha_key' => env('RECAPTCHA_PUBLIC_KEY')
+    ]);
 }
 
     public function login(Request $request)
@@ -41,6 +43,33 @@ class AuthController extends Controller
     $loginInput = trim($request->username); // username o email
     $ip = $request->ip();
     $ua = $request->header('User-Agent');
+
+    // ============================
+    // VALIDAR RECAPTCHA
+    // ============================
+    $recaptchaToken = $request->input('g-recaptcha-response');
+    if (!$recaptchaToken) {
+        return back()->withErrors(['recaptcha' => 'Por favor, completa el reCAPTCHA.'])->withInput();
+    }
+
+    // Verificar el reCAPTCHA con Google
+    $recaptchaUrl = 'https://www.google.com/recaptcha/api/siteverify';
+    $recaptchaResponse = file_get_contents($recaptchaUrl, false, stream_context_create([
+        'http' => [
+            'method' => 'POST',
+            'header' => 'Content-type: application/x-www-form-urlencoded',
+            'content' => http_build_query([
+                'secret' => env('RECAPTCHA_SECRET_KEY'),
+                'response' => $recaptchaToken
+            ])
+        ]
+    ]));
+
+    $recaptchaData = json_decode($recaptchaResponse);
+
+    if (!$recaptchaData->success) {
+        return back()->withErrors(['recaptcha' => 'La verificación de reCAPTCHA falló. Por favor, intenta de nuevo.'])->withInput();
+    }
 
     // ============================
     // 1. BLOQUEO POR USER AGENT
@@ -237,10 +266,165 @@ class AuthController extends Controller
 
 
         // ==============================
-    // ENVIAR CÓDIGO PARA RESTABLECER CONTRASEÑA
+    // NUEVO FLUJO: RECUPERACIÓN DE CONTRASEÑA (MEJORADO)
     // ==============================
-   public function sendResetCode(Request $request)
-{
+    
+    // PASO 1: Solicitar Email
+    public function showPasswordRecovery()
+    {
+        return view('auth.password-recovery.step1-email');
+    }
+
+    public function sendPasswordRecoveryCode(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email'
+        ], [
+            'email.exists' => 'No encontramos una cuenta con este correo.'
+        ]);
+
+        // Generar código de 6 dígitos
+        $email = strtolower(trim($request->email));
+        $code = (string) random_int(100000, 999999);
+
+        // Guardar código con expiración
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $email],
+            [
+                'email' => $email,
+                'token' => $code,
+                'created_at' => now()
+            ]
+        );
+
+        // Enviar código por Mailtrap
+        Mail::to($email)->send(new ResetPasswordMail($code));
+
+        // Guardar email en sesión para el siguiente paso
+        session([
+            'recovery_email' => $email,
+            'recovery_code_verified' => false,
+            'recovery_step' => 'verify_code'
+        ]);
+
+        return redirect()->route('password.recovery.verify')->with('success', 'Código enviado a tu correo.');
+    }
+
+    // PASO 2: Verificar Código
+    public function showVerifyCode()
+    {
+        if (!session('recovery_email')) {
+            return redirect()->route('password.recovery.email')->withErrors('Debe solicitar un código primero.');
+        }
+
+        return view('auth.password-recovery.step2-code');
+    }
+
+    public function verifyRecoveryCode(Request $request)
+    {
+        $email = session('recovery_email');
+        
+        if (!$email) {
+            return redirect()->route('password.recovery.email')->withErrors('Sesión expirada.');
+        }
+
+        $request->validate([
+            'code' => 'required|digits:6'
+        ]);
+
+        // Verificar código
+        $record = DB::table('password_reset_tokens')
+            ->where('email', $email)
+            ->first();
+
+        if (
+            !$record ||
+            (string) $record->token !== (string) $request->code ||
+            now()->diffInMinutes($record->created_at) > 30
+        ) {
+            return back()->withErrors(['code' => 'Código inválido o expirado.'])->withInput();
+        }
+
+        // Marcar como verificado en sesión
+        session([
+            'recovery_code_verified' => true,
+            'recovery_step' => 'new_password'
+        ]);
+
+        return redirect()->route('password.recovery.new');
+    }
+
+    // PASO 3: Establecer Nueva Contraseña
+    public function showNewPassword()
+    {
+        if (!session('recovery_code_verified')) {
+            return redirect()->route('password.recovery.email')->withErrors('Debe verificar el código primero.');
+        }
+
+        return view('auth.password-recovery.step3-password');
+    }
+
+    public function updateRecoveryPassword(Request $request)
+    {
+        $email = session('recovery_email');
+
+        if (!$email || !session('recovery_code_verified')) {
+            return redirect()->route('password.recovery.email')->withErrors('Sesión expirada.');
+        }
+
+        $record = DB::table('password_reset_tokens')
+            ->where('email', $email)
+            ->first();
+
+        if (!$record || now()->diffInMinutes($record->created_at) > 30) {
+            session()->forget(['recovery_email', 'recovery_code_verified', 'recovery_step']);
+
+            return redirect()->route('password.recovery.email')->withErrors('El código expiró. Solicita uno nuevo.');
+        }
+
+        // Validaciones estrictas de contraseña
+        $request->validate([
+            'password' => [
+                'required',
+                'confirmed',
+                'min:8',
+                'regex:/(?=.*[A-Z])/',      // Al menos una mayúscula
+                'regex:/(?=.*[a-z])/',      // Al menos una minúscula
+                'regex:/(?=.*[0-9])/',      // Al menos un número
+                'regex:/(?=.*[@$!%*#?&])/'  // Al menos un carácter especial
+            ],
+            'password_confirmation' => 'required'
+        ], [
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.regex' => 'La contraseña debe contener: mayúscula, minúscula, número y carácter especial (@$!%*#?&).',
+            'password.confirmed' => 'Las contraseñas no coinciden.'
+        ]);
+
+        // Actualizar contraseña
+        $user = User::where('email', $email)->first();
+        
+        if (!$user) {
+            return redirect()->route('password.recovery.email')->withErrors('Usuario no encontrado.');
+        }
+
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        // Limpiar código de reseteo
+        DB::table('password_reset_tokens')->where('email', $email)->delete();
+
+        // Limpiar sesión
+        session()->forget(['recovery_email', 'recovery_code_verified', 'recovery_step']);
+
+        return redirect()->route('login')->with('status', '✓ Contraseña actualizada correctamente. Inicia sesión con tu nueva contraseña.');
+    }
+
+    // ==============================
+    // SISTEMA ANTIGUO - DESHABILITADO
+    // ==============================
+    /*
+    public function sendPasswordEmail(Request $request)
+    {
     $request->validate([
         'email' => 'required|email|exists:users,email'
     ]);
@@ -309,6 +493,7 @@ $codigo = random_int(100000, 999999);
 
         return redirect('/')->with('status', 'Contraseña cambiada correctamente.');
     }
+    */
 
     // ==============================
     // REGISTRO SEGURO
