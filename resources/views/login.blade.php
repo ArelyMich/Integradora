@@ -252,7 +252,7 @@
 
         const toggleRecovery = document.getElementById('toggleRecovery');
         const recoveryPanel = document.getElementById('recoveryPanel');
-const shouldOpenRecovery = @json($errors->has('email') || session('success') || session('recovery_email'));
+        const shouldOpenRecovery = @json($errors->has('email') || session('success') || session('recovery_email'));
         if (toggleRecovery && recoveryPanel) {
             toggleRecovery.addEventListener('click', () => {
                 recoveryPanel.classList.toggle('hidden');

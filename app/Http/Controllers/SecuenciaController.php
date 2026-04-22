@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ComentarioSecuenciaNotificationMail;
 use App\Models\Carrera;
 use App\Models\HistorialEstado;
 use App\Models\Materia;
@@ -14,6 +15,7 @@ use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use setasign\Fpdi\Fpdi;
@@ -460,7 +462,7 @@ class SecuenciaController extends Controller
             'comentario' => 'required|string|min:5|max:1500',
         ]);
 
-        SecuenciaComentario::create([
+        $comentario = SecuenciaComentario::create([
             'secuencia_id' => $secuencia->id,
             'user_id' => Auth::id(),
             'coord_mode' => $validated['coord_mode'],
@@ -475,6 +477,25 @@ class SecuenciaController extends Controller
             'comentario' => $validated['comentario'],
             'estatus' => 'pendiente',
         ]);
+
+        // Enviar notificación por correo al docente (usando Resend)
+        try {
+            $secuencia->load('docente');
+            $usuario = Auth::user();
+
+            if ($secuencia->docente && $usuario) {
+                $notificacionEmail = config('mail.notification_email') ?? env('NOTIFICATION_EMAIL');
+                
+                if ($notificacionEmail) {
+                    Mail::mailer('resend')->to($notificacionEmail)->send(
+                        new ComentarioSecuenciaNotificationMail($comentario, $secuencia->docente, $usuario)
+                    );
+                }
+            }
+        } catch (\Exception $e) {
+            // Log del error pero no afecta la creación del comentario
+            \Log::error('Error al enviar notificación de comentario: ' . $e->getMessage());
+        }
 
         return back()->with('success', 'Comentario registrado correctamente.');
     }

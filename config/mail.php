@@ -63,6 +63,7 @@ return [
 
         'resend' => [
             'transport' => 'resend',
+            'secret' => env('RESEND_API_KEY'),
         ],
 
         'sendmail' => [
@@ -114,5 +115,15 @@ return [
         'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Notification Email Address
+    |--------------------------------------------------------------------------
+    |
+    | Email address where notifications will be sent.
+    |
+    */
+    'notification_email' => env('NOTIFICATION_EMAIL', null),
 
 ];
