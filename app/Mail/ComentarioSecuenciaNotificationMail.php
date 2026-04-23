@@ -6,6 +6,7 @@ use App\Models\SecuenciaComentario;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
@@ -19,41 +20,30 @@ class ComentarioSecuenciaNotificationMail extends Mailable
     public User $comentador;
     public string $nombreDocente;
 
-    /**
-     * Create a new message instance.
-     * 
-     * @param SecuenciaComentario $comentario
-     * @param User $docente
-     * @param User $comentador
-     */
     public function __construct(SecuenciaComentario $comentario, User $docente, User $comentador)
     {
         $this->comentario = $comentario;
         $this->docente = $docente;
         $this->comentador = $comentador;
-        
-        // Construir nombre completo del docente
+
         $nombre = trim($docente->name ?? '');
-        $apellido_paterno = trim($docente->apellido_paterno ?? '');
-        $apellido_materno = trim($docente->apellido_materno ?? '');
-        
-        $this->nombreDocente = implode(' ', array_filter([$nombre, $apellido_paterno, $apellido_materno]));
+        $apellidoPaterno = trim($docente->apellido_paterno ?? '');
+        $apellidoMaterno = trim($docente->apellido_materno ?? '');
+
+        $this->nombreDocente = implode(' ', array_filter([$nombre, $apellidoPaterno, $apellidoMaterno]));
     }
 
-    /**
-     * Get the message envelope.
-     */
     public function envelope(): Envelope
     {
         return new Envelope(
-            from: env('MAIL_FROM'),  // ✅ USAR EMAIL DE RESEND (sin nombre)
-            subject: 'Nuevo Comentario en tu Secuencia Didáctica - ' . $this->comentador->name,
+            from: new Address(
+                config('mail.from.address'),
+                config('mail.from.name')
+            ),
+            subject: 'Nuevo comentario en tu secuencia didactica - ' . $this->comentador->name,
         );
     }
 
-    /**
-     * Get the message content definition.
-     */
     public function content(): Content
     {
         return new Content(
@@ -67,11 +57,6 @@ class ComentarioSecuenciaNotificationMail extends Mailable
         );
     }
 
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-     */
     public function attachments(): array
     {
         return [];

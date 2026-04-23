@@ -6,6 +6,7 @@ use App\Models\Secuencia;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
@@ -20,38 +21,31 @@ class DictamenAprobadaMail extends Mailable
     public string $motivo;
     public string $nombreDocente;
 
-    /**
-     * Create a new message instance.
-     */
     public function __construct(Secuencia $secuencia, User $docente, User $revisor, string $motivo)
     {
         $this->secuencia = $secuencia;
         $this->docente = $docente;
         $this->revisor = $revisor;
         $this->motivo = $motivo;
-        
-        // Construir nombre completo del docente
+
         $nombre = trim($docente->name ?? '');
-        $apellido_paterno = trim($docente->apellido_paterno ?? '');
-        $apellido_materno = trim($docente->apellido_materno ?? '');
-        
-        $this->nombreDocente = implode(' ', array_filter([$nombre, $apellido_paterno, $apellido_materno]));
+        $apellidoPaterno = trim($docente->apellido_paterno ?? '');
+        $apellidoMaterno = trim($docente->apellido_materno ?? '');
+
+        $this->nombreDocente = implode(' ', array_filter([$nombre, $apellidoPaterno, $apellidoMaterno]));
     }
 
-    /**
-     * Get the message envelope.
-     */
     public function envelope(): Envelope
     {
         return new Envelope(
-            from: env('MAIL_FROM'),
-            subject: '✅ ¡Felicidades! Secuencia Aprobada - ' . $this->secuencia->materia?->nombre,
+            from: new Address(
+                config('mail.from.address'),
+                config('mail.from.name')
+            ),
+            subject: 'Secuencia aprobada - ' . ($this->secuencia->materia?->nombre ?? 'Secuencia'),
         );
     }
 
-    /**
-     * Get the message content definition.
-     */
     public function content(): Content
     {
         return new Content(
@@ -66,9 +60,6 @@ class DictamenAprobadaMail extends Mailable
         );
     }
 
-    /**
-     * Get the attachments for the message.
-     */
     public function attachments(): array
     {
         return [];

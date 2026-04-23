@@ -212,7 +212,7 @@ $pdfComments = $contextComments
                         <input type="hidden" name="texto_seleccionado" :value="selection.text">
                         <input type="hidden" name="comentario" :value="draftComment">
 
-                        <button type="submit" :disabled="!hasValidSelection" class="w-full rounded-lg bg-linear-to-r from-blue-600 via-blue-600 to-blue-700 px-4 py-3 text-sm font-semibold text-white transition shadow-lg hover:shadow-xl hover:from-blue-700 hover:via-blue-700 hover:to-blue-800 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:from-slate-400 disabled:to-slate-400">
+                        <button type="submit" :disabled="!hasValidSelection" class="w-full rounded-lg bg-linear-to-r from-blue-600 via-blue-600 to-blue-700 px-4 py-3 text-sm font-semibold text-blue transition shadow-lg hover:shadow-xl hover:from-blue-700 hover:via-blue-700 hover:to-blue-800 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:from-slate-400 disabled:to-slate-400">
                             Guardar Observación
                         </button>
                     </form>

@@ -12,11 +12,13 @@ use App\Models\SecuenciaArchivoVersion;
 use App\Models\SecuenciaComentario;
 use App\Models\Unidad;
 use App\Models\User;
+use App\Mail\ComentarioSecuenciaNotificationMail;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use PhpOffice\PhpWord\TemplateProcessor;
@@ -769,7 +771,7 @@ class SecuenciaController extends Controller
             'comentario' => 'required|string|min:5|max:1500',
         ]);
 
-        SecuenciaComentario::create([
+        $comentario = SecuenciaComentario::create([
             'secuencia_id' => $secuencia->id,
             'user_id' => Auth::id(),
             'coord_mode' => $validated['coord_mode'],
@@ -784,6 +786,25 @@ class SecuenciaController extends Controller
             'comentario' => $validated['comentario'],
             'estatus' => 'pendiente',
         ]);
+
+        $secuencia->loadMissing(['docente', 'revisor']);
+
+        $destinatario = $secuencia->docente ?? $secuencia->revisor;
+        $comentador = Auth::user();
+
+        if ($destinatario instanceof User && ! empty($destinatario->email) && $comentador instanceof User) {
+            try {
+                Mail::to($destinatario->email)->send(
+                    new ComentarioSecuenciaNotificationMail(
+                        $comentario,
+                        $destinatario,
+                        $comentador
+                    )
+                );
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
 
         return back()->with('success', 'Comentario registrado correctamente.');
     }
