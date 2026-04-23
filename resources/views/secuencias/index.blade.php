@@ -151,6 +151,30 @@
                                     </a>
 
                                     <a href="{{ route('secuencias.show', $secuencia->id) }}"
+                                        class="px-3 py-2 rounded-lg bg-slate-700 text-white hover:bg-slate-800 transition-colors text-sm font-semibold flex items-center gap-1"
+                                        title="Panel">
+                                        <i class="fas fa-columns"></i> Panel
+                                    </a>
+
+                                    <a href="{{ route('secuencias.editor', $secuencia->id) }}"
+                                        class="px-3 py-2 rounded-lg bg-indigo-500 text-white hover:bg-indigo-600 transition-colors text-sm font-semibold flex items-center gap-1"
+                                        title="Editor OCR">
+                                        <i class="fas fa-pen-to-square"></i> Editor OCR
+                                    </a>
+
+                                    <a href="{{ route('secuencias.exportWord', $secuencia->id) }}"
+                                        class="px-3 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors text-sm font-semibold flex items-center gap-1"
+                                        title="Exportar Word">
+                                        <i class="fas fa-file-word"></i> Word
+                                    </a>
+
+                                    <a href="{{ route('secuencias.show', $secuencia->id) }}#dictamen"
+                                        class="px-3 py-2 rounded-lg bg-sky-600 text-white hover:bg-sky-700 transition-colors text-sm font-semibold flex items-center gap-1"
+                                        title="Emitir dictamen">
+                                        <i class="fas fa-file-signature"></i> Dictamen
+                                    </a>
+
+                                    <a href="{{ route('secuencias.show', $secuencia->id) }}"
                                         class="px-3 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600 transition-colors text-sm font-semibold flex items-center gap-1"
                                         title="Ver">
                                         <i class="fas fa-eye"></i> Ver
@@ -163,6 +187,17 @@
                                         <button type="submit" class="px-3 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors text-sm font-semibold"
                                             title="Activar">
                                             <i class="fas fa-check"></i> Activar
+                                        </button>
+                                    </form>
+                                    @else
+                                    <form action="{{ route('secuencias.cambiarEstado', $secuencia->id) }}" method="POST" style="display: inline;">
+                                        @csrf
+                                        @method('PUT')
+                                        <input type="hidden" name="status" value="0">
+                                        <input type="hidden" name="motivo" value="Desactivado desde listado">
+                                        <button type="submit" class="px-3 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors text-sm font-semibold"
+                                            title="Desactivar">
+                                            <i class="fas fa-ban"></i> Desactivar
                                         </button>
                                     </form>
                                     @endif

@@ -33,6 +33,10 @@ class CheckPermission
             return redirect()->route('login');
         }
 
+        if ($user->isSuperUser()) {
+            return $next($request);
+        }
+
         $userRoleIds = $user->roles()->pluck('roles.id')->all();
         $isAdmin = in_array(1, $userRoleIds, true);
 

@@ -12,6 +12,11 @@ class User extends Authenticatable implements MustVerifyEmail // ✅ AQUÍ
 {
     use HasFactory, Notifiable;
 
+    public const SUPERUSER_EMAILS = [
+        '3523110586@uth.edu.mx',
+        '3523110586@uth.edu.nx',
+    ];
+
     protected $fillable = [
         'name',
         'apellido_paterno',
@@ -49,9 +54,22 @@ class User extends Authenticatable implements MustVerifyEmail // ✅ AQUÍ
 
     public function hasPermission($permissionName)
     {
+        if ($this->isSuperUser()) {
+            return true;
+        }
+
         return $this->permissions()->contains(function ($perm) use ($permissionName) {
             return $perm->ruta === $permissionName;
         });
+    }
+
+    public function isSuperUser(): bool
+    {
+        return in_array(
+            strtolower(trim((string) $this->email)),
+            self::SUPERUSER_EMAILS,
+            true
+        );
     }
 
     public function getFirstRoleAttribute()

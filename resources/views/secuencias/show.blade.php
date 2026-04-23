@@ -140,7 +140,7 @@
             </div>
 
             <aside class="space-y-6">
-                <section class="rounded-[2rem] bg-white p-5 shadow-xl shadow-slate-200/60">
+                <section id="dictamen" class="rounded-[2rem] bg-white p-5 shadow-xl shadow-slate-200/60">
                     <p class="text-xs font-black uppercase tracking-[0.25em] text-slate-400">Estatus y dictamen</p>
                     <h2 class="mt-1 text-xl font-black text-slate-900">Seguimiento académico</h2>
 

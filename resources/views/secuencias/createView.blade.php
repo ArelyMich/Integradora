@@ -59,6 +59,12 @@ if(isset($unidades)){
                 >
                     <i class="fas fa-file-word"></i> Exportar Word
                 </a>
+                <a
+                    href="{{ route('secuencias.show', $secuencia->id) }}"
+                    class="bg-slate-700 text-white px-6 py-3 rounded-xl shadow-lg hover:bg-slate-800 transition-all duration-300 flex items-center gap-2 font-semibold text-base"
+                >
+                    <i class="fas fa-columns"></i> Panel
+                </a>
             @else
                 <button
                     @click="showUploadModal = true"

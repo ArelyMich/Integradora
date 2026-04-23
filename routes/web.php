@@ -283,7 +283,8 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/secuencias/{secuencia}/comentarios/{comentario}/estado', [SecuenciaController::class, 'actualizarEstadoComentario'])
             ->name('secuencias.comentarios.estado');
 
-        Route::put('/secuencias/{secuencia}/estado', [SecuenciaController::class, 'cambiarEstado']);
+        Route::put('/secuencias/{secuencia}/estado', [SecuenciaController::class, 'cambiarEstado'])
+            ->name('secuencias.cambiarEstado');
         Route::put('/secuencias/{secuencia}/estatus-academico', [SecuenciaController::class, 'actualizarEstatusAcademico'])
             ->name('secuencias.actualizarEstatusAcademico');
         Route::put('/secuencias/{id}', [SecuenciaController::class,'update'])
@@ -330,4 +331,3 @@ Route::middleware(['auth'])->group(function () {
 
 
     });
-
