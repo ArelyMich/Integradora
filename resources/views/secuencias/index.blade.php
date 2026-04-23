@@ -1,563 +1,695 @@
 @extends('layouts.principal')
 
 @section('content')
-@php
-$roleIds = auth()->user()?->roles?->pluck('id')->all() ?? [];
-$isReviewer = in_array(3, $roleIds, true);
-@endphp
-<div
-    x-data="secuenciasDashboard({
-        secuencias: {{ Js::from($secuencias->map(fn($secuencia) => [
-            'id' => $secuencia->id,
-            'materia' => $secuencia->materia?->nombre ?? 'Materia no disponible',
-            'carrera' => $secuencia->carrera?->nombre_carrera ?? 'Carrera no disponible',
-            'docente' => $secuencia->docente ? trim($secuencia->docente->name . ' ' . $secuencia->docente->apellido_paterno) : 'Sin docente asignado',
-            'periodo' => $secuencia->periodo ? ($secuencia->periodo->nombre . ' ' . $secuencia->periodo->anio) : 'Sin periodo',
-            'estatus' => $secuencia->estatus,
-            'status' => (int) $secuencia->status,
-            'director' => $secuencia->director ? trim($secuencia->director->name . ' ' . $secuencia->director->apellido_paterno) : 'Sin director',
-            'revisor' => $secuencia->revisor ? trim($secuencia->revisor->name . ' ' . $secuencia->revisor->apellido_paterno) : 'Sin revisor',
-            'revisor_id' => $secuencia->revisor_id,
-            'horas_programadas' => $secuencia->horas_programadas ?: 'Sin captura',
-            'fecha_entrega' => optional($secuencia->fecha_entrega)->format('d/m/Y H:i'),
-            'created_at' => optional($secuencia->created_at)->format('d/m/Y H:i'),
-        ])) }},
-        statusBaseUrl: '{{ url('/secuencias') }}',
-        academicStatusBaseUrl: '{{ url('/secuencias') }}',
-        ocrUrl: '{{ route('secuencias.uploadAndExtract') }}',
-        templatePdfUrl: '{{ asset('docs/secuencia-didactica-uth.pdf') }}',
-        canReview: {{ $isReviewer ? 'true' : 'false' }}
-    })"
-    class="min-h-screen bg-slate-100/70 p-4 md:p-8"
-    x-cloak>
-    <div class="mx-auto max-w-7xl space-y-8">
-        <section class="overflow-hidden rounded-[2rem] bg-white shadow-xl shadow-slate-200/60">
-            <div class="grid gap-3 bg-[radial-gradient(circle_at_top_left,_rgba(12,75,84,0.16),_transparent_30%),linear-gradient(135deg,_#ffffff,_#f5f7fb)] px-6 py-8 md:grid-cols-2">
-                <div class="space-y-4">
-                    <div>
-                        <h1 class="text-3xl font-black text-slate-900 md:text-5xl">{{ $isReviewer ? 'Panel de Revisión de Secuencias' : 'Secuencias' }}</h1>
-                    </div>
-                    <div class="flex flex-wrap gap-3">
-                        @if (!$isReviewer && Auth::user()->hasPermission('secuencias.createView'))
-                        <a href="{{ route('secuencias.createView') }}" class="rounded-2xl bg-[#0C4B54] px-5 py-3 text-sm font-black text-white shadow-lg transition hover:-translate-y-0.5">
-                            Nueva secuencia
-                        </a>
-                        @endif
-                    </div>
-                </div>
 
-                <div class="grid grid-cols-4 gap-3">
-                    <div class="rounded-3xl bg-slate-900 p-5 text-white shadow-lg">
-                        <p class="text-xs font-bold uppercase tracking-[0.25em] text-white/60">Registradas</p>
-                        <p class="mt-3 text-4xl font-black" x-text="secuencias.length"></p>
+
+
+@php
+
+$unidadesFormateadas = [];
+
+if(isset($unidades)){
+
+foreach($unidades as $u){
+
+$unidadesFormateadas[] = [
+'id' => $u->id,
+'numero' => $u->numero,
+'titulo' => $u->nombre,
+'horas' => $u->horas,
+'objetivo' => '',
+'actividades' => ''
+
+];
+
+}
+
+}
+
+@endphp
+
+
+{{--
+    ***********************************************************************************************************
+    VISTA DE CREACIÓN DE SECUENCIAS: Formulario Multi-Paso (Stepper) con Modal de Subida de Documentos
+    Colores principales: #0C4B54 (Azul Primario), #F59E0B (Naranja Acento para progreso)
+    ***********************************************************************************************************
+--}}
+
+<div x-data="formSteps()">
+
+    {{-- ENCABEZADO Y BOTÓN DE RETORNO --}}
+    <div class="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between border-b border-[#0C4B54]/10 pb-4">
+        <div class="flex items-center gap-3">
+            <div class="p-3 bg-[#0C4B54] rounded-xl shadow-lg">
+                <i class="fas fa-file-alt text-white text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="text-4xl font-extrabold text-[#0C4B54]">Creación de Secuencia Didáctica</h1>
+                <p class="text-gray-600 mt-1" x-text="'Paso ' + currentStep + ': ' + steps.find(s => s.id === currentStep).title"></p>
+            </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-3 mt-4 md:mt-0">
+            {{-- BOTÓN NUEVO: Subir Documento --}}
+            @if(isset($secuencia))
+            <a
+                href="{{ route('secuencias.exportWord', $secuencia->id) }}"
+                class="bg-blue-600 text-white px-6 py-3 rounded-xl shadow-lg hover:bg-blue-700 transition-all duration-300 flex items-center gap-2 font-semibold text-base">
+                <i class="fas fa-file-word"></i> Exportar Word
+            </a>
+            @else
+            <button
+                @click="showUploadModal = true"
+                type="button"
+                class="bg-[#F59E0B] text-white px-6 py-3 rounded-xl shadow-lg hover:bg-[#e0900a] transition-all duration-300 flex items-center gap-2 font-semibold text-base">
+                <i class="fas fa-cloud-upload-alt"></i> Subir Documento
+            </button>
+            @endif
+
+            <a href="{{ route('secuencias.index') }}" class="bg-gray-400 text-white px-6 py-3 rounded-xl shadow-lg hover:bg-gray-500 transition-all duration-300 flex items-center gap-2 font-semibold text-base">
+                <i class="fas fa-arrow-left"></i> Volver a Secuencias
+            </a>
+        </div>
+    </div>
+
+    {{-- BARRA DE NAVEGACIÓN (BOTONES DE PASOS) --}}
+    <div class="space-y-6">
+
+
+        {{-- ********************************************************************************************** --}}
+        {{-- MODAL PARA SUBIR DOCUMENTO --}}
+        {{-- ********************************************************************************************** --}}
+        @unless(isset($secuencia))
+        <div
+            x-show="showUploadModal"
+            class="fixed inset-0 z-50 overflow-y-auto bg-gray-900 bg-opacity-75 backdrop-blur-sm"
+            x-transition:enter="ease-out duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="ease-in duration-200"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            @click.away="showUploadModal = false"
+            @keydown.escape.window="showUploadModal = false">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+
+                {{-- Contenedor del Modal --}}
+                <div
+                    x-show="showUploadModal"
+                    class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+                    x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-[#0C4B54]/10 sm:mx-0 sm:h-10 sm:w-10">
+                                <i class="fas fa-file-upload text-[#0C4B54] text-xl"></i>
+                            </div>
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                <h3 class="text-2xl leading-6 font-extrabold text-gray-900" id="modal-title">
+                                    Subir Documento de Secuencia
+                                </h3>
+                                <div class="mt-2">
+                                    <p class="text-sm text-gray-500">
+                                        Aquí puedes subir un archivo de secuencia didáctica existente (ej. PDF, DOCX) para auto-llenar el formulario.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        {{-- Formulario de Subida --}}
+
+                        <form
+                            id="upload-form"
+                            action="{{ route('secuencias.upload') }}"
+                            method="POST"
+                            enctype="multipart/form-data"
+                            class="mt-5 space-y-4">
+                            @csrf
+
+                            <div>
+
+                                <label class="block text-sm font-medium text-gray-700">
+                                    Seleccionar Archivo
+                                </label>
+
+                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl">
+
+                                    <div class="text-center">
+
+                                        <label
+                                            for="file-upload"
+                                            class="cursor-pointer font-medium text-[#F59E0B]">
+
+                                            Sube un archivo
+
+                                            <input
+                                                id="file-upload"
+                                                name="caratula_file"
+                                                type="file"
+                                                class="sr-only"
+                                                accept=".pdf"
+                                                required>
+
+                                        </label>
+
+                                        <p class="text-xs text-gray-500">
+                                            PDF hasta 10MB
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </form>
+
                     </div>
-                    <div class="rounded-3xl bg-emerald-50 p-5 text-emerald-700">
-                        <p class="text-xs font-bold uppercase tracking-[0.25em] text-emerald-500">Activas</p>
-                        <p class="mt-3 text-4xl font-black" x-text="activasCount"></p>
-                    </div>
-                    <div class="rounded-3xl bg-rose-50 p-5 text-rose-700">
-                        <p class="text-xs font-bold uppercase tracking-[0.25em] text-rose-500">Inactivas</p>
-                        <p class="mt-3 text-4xl font-black" x-text="inactivasCount"></p>
-                    </div>
-                    <div class="rounded-3xl bg-amber-50 p-5 text-amber-700">
-                        <p class="text-xs font-bold uppercase tracking-[0.25em] text-amber-500">Pendientes</p>
-                        <p class="mt-3 text-4xl font-black" x-text="pendientesCount"></p>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="submit" form="upload-form" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-6 py-3 bg-[#0C4B54] text-base font-medium text-white hover:bg-[#093D45] sm:ml-3 sm:w-auto sm:text-sm transition">
+                            Procesar y Llenar
+                        </button>
+                        <button @click="showUploadModal = false" type="button" class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-6 py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm transition">
+                            Cancelar
+                        </button>
                     </div>
                 </div>
             </div>
-        </section>
-
-        @if (session('success'))
-        <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-semibold text-emerald-700 shadow-sm">
-            {{ session('success') }}
         </div>
-        @endif
+        @endunless
+        {{-- FIN DEL MODAL --}}
+        {{-- ********************************************************************************************** --}}
 
-        @if (session('error'))
-        <div class="rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm font-semibold text-rose-700 shadow-sm">
-            {{ session('error') }}
+        {{-- ========================= --}}
+        {{-- BARRA SUPERIOR DINÁMICA --}}
+        {{-- ========================= --}}
+
+        <div class="sticky top-0 z-10 bg-white p-4 rounded-xl shadow-lg border border-gray-200">
+
+            <div class="flex justify-between space-x-2 overflow-x-auto">
+
+                <template x-for="step in steps" :key="step.id">
+
+                    <button
+
+                        @click="goToStep(step.id)"
+
+                        :class="{
+
+'bg-[#0C4B54] text-white shadow-xl transform scale-105':
+
+currentStep === step.id,
+
+'bg-gray-100 text-gray-700 hover:bg-gray-200':
+
+currentStep !== step.id
+
+}"
+
+                        class="flex-1 px-4 py-3 rounded-xl font-semibold transition whitespace-nowrap text-sm flex items-center justify-center gap-2">
+
+                        <i :class="step.icon"></i>
+
+                        <span x-text="step.title"></span>
+
+                    </button>
+
+                </template>
+
+            </div>
+
         </div>
-        @endif
 
-        @if ($errors->any())
-        <div class="rounded-2xl border border-rose-200 bg-white px-5 py-4 shadow-sm">
-            <p class="text-sm font-black text-rose-700">Hay validaciones pendientes:</p>
-            <ul class="mt-2 space-y-1 text-sm text-slate-600">
-                @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-                @endforeach
+        {{-- ========================= --}}
+        {{-- FORMULARIO --}}
+        {{-- ========================= --}}
+
+
+
+        @if(isset($secuencia))
+
+        <form action="{{ route('secuencias.update',$secuencia->id) }}" method="POST">
+            @method('PUT')
+
+            @else
+
+            <form action="{{ route('secuencias.store') }}" method="POST">
+
+                @endif
+
+                @csrf
+
+                <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-10 border border-gray-100 relative">
+
+                    {{-- CABECERA --}}
+
+                    <div
+
+                        class="bg-green-600 text-white font-extrabold text-2xl p-4 rounded-t-xl absolute top-0 left-0 w-full uppercase"
+
+                        x-text="steps.find(s => s.id === currentStep).title"></div>
+
+                    <div class="pt-16">
+
+                        {{-- ====================================================== --}}
+                        {{-- PASO 1 — CARÁTULA --}}
+                        {{-- ====================================================== --}}
+
+                        <div x-show="currentStep === 1">
+
+                            <h3 class="text-xl font-bold mb-6">
+
+                                Identificación de la Asignatura
+
+                            </h3>
+
+
+                            {{-- Carrera --}}
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center border-b pb-4">
+
+                                <label class="block text-lg font-bold text-gray-800">
+
+                                    Carrera:
+
+                                </label>
+
+                                <div class="col-span-2">
+
+                                    <input
+
+                                        type="text"
+
+                                        name="carrera"
+
+                                        value="{{ $caratula->carrera ?? '' }}"
+
+                                        class="w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm">
+
+                                </div>
+
+                            </div>
+
+                            {{-- Asignatura --}}
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center border-b pb-4 mt-4">
+
+                                <label class="block text-lg font-bold text-gray-800">
+
+                                    Asignatura:
+
+                                </label>
+
+                                <div class="col-span-2">
+
+                                    <input
+
+                                        type="text"
+
+                                        name="asignatura"
+
+                                        value="{{ $caratula->asignatura ?? '' }}"
+
+                                        class="w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm">
+
+                                </div>
+
+                            </div>
+
+                            {{-- Competencia --}}
+
+                            <div class="grid grid-cols-3 gap-6 mt-4">
+
+                                <label class="font-bold">
+
+                                    Competencia:
+
+                                </label>
+
+                                <div class="col-span-2">
+
+                                    <textarea
+
+                                        name="competencia"
+
+                                        rows="4"
+
+                                        class="w-full rounded-xl">{{ $caratula->competencia ?? '' }}</textarea>
+
+                                </div>
+
+                            </div>
+
+                            {{-- Cuatrimestre (VARCHAR) --}}
+
+                            <div class="grid grid-cols-3 gap-6 mt-4">
+
+                                <label class="font-bold">
+
+                                    Cuatrimestre:
+
+                                </label>
+
+                                <div class="col-span-2">
+
+                                    <input
+
+                                        type="text"
+
+                                        name="cuatrimestre"
+
+                                        value="{{ $caratula->cuatrimestre ?? '' }}"
+
+                                        class="w-full rounded-xl">
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        {{-- ====================================================== --}}
+                        {{-- PASOS DINÁMICOS — UNIDADES --}}
+                        {{-- ====================================================== --}}
+
+                        <template x-for="(unidad,index) in unidades" :key="index">
+
+                            <div
+
+                                x-show="currentStep === index + 2">
+
+                                <h3 class="text-xl font-bold mb-6">
+
+                                    Unidad
+
+                                    <span x-text="unidad.numero"></span>
+
+                                </h3>
+
+                                <div class="space-y-4">
+
+                                    {{-- TÍTULO --}}
+
+                                    <div>
+
+                                        <label class="font-semibold">
+
+                                            Título de la Unidad
+
+                                        </label>
+
+                                        <input
+
+                                            type="text"
+
+                                            :name="'unidades['+index+'][titulo]'"
+
+                                            x-model="unidad.titulo"
+
+                                            class="w-full px-4 py-3 rounded-xl border">
+                                        <input
+                                            type="hidden"
+                                            :name="'unidades['+index+'][id]'"
+                                            :value="unidad.id">
+
+                                    </div>
+
+                                    {{-- OBJETIVO --}}
+
+                                    <div>
+
+                                        <label class="font-semibold">
+
+                                            Objetivo de la Unidad
+
+                                        </label>
+
+                                        <textarea
+
+                                            :name="'unidades['+index+'][objetivo]'"
+
+                                            rows="3"
+
+                                            x-model="unidad.objetivo"
+
+                                            class="w-full px-4 py-3 rounded-xl border"></textarea>
+
+                                    </div>
+
+                                    {{-- DURACIÓN --}}
+
+                                    <div>
+
+                                        <label class="font-semibold">
+
+                                            Duración (Horas)
+
+                                        </label>
+
+                                        <input
+
+                                            type="number"
+
+                                            :name="'unidades['+index+'][duracion]'"
+
+                                            x-model="unidad.horas"
+
+                                            class="w-1/4 px-4 py-3 rounded-xl border">
+
+                                    </div>
+
+                                    {{-- ACTIVIDADES --}}
+
+                                    <div class="p-4 bg-gray-50 rounded-xl">
+
+                                        <label class="font-bold">
+
+                                            Actividades
+
+                                        </label>
+
+                                        <textarea
+
+                                            :name="'unidades['+index+'][actividades]'"
+
+                                            rows="4"
+
+                                            x-model="unidad.actividades"
+
+                                            class="w-full px-4 py-3 rounded-xl border"></textarea>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </template>
+
+                        {{-- ====================================================== --}}
+                        {{-- PASO FINAL --}}
+                        {{-- ====================================================== --}}
+
+                        <div x-show="currentStep === maxStep">
+
+                            <h3 class="text-2xl font-bold text-green-600">
+
+                                Listo para guardar
+
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {{-- ========================= --}}
+                {{-- NAVEGACIÓN INFERIOR --}}
+                {{-- ========================= --}}
+
+                <div class="flex justify-between mt-6">
+
+                    <button
+
+                        type="button"
+
+                        @click="prevStep()"
+
+                        class="px-6 py-3 bg-gray-200 rounded-xl">
+
+                        Anterior
+
+                    </button>
+
+                    <div class="flex gap-4">
+
+                        <button
+
+                            type="button"
+
+                            @click="nextStep()"
+
+                            class="px-8 py-3 bg-[#F59E0B] text-white rounded-xl">
+
+                            Siguiente
+
+                        </button>
+
+                        <button
+
+                            type="submit"
+
+                            class="px-8 py-3 bg-[#0C4B54] text-white rounded-xl">
+
+                            Guardar Secuencia
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+    </div>
+
+    {{-- PASO 5: FINALIZAR (Resumen y Envío) --}}
+    <div x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0 transform translate-x-full" x-transition:enter-end="opacity-100 transform translate-x-0"
+        x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100 transform translate-x-0" x-transition:leave-end="opacity-0 transform -translate-x-full">
+        <h3 class="text-2xl font-bold text-[#10B981] mb-6 flex items-center gap-2"><i class="fas fa-rocket"></i> Listo para Enviar</h3>
+        <div class="p-6 bg-[#10B981]/10 border-l-4 border-[#10B981] rounded-lg">
+            <p class="text-gray-700 font-semibold">Ha completado la sección de Identificación y los esquemas de las tres unidades.</p>
+            <p class="text-sm text-gray-600 mt-2">Presione **"Guardar Secuencia"** para almacenar toda la información.</p>
+        </div>
+
+        <div class="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+            <h4 class="font-bold text-yellow-700 flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i> Revisión Final</h4>
+            <ul class="list-disc list-inside text-sm text-yellow-800 mt-2">
+                <li>Verifique que todos los campos obligatorios del Paso 1 estén llenos.</li>
+                <li>Asegúrese de que el contenido de las unidades sea correcto.</li>
             </ul>
         </div>
-        @endif
-
-
-        <section class="grid gap-6">
-            <div class="rounded-[2rem] bg-white p-6 shadow-xl shadow-slate-200/60">
-                <div class="flex flex-col gap-4 border-b border-slate-100 pb-5 md:flex-row md:items-end md:justify-between">
-                    <div>
-                        <p class="text-sm font-black uppercase tracking-[0.25em] text-slate-400">Tabla maestra</p>
-                        <h2 class="mt-1 text-2xl font-black text-slate-900">Listado de secuencias</h2>
-                    </div>
-                    <div class="grid gap-3 md:grid-cols-3">
-                        <input
-                            x-model="search"
-                            type="text"
-                            placeholder="Buscar materia, carrera o docente"
-                            class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#0C4B54] focus:bg-white">
-                        <select x-model="filterStatus" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#0C4B54]">
-                            <option value="all">Activo e inactivo</option>
-                            <option value="active">Solo activas</option>
-                            <option value="inactive">Solo inactivas</option>
-                        </select>
-                        <select x-model="filterAcademicStatus" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#0C4B54]">
-                            <option value="all">Todos los estatus</option>
-                            <option value="elaboracion">Elaboración</option>
-                            <option value="pendiente">Pendiente</option>
-                            <option value="revision">Revisión</option>
-                            <option value="correcciones">Correcciones</option>
-                            <option value="entregada">Entregada</option>
-                            <option value="aprobada">Aprobada</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="mt-4 overflow-hidden rounded-[1.75rem] border border-slate-200">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full text-left">
-                            <thead class="bg-slate-900 text-xs font-black uppercase tracking-[0.2em] text-white">
-                                <tr>
-                                    <th class="px-4 py-4">Materia y carrera</th>
-                                    <th class="px-4 py-4">Docente</th>
-                                    <th class="px-4 py-4">Periodo</th>
-                                    <th class="px-4 py-4">Estatus</th>
-                                    <th class="px-4 py-4">Estado</th>
-                                    <th class="px-4 py-4 text-center">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-200 bg-white">
-                                <template x-for="secuencia in filteredSecuencias" :key="secuencia.id">
-                                    <tr class="align-top transition hover:bg-slate-50/80">
-                                        <td class="px-4 py-4">
-                                            <p class="text-sm font-black text-slate-900" x-text="secuencia.materia"></p>
-                                            <p class="mt-1 text-xs font-semibold text-slate-500" x-text="secuencia.carrera"></p>
-                                        </td>
-                                        <td class="px-4 py-4 text-sm font-semibold text-slate-700" x-text="secuencia.docente"></td>
-                                        <td class="px-4 py-4 text-sm text-slate-600" x-text="secuencia.periodo"></td>
-                                        <td class="px-4 py-4">
-                                            <span class="rounded-full px-3 py-1 text-xs font-black uppercase tracking-[0.2em]" :class="academicBadge(secuencia.estatus)" x-text="labelAcademicStatus(secuencia.estatus)"></span>
-                                        </td>
-                                        <td class="px-4 py-4">
-                                            <span class="rounded-full px-3 py-1 text-xs font-black uppercase tracking-[0.2em]" :class="secuencia.status ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'" x-text="secuencia.status ? 'Activa' : 'Inactiva'"></span>
-                                        </td>
-                                        <td class="px-4 py-4">
-                                            <div class="flex flex-wrap justify-center gap-2">
-                                                <button
-                                                    @click="openDetailModal(secuencia)"
-                                                    class="rounded-2xl border border-slate-200 px-3 py-2 text-xs font-black text-slate-700 transition hover:border-[#0C4B54] hover:text-[#0C4B54]">
-                                                    Ver
-                                                </button>
-                                                <a
-                                                    :href="`${statusBaseUrl}/${secuencia.id}`"
-                                                    class="rounded-2xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs font-black text-cyan-700 transition hover:border-cyan-300 hover:bg-cyan-100">
-                                                    Panel
-                                                </a>
-                                                <template x-if="!canReview">
-                                                    <button
-                                                        @click="openStatusModal(secuencia)"
-                                                        class="rounded-2xl px-3 py-2 text-xs font-black transition"
-                                                        :class="secuencia.status ? 'bg-rose-50 text-rose-700 hover:bg-rose-100' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'"
-                                                        x-text="secuencia.status ? 'Desactivar' : 'Reactivar'"></button>
-                                                </template>
-                                                <template x-if="canReview">
-                                                    <button
-                                                        @click="openAcademicStatusModal(secuencia)"
-                                                        class="rounded-2xl bg-sky-50 px-3 py-2 text-xs font-black text-sky-700 transition hover:bg-sky-100">
-                                                        Emitir dictamen
-                                                    </button>
-                                                </template>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </template>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div x-show="filteredSecuencias.length === 0" class="px-6 py-12 text-center text-sm font-semibold text-slate-500" style="display: none;">
-                        No hay secuencias que coincidan con los filtros actuales.
-                    </div>
-                </div>
-            </div>
-
-            <aside class="rounded-[2rem] bg-white p-6 shadow-xl shadow-slate-200/60">
-                <div class="flex items-center justify-between border-b border-slate-100 pb-4">
-                    <div>
-                        <p class="text-sm font-black uppercase tracking-[0.25em] text-slate-400">Historial</p>
-                        <h2 class="mt-1 text-2xl font-black text-slate-900">Cambios recientes</h2>
-                    </div>
-                    <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-500">{{ $historialCambios->count() }}</span>
-                </div>
-
-                <div class="mt-5 space-y-4">
-                    @forelse ($historialCambios as $cambio)
-                    <article class="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                        <div class="flex items-center justify-between gap-3">
-                            <p class="text-sm font-black text-slate-900">{{ $cambio->registro_nombre }}</p>
-                            <span class="rounded-full px-2.5 py-1 text-[11px] font-black uppercase {{ $cambio->estado_nuevo ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' }}">
-                                {{ $cambio->accion }}
-                            </span>
-                        </div>
-                        <p class="mt-2 text-sm text-slate-600">{{ $cambio->motivo }}</p>
-                        <div class="mt-3 flex items-center justify-between gap-3 text-xs font-semibold text-slate-400">
-                            <span>{{ $cambio->usuario?->name ?? 'Sistema' }}</span>
-                            <span>{{ optional($cambio->fecha_movimiento)->format('d/m/Y H:i') }}</span>
-                        </div>
-                    </article>
-                    @empty
-                    <div class="rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-5 py-10 text-center text-sm text-slate-500">
-                        Aún no hay movimientos registrados para secuencias.
-                    </div>
-                    @endforelse
-                </div>
-            </aside>
-        </section>
     </div>
 
-    <div x-show="modalDetailOpen" class="fixed inset-0 z-50 flex items-center justify-center px-4" style="display: none;">
-        <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" @click="closeDetailModal()"></div>
-        <div class="relative z-10 w-full max-w-3xl rounded-[2rem] bg-white p-6 shadow-2xl">
-            <div class="flex items-start justify-between gap-4">
-                <div>
-                    <p class="text-sm font-black uppercase tracking-[0.25em] text-slate-400">Detalle</p>
-                    <h3 class="mt-1 text-2xl font-black text-slate-900" x-text="selectedSecuencia.materia || 'Secuencia'"></h3>
-                    <p class="mt-2 text-sm text-slate-500" x-text="selectedSecuencia.carrera || ''"></p>
-                </div>
-                <button @click="closeDetailModal()" class="rounded-full bg-slate-100 px-3 py-2 text-slate-500 transition hover:bg-slate-200">×</button>
-            </div>
+</div>
+</div>
 
-            <div class="mt-6 grid gap-4 md:grid-cols-2">
-                <div class="rounded-3xl bg-slate-50 p-4">
-                    <p class="text-xs font-black uppercase tracking-[0.25em] text-slate-400">Docente</p>
-                    <p class="mt-2 text-sm font-semibold text-slate-800" x-text="selectedSecuencia.docente"></p>
-                </div>
-                <div class="rounded-3xl bg-slate-50 p-4">
-                    <p class="text-xs font-black uppercase tracking-[0.25em] text-slate-400">Periodo</p>
-                    <p class="mt-2 text-sm font-semibold text-slate-800" x-text="selectedSecuencia.periodo"></p>
-                </div>
-                <div class="rounded-3xl bg-slate-50 p-4">
-                    <p class="text-xs font-black uppercase tracking-[0.25em] text-slate-400">Director</p>
-                    <p class="mt-2 text-sm font-semibold text-slate-800" x-text="selectedSecuencia.director"></p>
-                </div>
-                <div class="rounded-3xl bg-slate-50 p-4">
-                    <p class="text-xs font-black uppercase tracking-[0.25em] text-slate-400">Revisor</p>
-                    <p class="mt-2 text-sm font-semibold text-slate-800" x-text="selectedSecuencia.revisor"></p>
-                </div>
-                <div class="rounded-3xl bg-slate-50 p-4">
-                    <p class="text-xs font-black uppercase tracking-[0.25em] text-slate-400">Horas programadas</p>
-                    <p class="mt-2 text-sm font-semibold text-slate-800" x-text="selectedSecuencia.horas_programadas"></p>
-                </div>
-                <div class="rounded-3xl bg-slate-50 p-4">
-                    <p class="text-xs font-black uppercase tracking-[0.25em] text-slate-400">Fecha entrega</p>
-                    <p class="mt-2 text-sm font-semibold text-slate-800" x-text="selectedSecuencia.fecha_entrega || 'Sin captura'"></p>
-                </div>
-                <div class="rounded-3xl bg-slate-50 p-4">
-                    <p class="text-xs font-black uppercase tracking-[0.25em] text-slate-400">Estatus académico</p>
-                    <p class="mt-2 text-sm font-semibold text-slate-800" x-text="labelAcademicStatus(selectedSecuencia.estatus)"></p>
-                </div>
-                <div class="rounded-3xl bg-slate-50 p-4">
-                    <p class="text-xs font-black uppercase tracking-[0.25em] text-slate-400">Estado operativo</p>
-                    <p class="mt-2 text-sm font-semibold text-slate-800" x-text="selectedSecuencia.status ? 'Activa' : 'Inactiva'"></p>
-                </div>
-            </div>
-        </div>
-    </div>
+{{-- BARRA DE NAVEGACIÓN INFERIOR --}}
+<div class="flex justify-between items-center pt-4">
+    {{-- Botón Anterior --}}
+    <button
+        type="button"
+        @click="prevStep()"
+        x-show="currentStep > 1 && currentStep < maxStep"
+        class="px-6 py-3 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold transition shadow-md flex items-center gap-2">
+        <i class="fas fa-chevron-left"></i> Anterior
+    </button>
+    <div x-show="currentStep === 1"></div> {{-- Placeholder para centrar si es necesario --}}
 
-    <div x-show="modalStatusOpen" class="fixed inset-0 z-50 flex items-center justify-center px-4" style="display: none;">
-        <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" @click="closeStatusModal()"></div>
-        <div class="relative z-10 w-full max-w-xl rounded-[2rem] bg-white p-6 shadow-2xl">
-            <div class="flex items-start gap-4">
-                <div class="flex h-14 w-14 items-center justify-center rounded-2xl" :class="selectedStatusValue === 0 ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600'">
-                    <span class="text-2xl font-black">!</span>
-                </div>
-                <div>
-                    <p class="text-sm font-black uppercase tracking-[0.25em] text-slate-400">Confirmación</p>
-                    <h3 class="mt-1 text-2xl font-black text-slate-900" x-text="selectedStatusValue === 0 ? 'Desactivar secuencia' : 'Reactivar secuencia'"></h3>
-                    <p class="mt-2 text-sm text-slate-500">
-                        El registro permanece en base de datos. Solo cambia su disponibilidad y se guarda el historial del movimiento.
-                    </p>
-                </div>
-            </div>
+    {{-- Botones de Acción Final --}}
+    <div class="flex gap-4">
+        <button
+            type="button"
+            @click="nextStep()"
+            x-show="currentStep < maxStep"
+            class="px-8 py-3 rounded-xl bg-[#F59E0B] hover:bg-[#e0900a] text-white font-bold transition shadow-lg flex items-center gap-2">
+            Siguiente <i class="fas fa-chevron-right"></i>
+        </button>
 
-            <form :action="selectedStatusAction" method="POST" class="mt-6 space-y-5">
-                @csrf
-                @method('PUT')
-                <input type="hidden" name="status" :value="selectedStatusValue">
-
-                <div class="rounded-2xl bg-slate-50 p-4 text-sm text-slate-700">
-                    <span class="font-black text-slate-900">Secuencia:</span>
-                    <span x-text="selectedSecuencia.materia ? selectedSecuencia.materia + ' - ' + selectedSecuencia.carrera : ''"></span>
-                </div>
-
-                <div>
-                    <label class="text-sm font-bold text-slate-600">Motivo del cambio</label>
-                    <textarea name="motivo" rows="4" required class="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-[#0C4B54]" placeholder="Ej. Se desactiva porque el periodo ya cerró y no debe recibir más movimientos"></textarea>
-                </div>
-
-                <div class="flex justify-end gap-3">
-                    <button type="button" @click="closeStatusModal()" class="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-black text-slate-600">Cancelar</button>
-                    <button type="submit" class="rounded-2xl px-5 py-3 text-sm font-black text-white shadow-lg" :class="selectedStatusValue === 0 ? 'bg-rose-600' : 'bg-emerald-600'">
-                        Confirmar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div x-show="modalAcademicStatusOpen" class="fixed inset-0 z-50 flex items-center justify-center px-4" style="display: none;">
-        <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" @click="closeAcademicStatusModal()"></div>
-        <div class="relative z-10 w-full max-w-3xl rounded-[2rem] bg-white p-6 shadow-2xl">
-            <div class="flex items-start justify-between gap-4">
-                <div>
-                    <p class="text-sm font-black uppercase tracking-[0.25em] text-slate-400">Dictamen</p>
-                    <h3 class="mt-1 text-2xl font-black text-slate-900">Revisión de secuencia</h3>
-                    <p class="mt-2 text-sm text-slate-500" x-text="selectedSecuencia.materia ? selectedSecuencia.materia + ' - ' + selectedSecuencia.carrera : ''"></p>
-                </div>
-                <button @click="closeAcademicStatusModal()" class="rounded-full bg-slate-100 px-3 py-2 text-slate-500 transition hover:bg-slate-200">×</button>
-            </div>
-
-            <form :action="selectedAcademicStatusAction" method="POST" class="mt-6 space-y-5">
-                @csrf
-                @method('PUT')
-
-                <div class="grid gap-4 md:grid-cols-2">
-                    <div>
-                        <label class="text-sm font-bold text-slate-600">Nuevo estatus académico</label>
-                        <select name="estatus" x-model="selectedAcademicStatusValue" class="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none focus:border-[#0C4B54]">
-                            <option value="revision">Revisión</option>
-                            <option value="correcciones">Correcciones</option>
-                            <option value="aprobada">Aprobada</option>
-                        </select>
-                    </div>
-                    <div class="rounded-3xl bg-slate-50 p-4">
-                        <p class="text-xs font-black uppercase tracking-[0.25em] text-slate-400">Estatus actual</p>
-                        <p class="mt-2 text-sm font-semibold text-slate-800" x-text="labelAcademicStatus(selectedSecuencia.estatus)"></p>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="text-sm font-bold text-slate-600">Motivo del dictamen</label>
-                    <textarea name="motivo" rows="4" x-model="reviewNote" required class="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-[#0C4B54]" placeholder="Describe observaciones, correcciones o aprobacion final"></textarea>
-                </div>
-
-
-                <div class="flex justify-end gap-3">
-                    <button type="button" @click="closeAcademicStatusModal()" class="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-black text-slate-600">Cancelar</button>
-                    <button type="submit" class="rounded-2xl bg-[#0C4B54] px-5 py-3 text-sm font-black text-white shadow-lg transition hover:bg-[#083840]">
-                        Guardar dictamen
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div x-show="modalTemplateOpen" class="fixed inset-0 z-50 flex items-center justify-center px-4" style="display: none;">
-        <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" @click="closeTemplateModal()"></div>
-        <div class="relative z-10 w-full max-w-3xl overflow-hidden rounded-[2rem] bg-white shadow-2xl">
-            <div class="flex items-center justify-between border-b border-slate-200 px-5 py-3">
-                <div>
-                    <p class="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Vista rápida</p>
-                    <p class="text-sm font-semibold text-slate-700">Formato SECUENCIA DIDÁCTICA UTH</p>
-                </div>
-                <div class="flex items-center gap-2">
-                    <a :href="templatePdfUrl" target="_blank" class="rounded-xl bg-slate-100 px-3 py-2 text-xs font-black text-slate-700 transition hover:bg-slate-200">Abrir en pestaña</a>
-                    <button type="button" @click="closeTemplateModal()" class="rounded-xl bg-slate-100 px-3 py-2 text-xs font-black text-slate-600 transition hover:bg-slate-200">Cerrar</button>
-                </div>
-            </div>
-            <div class="p-6 text-center">
-                <p class="text-sm font-semibold text-slate-700">La vista embebida del PDF fue desactivada para evitar aperturas no deseadas del panel de impresión.</p>
-                <p class="mt-2 text-xs text-slate-500">Usa "Abrir en pestaña" para ver el documento completo sin incrustarlo en el panel.</p>
-                <div class="mt-4 flex justify-center">
-                    <a :href="templatePdfUrl" target="_blank" class="rounded-2xl bg-slate-900 px-5 py-2.5 text-xs font-black text-white transition hover:bg-slate-700">Abrir formato</a>
-                </div>
-            </div>
-        </div>
+        <button
+            type="submit"
+            x-show="currentStep === maxStep"
+            class="px-8 py-3 rounded-xl bg-[#0C4B54] hover:bg-[#093D45] text-white font-bold transition shadow-lg">
+            <i class="fas fa-save"></i> Guardar Secuencia
+        </button>
     </div>
 </div>
 
+</form>
+
+
+</div>
 <script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('secuenciasDashboard', (config) => ({
-            secuencias: config.secuencias,
-            statusBaseUrl: config.statusBaseUrl,
-            academicStatusBaseUrl: config.academicStatusBaseUrl,
-            ocrUrl: config.ocrUrl,
-            templatePdfUrl: config.templatePdfUrl,
-            canReview: config.canReview,
-            search: '',
-            filterStatus: 'all',
-            filterAcademicStatus: 'all',
-            modalDetailOpen: false,
-            modalStatusOpen: false,
-            modalAcademicStatusOpen: false,
-            modalTemplateOpen: false,
-            selectedSecuencia: {},
-            selectedStatusValue: 0,
-            selectedStatusAction: '',
-            selectedAcademicStatusValue: 'revision',
-            selectedAcademicStatusAction: '',
-            reviewNote: '',
-            ocrFile: null,
-            ocrData: {},
-            ocrError: '',
-            ocrLoading: false,
+    function formSteps() {
 
-            get activasCount() {
-                return this.secuencias.filter(secuencia => secuencia.status === 1).length;
-            },
-            get inactivasCount() {
-                return this.secuencias.filter(secuencia => secuencia.status === 0).length;
-            },
-            get pendientesCount() {
-                return this.secuencias.filter(secuencia => secuencia.estatus === 'pendiente').length;
-            },
-            get filteredSecuencias() {
-                return this.secuencias.filter(secuencia => {
-                    const term = this.search.toLowerCase();
-                    const matchesSearch = !term ||
-                        secuencia.materia.toLowerCase().includes(term) ||
-                        secuencia.carrera.toLowerCase().includes(term) ||
-                        secuencia.docente.toLowerCase().includes(term) ||
-                        String(secuencia.id).includes(term);
+        return {
 
-                    const matchesStatus = this.filterStatus === 'all' ||
-                        (this.filterStatus === 'active' && secuencia.status === 1) ||
-                        (this.filterStatus === 'inactive' && secuencia.status === 0);
+            currentStep: 1,
 
-                    const matchesAcademicStatus = this.filterAcademicStatus === 'all' ||
-                        secuencia.estatus === this.filterAcademicStatus;
+            showUploadModal: false,
 
-                    return matchesSearch && matchesStatus && matchesAcademicStatus;
-                });
-            },
-            academicBadge(estatus) {
-                const palette = {
-                    elaboracion: 'bg-slate-200 text-slate-700',
-                    pendiente: 'bg-amber-100 text-amber-700',
-                    revision: 'bg-sky-100 text-sky-700',
-                    correcciones: 'bg-orange-100 text-orange-700',
-                    entregada: 'bg-indigo-100 text-indigo-700',
-                    aprobada: 'bg-emerald-100 text-emerald-700',
-                };
-                return palette[estatus] || 'bg-slate-200 text-slate-700';
-            },
-            labelAcademicStatus(estatus) {
-                const labels = {
-                    elaboracion: 'Elaboración',
-                    pendiente: 'Pendiente',
-                    revision: 'Revisión',
-                    correcciones: 'Correcciones',
-                    entregada: 'Entregada',
-                    aprobada: 'Aprobada',
-                };
-                return labels[estatus] || estatus;
-            },
-            openDetailModal(secuencia) {
-                this.selectedSecuencia = secuencia;
-                this.modalDetailOpen = true;
-                document.body.style.overflow = 'hidden';
-            },
-            closeDetailModal() {
-                this.modalDetailOpen = false;
-                document.body.style.overflow = '';
-            },
-            openStatusModal(secuencia) {
-                this.selectedSecuencia = secuencia;
-                this.selectedStatusValue = secuencia.status === 1 ? 0 : 1;
-                this.selectedStatusAction = `${this.statusBaseUrl}/${secuencia.id}/estado`;
-                this.modalStatusOpen = true;
-                document.body.style.overflow = 'hidden';
-            },
-            closeStatusModal() {
-                this.modalStatusOpen = false;
-                document.body.style.overflow = '';
-            },
-            openAcademicStatusModal(secuencia) {
-                this.selectedSecuencia = secuencia;
-                this.selectedAcademicStatusValue = secuencia.estatus === 'aprobada' ? 'aprobada' : 'correcciones';
-                this.selectedAcademicStatusAction = `${this.academicStatusBaseUrl}/${secuencia.id}/estatus-academico`;
-                this.reviewNote = '';
-                this.ocrFile = null;
-                this.ocrData = {};
-                this.ocrError = '';
-                this.modalAcademicStatusOpen = true;
-                document.body.style.overflow = 'hidden';
-            },
-            closeAcademicStatusModal() {
-                this.modalAcademicStatusOpen = false;
-                this.ocrLoading = false;
-                document.body.style.overflow = '';
-            },
-            openTemplateModal() {
-                this.modalTemplateOpen = true;
-                document.body.style.overflow = 'hidden';
-            },
-            closeTemplateModal() {
-                this.modalTemplateOpen = false;
-                document.body.style.overflow = '';
-            },
-            setOcrFile(event) {
-                const files = event?.target?.files || [];
-                this.ocrFile = files.length ? files[0] : null;
-                this.ocrError = '';
-            },
-            async runOcrFromFile() {
-                if (!this.ocrFile || this.ocrLoading) {
-                    return;
-                }
+            unidades: @json($unidadesFormateadas ?? []),
 
-                this.ocrLoading = true;
-                this.ocrError = '';
+            get steps() {
 
-                const formData = new FormData();
-                formData.append('caratula_file', this.ocrFile);
+                let lista = [
 
-                try {
-                    const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-                    const response = await fetch(this.ocrUrl, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': csrf || '',
-                            'Accept': 'application/json',
-                        },
-                        body: formData,
+                    {
+                        id: 1,
+                        title: 'Carátula',
+                        icon: 'fas fa-id-card'
+                    }
+
+                ];
+
+                this.unidades.forEach((u, i) => {
+
+                    lista.push({
+
+                        id: i + 2,
+                        title: 'Unidad ' + u.numero,
+                        icon: 'fas fa-bookmark'
+
                     });
 
-                    const data = await response.json();
+                });
 
-                    if (!response.ok || !data.success) {
-                        this.ocrError = data.message || 'No se pudo procesar el archivo OCR.';
-                        return;
-                    }
+                lista.push({
 
-                    this.ocrData = data.extracted_data || {};
+                    id: this.unidades.length + 2,
+                    title: 'Finalizar',
+                    icon: 'fas fa-check-circle'
 
-                    if (this.ocrData.competencia) {
-                        const block = `\n\nOCR competencia detectada:\n${this.ocrData.competencia}`;
-                        this.reviewNote = `${this.reviewNote}${block}`.trim();
-                    }
-                } catch (error) {
-                    this.ocrError = 'Ocurrio un error al procesar OCR.';
-                } finally {
-                    this.ocrLoading = false;
-                }
+                });
+
+                return lista;
+
             },
-        }));
-    });
+
+            get maxStep() {
+
+                return this.unidades.length + 2;
+
+            },
+
+            goToStep(step) {
+
+                this.currentStep = step;
+
+            },
+
+            nextStep() {
+
+                if (this.currentStep < this.maxStep)
+                    this.currentStep++;
+
+            },
+
+            prevStep() {
+
+                if (this.currentStep > 1)
+                    this.currentStep--;
+
+            }
+
+        }
+
+    }
 </script>
 
-<style>
-    [x-cloak] {
-        display: none !important;
-    }
-</style>
 @endsection

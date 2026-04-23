@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL; // <- Agrega esta línea
+use Illuminate\Support\Facades\Schema;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
         // Forzar HTTPS en todas las URLs generadas
         if (config('app.env') === 'local') { // Cambia 'local' por 'production' si es servidor real
             URL::forceScheme('http');
+            Schema::defaultStringLength(191);
         }
     }
 }
