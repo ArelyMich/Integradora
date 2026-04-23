@@ -247,9 +247,6 @@ Route::middleware(['auth'])->group(function () {
         ->name('permisos.assignRoles');
 
         //********** SECUENCIAS ********/
-        Route::get('/secuecias',[SecuenciaController::class,'index'])
-            ->name('secuencias.index');
-
         Route::get('secuencias/Crear',[SecuenciaController::class,'createView'])
             ->name('secuencias.createView');
 

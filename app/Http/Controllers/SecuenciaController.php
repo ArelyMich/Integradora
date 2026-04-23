@@ -93,13 +93,23 @@ class SecuenciaController extends Controller
 
         // Obtener unidades
         $unidades = $secuencia->unidades;
+        
+        // Obtener datos para los selects
+        $docentes = \App\Models\User::all(); // Docentes
+        $materias = \App\Models\Materia::all();
+        $carreras = \App\Models\Carrera::all();
+        $periodos = \App\Models\Periodo::all();
 
         return view(
             'secuencias.createView',
             compact(
                 'secuencia',
                 'caratula',
-                'unidades'
+                'unidades',
+                'docentes',
+                'materias',
+                'carreras',
+                'periodos'
             )
         );
     }
@@ -514,6 +524,20 @@ class SecuenciaController extends Controller
         ]);
 
         //
+        // ACTUALIZAR SECUENCIA CON IDS
+        //
+        
+        $secuencia->update([
+            'docente_id' => $request->docente_id,
+            'materia_id' => $request->materia_id,
+            'carrera_id' => $request->carrera_id,
+            'periodo_id' => $request->periodo_id,
+            'revisor_id' => $request->revisor_id,
+            'director_id' => $request->director_id,
+            'tutor_id' => $request->tutor_id,
+        ]);
+
+        //
         // ACTUALIZAR UNIDADES
         //
 
@@ -557,13 +581,22 @@ class SecuenciaController extends Controller
     // NUEVA
     public function create()
     {
-
         $caratula = null;
         $unidades = [];
+        
+        // Obtener datos para los selects
+        $docentes = \App\Models\User::where('role_id', 3)->get(); // Docentes
+        $materias = \App\Models\Materia::all();
+        $carreras = \App\Models\Carrera::all();
+        $periodos = \App\Models\Periodo::all();
 
         return view('secuencias.createView', [
             'caratula' => $caratula,
-            'unidades' => $unidades
+            'unidades' => $unidades,
+            'docentes' => $docentes,
+            'materias' => $materias,
+            'carreras' => $carreras,
+            'periodos' => $periodos
         ]);
     }
 
@@ -755,5 +788,18 @@ class SecuenciaController extends Controller
         $property = new \ReflectionProperty(TemplateProcessor::class, 'tempDocumentMainPart');
         $property->setAccessible(true);
         $property->setValue($template, $mainPart);
+    }
+
+    /**
+     * Mostrar detalle de una secuencia
+     */
+    public function show($id)
+    {
+        $secuencia = Secuencia::with([
+            'caratula',
+            'unidades'
+        ])->findOrFail($id);
+
+        return view('secuencias.show', compact('secuencia'));
     }
 }

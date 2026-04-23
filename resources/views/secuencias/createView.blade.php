@@ -389,6 +389,125 @@ class="w-full rounded-xl"
 
 </div>
 
+{{-- DOCENTE --}}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center border-b pb-4 mt-4">
+<label class="block text-lg font-bold text-gray-800">
+Docente:
+</label>
+<div class="col-span-2">
+<select name="docente_id" class="w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm">
+<option value="">-- Seleccionar Docente --</option>
+@foreach($docentes as $docente)
+<option value="{{ $docente->id }}" @selected(($secuencia->docente_id ?? null) == $docente->id)>
+{{ $docente->name }}
+</option>
+@endforeach
+</select>
+</div>
+</div>
+
+{{-- MATERIA --}}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center border-b pb-4 mt-4">
+<label class="block text-lg font-bold text-gray-800">
+Materia:
+</label>
+<div class="col-span-2">
+<select name="materia_id" class="w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm">
+<option value="">-- Seleccionar Materia --</option>
+@foreach($materias as $materia)
+<option value="{{ $materia->id }}" @selected(($secuencia->materia_id ?? null) == $materia->id)>
+{{ $materia->nombre }}
+</option>
+@endforeach
+</select>
+</div>
+</div>
+
+{{-- CARRERA --}}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center border-b pb-4 mt-4">
+<label class="block text-lg font-bold text-gray-800">
+Carrera:
+</label>
+<div class="col-span-2">
+<select name="carrera_id" class="w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm">
+<option value="">-- Seleccionar Carrera --</option>
+@foreach($carreras as $carrera)
+<option value="{{ $carrera->id }}" @selected(($secuencia->carrera_id ?? null) == $carrera->id)>
+{{ $carrera->nombre }}
+</option>
+@endforeach
+</select>
+</div>
+</div>
+
+{{-- PERÍODO --}}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center border-b pb-4 mt-4">
+<label class="block text-lg font-bold text-gray-800">
+Período:
+</label>
+<div class="col-span-2">
+<select name="periodo_id" class="w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm">
+<option value="">-- Seleccionar Período --</option>
+@foreach($periodos as $periodo)
+<option value="{{ $periodo->id }}" @selected(($secuencia->periodo_id ?? null) == $periodo->id)>
+{{ $periodo->nombre }}
+</option>
+@endforeach
+</select>
+</div>
+</div>
+
+{{-- REVISOR --}}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center border-b pb-4 mt-4">
+<label class="block text-lg font-bold text-gray-800">
+Revisor:
+</label>
+<div class="col-span-2">
+<select name="revisor_id" class="w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm">
+<option value="">-- Seleccionar Revisor --</option>
+@foreach($docentes as $docente)
+<option value="{{ $docente->id }}" @selected(($secuencia->revisor_id ?? null) == $docente->id)>
+{{ $docente->name }}
+</option>
+@endforeach
+</select>
+</div>
+</div>
+
+{{-- DIRECTOR --}}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center border-b pb-4 mt-4">
+<label class="block text-lg font-bold text-gray-800">
+Director:
+</label>
+<div class="col-span-2">
+<select name="director_id" class="w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm">
+<option value="">-- Seleccionar Director --</option>
+@foreach($docentes as $docente)
+<option value="{{ $docente->id }}" @selected(($secuencia->director_id ?? null) == $docente->id)>
+{{ $docente->name }}
+</option>
+@endforeach
+</select>
+</div>
+</div>
+
+{{-- TUTOR --}}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center border-b pb-4 mt-4">
+<label class="block text-lg font-bold text-gray-800">
+Tutor:
+</label>
+<div class="col-span-2">
+<select name="tutor_id" class="w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm">
+<option value="">-- Seleccionar Tutor --</option>
+@foreach($docentes as $docente)
+<option value="{{ $docente->id }}" @selected(($secuencia->tutor_id ?? null) == $docente->id)>
+{{ $docente->name }}
+</option>
+@endforeach
+</select>
+</div>
+</div>
+
 </div>
 
 {{-- ====================================================== --}}
