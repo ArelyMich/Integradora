@@ -16,9 +16,9 @@
   </div>
 
   <div class="flex-shrink-0">
-    <img src="https://png.pngtree.com/recommend-works/png-clipart/20250408/ourmid/pngtree-combination-icon-of-graduation-hat-with-book-and-pen-png-image_15951804.png" 
-         alt="Banner académico" 
-         class="w-32 h-32">
+    <img src="{{ asset('img/banner.png') }}" 
+     alt="Banner académico" 
+     class="w-32 h-32">
   </div>
 </div>
 
