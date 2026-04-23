@@ -1,76 +1,180 @@
 <!DOCTYPE html>
-<html lang="es" x-data="{ open: window.innerWidth >= 768, userMenu: false, notif: false, perfilModal: false }">
+<html lang="es" x-data="{ open: false, userMenu: false, notif: false, perfilModal: false }">
 <head>
     <meta charset="UTF-8">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $title ?? 'Panel' }}</title>
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        :root {
-            --c1: #BDDIBD;
-            --c2: #85B093;
-            --c3: #568F7C;
-            --c4: #326D6C;
-            --c5: #173C4C;
-            --c6: #07142B;
-            --c7: #000009;
-        }
-
+       
         body {
-            font-family: "Segoe UI", sans-serif;
-            background: linear-gradient(135deg, var(--c1), var(--c2));
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8fafc;
             min-height: 100vh;
             display: flex;
         }
 
+        /* SIDEBAR MODERNO */
         .sidebar {
-            width: 260px;
-            background: var(--c6);
+            width: 280px;
+            background: linear-gradient(180deg, #ffffff 0%, #F3F4F6 100%);
             height: 100vh;
-            color: white;
-            padding: 25px 20px;
+            color: #0F766E;
+            padding: 24px 16px;
             position: fixed;
             left: 0;
             top: 0;
-            transition: 0.3s ease;
-            box-shadow: 5px 0 15px rgba(0,0,0,0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.06);
             z-index: 50;
+            border-right: 1px solid rgba(0, 0, 0, 0.05);
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #F3F4F6 #F3F4F6;
         }
-        .sidebar-hidden { transform: translateX(-260px); }
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 40; }
 
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: #F3F4F6;
+        }
+
+        .sidebar-hidden { 
+            transform: translateX(-280px);
+        }
+
+        .overlay { 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(0, 0, 0, 0.5); 
+            z-index: 40;
+            backdrop-filter: blur(4px);
+        }
+
+        /* NAVBAR MODERNO */
         .topbar {
-            width: calc(100% - 260px);
-            height: 60px;
-            background: var(--c6);
-            color: white;
+            width: calc(100% - 280px);
+            height: 64px;
+            background: #ffffff;
+            color: #1e293b;
             position: fixed;
             top: 0;
-            left: 260px;
+            left: 280px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 20px;
+            padding: 0 28px;
             z-index: 60;
-            transition: left 0.3s ease, width 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         }
-        .topbar.shifted { left: 0; width: 100%; }
-        .main { margin-left: 260px; padding: 80px 25px; width: 100%; transition: margin-left 0.3s ease; }
-        .main.expanded { margin-left: 0; }
-        .topbar-icon-btn { padding: 8px; border-radius: 9999px; transition: background-color 0.2s; }
-        .topbar-icon-btn:hover { background-color: var(--c5); }
 
+        .topbar.shifted { 
+            left: 0; 
+            width: 100%;
+        }
+
+        .main { 
+            margin-left: 280px; 
+            padding: 80px 28px 40px 28px; 
+            width: 100%; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .main.expanded { 
+            margin-left: 0; 
+        }
+
+        .topbar-icon-btn { 
+            padding: 8px 10px; 
+            border-radius: 8px; 
+            transition: all 0.2s ease;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .topbar-icon-btn:hover { 
+            background-color: #f1f5f9;
+            color: #0F766E;
+        }
+
+        .topbar-icon-btn.active {
+            background-color: #e0e7ff;
+            color: #0F766E;
+        }
+
+        /* RESPONSIVE */
         @media (max-width: 768px) {
-            body { display: block; }
-            .sidebar { transform: translateX(-260px); z-index: 70; }
-            .sidebar.shown-mobile { transform: translateX(0); }
-            .topbar { left: 0 !important; width: 100% !important; }
-            .main { margin-left: 0 !important; padding-top: 80px; }
+            body { 
+                display: block; 
+            }
+            
+            .sidebar { 
+                transform: translateX(-280px); 
+                z-index: 70;
+                width: 280px;
+            }
+            
+            .sidebar.shown-mobile { 
+                transform: translateX(0); 
+            }
+            
+            .topbar { 
+                left: 0 !important; 
+                width: 100% !important;
+                padding: 0 16px;
+            }
+            
+            .main { 
+                margin-left: 0 !important; 
+                padding: 76px 16px 20px 16px;
+            }
+        }
+
+        /* ANIMACIONES */
+        @keyframes slideIn {
+            from {
+                transform: translateX(-4px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .animate-slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        [x-show*="Modal"], 
+        .fixed.inset-0.z-50 {
+            z-index: 100 !important;
+        }
+
+        /* Opcionalmente, puedes ser más específico si usas 
+        una clase común en tus modales */
+        .modal-overlay {
+            z-index: 100 !important;
         }
     </style>
 </head>
@@ -84,53 +188,96 @@
         <x-sidebar />
     </div>
 
-    <!-- TOPBAR -->
+    <!-- TOPBAR MODERNO -->
     <div id="topbar" class="topbar" :class="open && window.innerWidth >= 768 ? '' : 'shifted'" role="navigation">
-        <div class="flex items-center gap-4">
-            <button @click="open = !open" class="text-white text-xl topbar-icon-btn">
-                <i class="fas fa-bars"></i>
+        <div class="flex items-center gap-3">
+            <!-- Toggle Sidebar -->
+            <button @click="open = !open" class="topbar-icon-btn hidden md:flex rounded-lg text-lg">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
             </button>
-            <span class="font-bold text-white tracking-wider">Panel Administrativo</span>
+
+            <!-- Branding -->
+            <span class="text-sm font-bold text-gray-900 tracking-wide hidden sm:inline ml-2">
+                Sistema de Gestión Académica
+            </span>
         </div>
 
-        <div class="flex items-center gap-6">
-            <span class="hidden md:inline text-white font-semibold tracking-wide text-sm">
-                {{ Auth::user()->name }} [{{ Auth::user()->roles?->first()?->nombre ?? "S/A" }}]
-            </span>
+        <div class="flex items-center gap-2 md:gap-4">
+            <!-- User Info (Desktop) -->
+            <div class="hidden md:flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200 text-sm">
+                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                <span class="text-gray-700 font-medium">{{ explode(' ', Auth::user()->name)[0] ?? 'User' }}</span>
+                <span class="text-xs text-gray-500 font-medium">{{ Auth::user()->roles?->first()?->nombre ?? "Admin" }}</span>
+            </div>
 
-            <a href="#" class="text-xl text-white hover:text-[var(--c2)] transition topbar-icon-btn">
-                <i class="fa-solid fa-gear"></i>
+            <!-- Settings -->
+            <a href="#" class="topbar-icon-btn" title="Configuración">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
             </a>
 
-            <!-- Notificaciones -->
+            <!-- Notifications -->
             <div class="relative" @click="notif = !notif">
-                <button class="text-xl text-white topbar-icon-btn relative"><i class="fa-regular fa-bell"></i></button>
-                <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white animate-pulse"></span>
+                <button class="topbar-icon-btn relative" title="Notificaciones">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                    </svg>
+                    <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border border-white shadow-sm"></span>
+                </button>
+
+                <!-- Notificaciones Dropdown -->
                 <div x-show="notif" @click.outside="notif = false" x-transition
-                     class="absolute right-0 mt-3 w-64 bg-white text-[var(--c6)] rounded-xl shadow-2xl p-4 border border-gray-100 z-50">
-                    <p class="text-sm font-bold">Notificaciones</p>
-                    <p class="text-xs opacity-70">No tienes notificaciones nuevas.</p>
-                    <a href="#" class="mt-2 block text-xs text-[var(--c3)] hover:text-[var(--c4)] font-semibold">Ver todas</a>
+                     class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden">
+                    <div class="px-4 py-3 border-b border-gray-100 bg-gray-50">
+                        <p class="text-sm font-semibold text-gray-900">Notificaciones</p>
+                    </div>
+                    <div class="p-4">
+                        <p class="text-sm text-gray-500 text-center py-6">No tienes notificaciones nuevas.</p>
+                    </div>
+                    <div class="px-4 py-2 border-t border-gray-100 bg-gray-50 text-center">
+                        <a href="#" class="text-sm text-indigo-600 hover:text-indigo-700 font-medium">Ver todas</a>
+                    </div>
                 </div>
             </div>
 
-            <!-- Perfil -->
-            <div class="relative">
-                <button @click="userMenu = !userMenu" class="w-10 h-10 rounded-full bg-[var(--c4)] text-white flex items-center justify-center shadow-md">
-                    <i class="fa-solid fa-user"></i>
+            <!-- Profile -->
+            <div class="relative" @click="userMenu = !userMenu">
+                <button class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 text-white flex items-center justify-center text-sm font-semibold shadow-sm">
+                        {{ substr(Auth::user()->name ?? 'U', 0, 1) }}
+                    </div>
+                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                    </svg>
                 </button>
 
+                <!-- User Menu Dropdown -->
                 <div x-show="userMenu" @click.outside="userMenu = false" x-transition
-                     class="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 py-1 z-50">
-                    <div class="px-4 py-2 text-sm text-gray-700 border-b">
-                        <p class="font-semibold">{{ Auth::user()->name }} {{ Auth::user()->apellido_paterno }}</p>
-                        <p class="text-xs opacity-70">Miembro</p>
+                     class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden">
+                    <div class="px-4 py-3 border-b border-gray-100 bg-gray-50">
+                        <p class="text-sm font-semibold text-gray-900">{{ Auth::user()->name }}</p>
+                        <p class="text-xs text-gray-500 mt-0.5">{{ Auth::user()->email }}</p>
                     </div>
+                    
                     <a href="#" @click.prevent="perfilModal = true; userMenu = false"
-                       class="block px-4 py-2 text-sm text-gray-700 border-t hover:bg-[var(--c1)]">
-                        Ver mis datos
+                       class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        Ver perfil
                     </a>
-                    <a href="{{ route('logout') }}" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 border-t mt-1 pt-2">
+                    
+                    <a href="{{ route('logout') }}" 
+                       class="block px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 border-t border-gray-100 transition-colors flex items-center gap-2 font-medium">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
                         Cerrar sesión
                     </a>
                 </div>
@@ -320,9 +467,5 @@
 
     </div>
 </div>
-
-
-
-
 </body>
 </html>

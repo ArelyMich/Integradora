@@ -10,7 +10,22 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8;
+            background:
+
+radial-gradient(circle at 15% 20%,
+rgba(86,143,124,0.15),
+transparent 40%),
+
+radial-gradient(circle at 85% 80%,
+rgba(50,109,108,0.15),
+transparent 45%),
+
+linear-gradient(
+145deg,
+#f8fafc,
+#eef2f6,
+#e2e8f0
+);
         }
         .uth-blue {
             background-color: #004A80;
@@ -53,45 +68,239 @@
         @endif
 
         <!-- Formulario -->
-        <form method="POST" action="/2fa" x-data="{ code: '' }" @submit="$event.preventDefault(); $el.submit();">
-            @csrf
+       <form method="POST" action="/2fa"
 
-            <!-- Campo de Código -->
-            <div class="mb-6">
-                <label for="code" class="block text-sm font-medium text-gray-700 mb-2">Código de Verificación</label>
-                <input 
-                    type="text" 
-                    id="code"
-                    name="code" 
-                    x-model="code"
-                    inputmode="numeric"
-                    placeholder="000000"
-                    maxlength="6"
-                    pattern="[0-9]{6}"
-                    required
-                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl text-center text-3xl font-bold tracking-widest focus:border-uth-blue focus:ring-2 focus:ring-blue-200 focus:outline-none transition"
-                    @input="code = $event.target.value.replace(/[^0-9]/g, '').slice(0, 6)"
-                >
-                <p class="text-gray-500 text-xs mt-2 text-center">
-                    Ingresa solo números
-                </p>
-            </div>
+x-data="{
 
-            <!-- Botón de Verificación -->
-            <button 
-                type="submit"
-                :disabled="code.length < 6"
-                class="w-full uth-blue text-white font-bold py-3 rounded-xl shadow-lg transition duration-300 transform hover:bg-uth-blue-hover hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
-                Verificar Código
-            </button>
+code: ['', '', '', '', '', ''],
 
-            <!-- Información adicional -->
-            <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <p class="text-xs text-gray-600 text-center">
-                    <strong>Nota:</strong> El código expira en 5 minutos. Si no lo recibiste, revisa tu carpeta de spam o solicita uno nuevo.
-                </p>
-            </div>
-        </form>
+minutes: 4,
+seconds: 59,
+
+startTimer() {
+
+setInterval(() => {
+
+if (this.seconds === 0) {
+
+if (this.minutes === 0) return
+
+this.minutes--
+this.seconds = 59
+
+} else {
+
+this.seconds--
+
+}
+
+}, 1000)
+
+},
+
+handleInput(index, event) {
+
+let value =
+event.target.value.replace(/[^0-9]/g,'')
+
+if (value.length > 1) {
+
+value.split('').forEach((digit, i) => {
+
+if (index + i < this.code.length) {
+this.code[index + i] = digit
+}
+
+})
+
+} else {
+
+this.code[index] = value
+
+if (value &&
+event.target.nextElementSibling) {
+
+event.target
+.nextElementSibling
+.focus()
+
+}
+
+}
+
+},
+
+handlePaste(event) {
+
+let paste =
+event.clipboardData
+.getData('text')
+.replace(/[^0-9]/g,'')
+
+paste.split('').forEach((digit, i) => {
+
+if (i < this.code.length) {
+this.code[i] = digit
+}
+
+})
+
+event.preventDefault()
+
+}
+
+}"
+
+x-init="startTimer()"
+
+class="space-y-6">
+
+@csrf
+
+<!-- CÓDIGO EN CAJAS -->
+
+<div>
+
+<label 
+
+class="block text-sm font-medium text-gray-700 mb-3">
+
+Código de Verificación
+
+</label>
+
+<div class="flex justify-center gap-3">
+
+<template x-for="(digit,index) in code">
+
+<input
+
+type="text"
+
+maxlength="1"
+
+x-model="code[index]"
+
+@input="handleInput(index,$event)"
+
+@paste="handlePaste($event)"
+
+@keydown.backspace="
+
+if (!code[index] &&
+$event.target.previousElementSibling) {
+
+$event.target.previousElementSibling.focus()
+
+}
+
+"
+
+class="w-12 h-14
+
+text-center
+text-xl
+font-bold
+
+rounded-xl
+
+border border-gray-300
+
+bg-white
+
+shadow-sm
+
+transition
+
+focus:border-[#568F7C]
+focus:ring-2
+focus:ring-[#85B093]/30
+
+:class="{
+'border-[#326D6C] bg-[#ECFDF5]':
+code[index]
+}"
+
+>
+
+</template>
+
+</div>
+
+<input
+type="hidden"
+name="code"
+:value="code.join('')">
+
+</div>
+
+<!-- CONTADOR -->
+
+<p class="text-sm 
+
+text-[#326D6C]
+
+font-medium
+
+flex items-center
+justify-center
+gap-2">
+
+<i class="fa-regular fa-clock text-[#568F7C]"></i>
+
+<span>
+
+El código expira en 
+
+<strong>
+
+<span x-text="minutes"></span>:
+<span x-text="seconds.toString().padStart(2,'0')"></span>
+
+</strong>
+
+</span>
+
+</p>
+
+<!-- BOTÓN -->
+
+<button 
+
+type="submit"
+
+:disabled="code.join('').length !== 6 
+|| (minutes === 0 && seconds === 0)"
+
+class="w-full 
+
+text-white 
+
+font-bold 
+
+py-3 
+
+rounded-xl 
+
+shadow-lg 
+
+transition 
+
+bg-gradient-to-r 
+from-[#326D6C] 
+to-[#568F7C]
+
+hover:scale-[1.01]
+
+disabled:bg-slate-400
+disabled:opacity-70
+disabled:cursor-not-allowed">
+
+Verificar Código
+
+</button>
+
+</form>
 
         <!-- Enlace de Ayuda -->
         <div class="mt-6 text-center">
