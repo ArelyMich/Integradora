@@ -1,4 +1,4 @@
-    <?php
+<?php
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -51,6 +51,11 @@ Route::get(
     '/secuencias/create/{id}',
     [SecuenciaController::class,'createView']
 )->name('secuencias.edit');
+
+Route::get(
+'/secuencias/{id}/export-word',
+[SecuenciaController::class,'exportWord']
+)->name('secuencias.exportWord');
 
 
 
@@ -218,10 +223,13 @@ Route::middleware(['auth'])->group(function () {
             ->name('secuencias.index');
 
         Route::get('secuencias/Crear',[SecuenciaController::class,'createView'])
-            ->name('secuencias.createView');    
+            ->name('secuencias.createView');
 
         Route::post('/secuenciasCreate',[SecuenciaController::class,'store'])
             ->name('secuencias.store');
+
+        Route::put('/secuencias/{id}', [SecuenciaController::class,'update'])
+            ->name('secuencias.update');
 
         //********** MATERIAS ********* */   
         Route::get('/materias',[MateriaController::class,'index'])
@@ -261,6 +269,4 @@ Route::middleware(['auth'])->group(function () {
             ->name('roles.desactivate');
 
 
-    
     });
-        

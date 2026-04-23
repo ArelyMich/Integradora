@@ -13,7 +13,7 @@ if(isset($unidades)){
     foreach($unidades as $u){
 
         $unidadesFormateadas[] = [
-
+            'id' => $u->id,
             'numero' => $u->numero,
             'titulo' => $u->nombre,
             'horas' => $u->horas,
@@ -52,13 +52,22 @@ if(isset($unidades)){
         
         <div class="flex flex-col md:flex-row gap-3 mt-4 md:mt-0">
             {{-- BOTÓN NUEVO: Subir Documento --}}
-            <button
-                @click="showUploadModal = true"
-                type="button"
-                class="bg-[#F59E0B] text-white px-6 py-3 rounded-xl shadow-lg hover:bg-[#e0900a] transition-all duration-300 flex items-center gap-2 font-semibold text-base"
-            >
-                <i class="fas fa-cloud-upload-alt"></i> Subir Documento
-            </button>
+            @if(isset($secuencia))
+                <a
+                    href="{{ route('secuencias.exportWord', $secuencia->id) }}"
+                    class="bg-blue-600 text-white px-6 py-3 rounded-xl shadow-lg hover:bg-blue-700 transition-all duration-300 flex items-center gap-2 font-semibold text-base"
+                >
+                    <i class="fas fa-file-word"></i> Exportar Word
+                </a>
+            @else
+                <button
+                    @click="showUploadModal = true"
+                    type="button"
+                    class="bg-[#F59E0B] text-white px-6 py-3 rounded-xl shadow-lg hover:bg-[#e0900a] transition-all duration-300 flex items-center gap-2 font-semibold text-base"
+                >
+                    <i class="fas fa-cloud-upload-alt"></i> Subir Documento
+                </button>
+            @endif
             
             <a href="{{ route('secuencias.index') }}" class="bg-gray-400 text-white px-6 py-3 rounded-xl shadow-lg hover:bg-gray-500 transition-all duration-300 flex items-center gap-2 font-semibold text-base">
                 <i class="fas fa-arrow-left"></i> Volver a Secuencias
@@ -73,6 +82,7 @@ if(isset($unidades)){
     {{-- ********************************************************************************************** --}}
     {{-- MODAL PARA SUBIR DOCUMENTO --}}
     {{-- ********************************************************************************************** --}}
+    @unless(isset($secuencia))
     <div 
         x-show="showUploadModal" 
         class="fixed inset-0 z-50 overflow-y-auto bg-gray-900 bg-opacity-75 backdrop-blur-sm"
@@ -114,7 +124,6 @@ if(isset($unidades)){
                             </div>
                         </div>
                     </div>
-                    
                     {{-- Formulario de Subida --}}
 
                     <form 
@@ -178,6 +187,7 @@ if(isset($unidades)){
             </div>
         </div>
     </div>
+    @endunless
     {{-- FIN DEL MODAL --}}
     {{-- ********************************************************************************************** --}}
 
@@ -227,7 +237,18 @@ class="flex-1 px-4 py-3 rounded-xl font-semibold transition whitespace-nowrap te
 {{-- FORMULARIO --}}
 {{-- ========================= --}}
 
+
+
+@if(isset($secuencia))
+
+<form action="{{ route('secuencias.update',$secuencia->id) }}" method="POST">
+@method('PUT')
+
+@else
+
 <form action="{{ route('secuencias.store') }}" method="POST">
+
+@endif
 
 @csrf
 
@@ -412,6 +433,11 @@ x-model="unidad.titulo"
 
 class="w-full px-4 py-3 rounded-xl border"
 
+>
+<input
+type="hidden"
+:name="'unidades['+index+'][id]'"
+:value="unidad.id"
 >
 
 </div>

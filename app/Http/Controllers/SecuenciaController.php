@@ -11,6 +11,7 @@ use Spatie\PdfToText\Pdf;
 use Illuminate\Support\Str;
 use App\Models\Caratula;
 use App\Models\Unidad;
+use PhpOffice\PhpWord\TemplateProcessor;
 
 
 
@@ -501,25 +502,285 @@ if (preg_match('/(\d+)\s+(\d+[.,]?\d*)\s+([A-Za-zÁÉÍÓÚáéíóú]+)\s+(\d+)
             ->with('success','Estatus actualizado');
     }
 
-    public function create()
-{
-    // Crear estructuras vacías
+    public function update(Request $request, $id)
+    {
 
-    $secuencia = new Secuencia();
+    $secuencia = Secuencia::findOrFail($id);
 
-    $caratula = new Caratula();
-
-    $unidades = collect();
-
-    return view(
-        'secuencias.createView',
-        compact(
-            'secuencia',
-            'caratula',
-            'unidades'
-        )
+    $caratula = Caratula::findOrFail(
+    $secuencia->caratula_id
     );
+
+    //
+    // ACTUALIZAR CARÁTULA
+    //
+
+    $caratula->update([
+
+    'carrera' => $request->carrera,
+    'asignatura' => $request->asignatura,
+    'competencia' => $request->competencia,
+    'cuatrimestre' => $request->cuatrimestre,
+
+    ]);
+
+    //
+    // ACTUALIZAR UNIDADES
+    //
+
+    if($request->has('unidades')){
+
+    foreach($request->unidades as $u){
+
+    if(isset($u['id'])){
+
+    // UPDATE existente
+
+    Unidad::where('id',$u['id'])
+    ->update([
+
+    'nombre' => $u['titulo'] ?? '',
+    'horas' => $u['duracion'] ?? 0
+
+    ]);
+
+    }else{
+
+    // CREAR nueva
+
+    Unidad::create([
+
+    'secuencia_id' => $secuencia->id,
+    'nombre' => $u['titulo'] ?? '',
+    'numero' => 'NUEVA',
+    'horas' => $u['duracion'] ?? 0
+
+    ]);
+
+    }
+
+    }
+
+    }
+
+    return redirect()
+    ->route('secuencias.edit',$secuencia->id)
+    ->with('success','Secuencia actualizada correctamente');
+
+    }
+
+
+    // NUEVA
+public function create()
+{
+
+$caratula = null;
+$unidades = [];
+
+return view('secuencias.createView',[
+'caratula'=>$caratula,
+'unidades'=>$unidades
+]);
+
 }
+
+
+
+
+
+
+public function exportWord($id)
+{
+    $secuencia = Secuencia::with([
+        'caratula',
+        'unidades'
+    ])->findOrFail($id);
+
+    $caratula = $secuencia->caratula;
+    $unidades = $secuencia->unidades;
+
+    $templatePath = storage_path(
+        'app/templates/plantilla_secuencia.docx'
+    );
+
+    $template = new TemplateProcessor($templatePath);
+
+    /*
+    ===============================
+    CARÁTULA
+    ===============================
+    */
+
+    $template->setValue(
+        'carrera',
+        $caratula->carrera ?? ''
+    );
+
+    $template->setValue(
+        'cuatrimestre',
+        $caratula->cuatrimestre ?? ''
+    );
+
+    $template->setValue(
+        'asignatura',
+        $caratula->asignatura ?? ''
+    );
+
+    $template->setValue(
+        'proposito',
+        $caratula->proposito ?? ''
+    );
+
+    $template->setValue(
+        'competencia',
+        $caratula->competencia ?? ''
+    );
+
+    $template->setValue(
+        'tipo_competencia',
+        $caratula->tipo_competencia ?? ''
+    );
+
+    $template->setValue(
+        'creditos',
+        $caratula->creditos ?? ''
+    );
+
+    $template->setValue(
+        'modalidad',
+        $caratula->modalidad ?? ''
+    );
+
+    $template->setValue(
+        'horas_saber',
+        $caratula->horas_saber ?? ''
+    );
+
+    $template->setValue(
+        'horas_saber_hacer',
+        $caratula->horas_saber_hacer ?? ''
+    );
+
+    $template->setValue(
+        'horas_totales',
+        $caratula->horas_totales ?? ''
+    );
+
+    $template->setValue(
+        'horas_semana',
+        $caratula->horas_semana ?? ''
+    );
+
+    /*
+    ===============================
+    UNIDADES (VARIABLES)
+    ===============================
+    */
+
+    $this->fillUnidadBlock($template, $unidades);
+
+    /*
+    ===============================
+    GENERAR ARCHIVO
+    ===============================
+    */
+
+    $fileName =
+        'secuencia_'.$secuencia->id.'.docx';
+
+    $tempFile =
+        storage_path('app/'.$fileName);
+
+    $template->saveAs($tempFile);
+
+    return response()->download(
+        $tempFile,
+        $fileName,
+        [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ]
+    )->deleteFileAfterSend(true);
+}
+
+private function fillUnidadBlock(TemplateProcessor $template, $unidades): void
+{
+    $mainPart = $this->getTemplateMainPart($template);
+
+    $pattern = '/<w:p\b(?:(?!<w:p\b).)*?\$\{unidad_block\}.*?<\/w:p>(.*?)<w:p\b(?:(?!<w:p\b).)*?\$\{\/unidad_block\}.*?<\/w:p>/s';
+
+    $replacement = '';
+
+    if ($unidades->count() > 0 && preg_match($pattern, $mainPart, $matches)) {
+        $block = $matches[1];
+
+        foreach ($unidades as $unidad) {
+            $replacement .= str_replace(
+                [
+                    '${unidad_nombre}',
+                    '${unidad_horas}',
+                ],
+                [
+                    $this->escapeWordXmlValue($this->formatUnidadNombre($unidad)),
+                    $this->escapeWordXmlValue($unidad->horas ?? ''),
+                ],
+                $block
+            );
+        }
+    }
+
+    $mainPart = preg_replace_callback(
+        $pattern,
+        fn () => $replacement,
+        $mainPart,
+        1
+    );
+
+    $this->setTemplateMainPart($template, $mainPart);
+}
+
+private function formatUnidadNombre(Unidad $unidad): string
+{
+    $numero = trim((string) ($unidad->numero ?? ''));
+    $nombre = trim((string) ($unidad->nombre ?? ''));
+
+    if ($numero === '') {
+        return $nombre;
+    }
+
+    if ($nombre === '') {
+        return $numero;
+    }
+
+    return $numero . '. ' . $nombre;
+}
+
+private function escapeWordXmlValue($value): string
+{
+    return htmlspecialchars((string) $value, ENT_QUOTES | ENT_XML1, 'UTF-8');
+}
+
+private function getTemplateMainPart(TemplateProcessor $template): string
+{
+    $property = new \ReflectionProperty(TemplateProcessor::class, 'tempDocumentMainPart');
+    $property->setAccessible(true);
+
+    return $property->getValue($template);
+}
+
+private function setTemplateMainPart(TemplateProcessor $template, string $mainPart): void
+{
+    $property = new \ReflectionProperty(TemplateProcessor::class, 'tempDocumentMainPart');
+    $property->setAccessible(true);
+    $property->setValue($template, $mainPart);
+}
+
+
+
+
+
+
+
+
 
    
 }
