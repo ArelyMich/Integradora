@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nueva contraseña | UTH</title>
@@ -17,6 +19,7 @@
         }
     </style>
 </head>
+
 <body class="min-h-screen px-4 py-8 text-slate-800">
     <main class="mx-auto max-w-4xl">
         <section class="rounded-[2rem] bg-white p-8 shadow-xl ring-1 ring-slate-200 sm:p-10" x-data="passwordRecoveryForm()">
@@ -25,16 +28,20 @@
                     <p class="text-sm font-semibold uppercase tracking-[0.3em] text-slate-400">Paso 3 de 3</p>
                     <h1 class="mt-3 text-3xl font-bold text-[#173C4C]">Crea una nueva contraseña</h1>
                     <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-500">
-                        Evita reutilizar contraseñas anteriores. La nueva contraseña debe incluir mayúscula, minúscula, número y carácter especial.
+                        Evita reutilizar contraseñas anteriores. La nueva contraseña debe incluir mayúscula, minúscula,
+                        número y carácter especial.
                     </p>
                 </div>
 
                 <div class="flex items-center gap-3 text-sm font-semibold">
-                    <span class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-white">1</span>
+                    <span
+                        class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-white">1</span>
                     <span class="h-1 w-10 rounded-full bg-emerald-500"></span>
-                    <span class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-white">2</span>
+                    <span
+                        class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-white">2</span>
                     <span class="h-1 w-10 rounded-full bg-emerald-500"></span>
-                    <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[#326D6C] text-white">3</span>
+                    <span
+                        class="flex h-10 w-10 items-center justify-center rounded-full bg-[#326D6C] text-white">3</span>
                 </div>
             </div>
 
@@ -48,34 +55,30 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('password.recovery.update') }}" class="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+            <form method="POST" action="{{ route('password.recovery.update') }}"
+                class="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
                 @csrf
 
                 <div class="space-y-6">
                     <div>
-                        <label for="password" class="mb-2 block text-sm font-semibold text-slate-700">Nueva contraseña</label>
+                        <label for="password" class="mb-2 block text-sm font-semibold text-slate-700">Nueva
+                            contraseña</label>
                         <div class="relative">
-                            <input
-                                id="password"
-                                :type="showPassword ? 'text' : 'password'"
-                                name="password"
-                                x-model="password"
-                                @input="validatePasswordRules()"
-                                required
-                                placeholder="••••••••"
-                                class="w-full rounded-2xl border border-slate-300 px-4 py-3 pr-14 text-slate-800 outline-none transition focus:border-[#568F7C] focus:ring-4 focus:ring-[#85B093]/20">
-                            <button
-                                type="button"
-                                @click="showPassword = !showPassword"
-                                class="absolute right-4 top-1/2 -translate-y-1/2 text-xl text-slate-400 transition hover:text-slate-700">
-                                <span x-text="showPassword ? '🙈' : '👁️'"></span>
+                            <i class="fa-solid fa-lock  absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                            </i>
+                            <input id="password" :type="showPassword ? 'text' : 'password'" name="password"
+                                x-model="password" @input="validatePasswordRules()" required placeholder="••••••••"
+                                class="w-full rounded-2xl border border-slate-300 pl-12 pr-14 py-3 text-slate-800 outline-none transition focus:border-[#568F7C] focus:ring-4 focus:ring-[#85B093]/20">
+                            <button type="button" @click="showPassword = !showPassword"
+                                class="absolute right-4 top-1/2 -translate-y-1/2 text-lg text-slate-400 hover:text-[#326D6C]">
+                                <i :class="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'">
+                                </i>
                             </button>
+
                         </div>
 
                         <div class="mt-4 overflow-hidden rounded-full bg-slate-200">
-                            <div
-                                class="h-2 transition-all duration-300"
-                                :class="strengthClass"
+                            <div class="h-2 transition-all duration-300" :class="strengthClass"
                                 :style="`width: ${strengthWidth}`">
                             </div>
                         </div>
@@ -83,32 +86,130 @@
                     </div>
 
                     <div>
-                        <label for="password_confirmation" class="mb-2 block text-sm font-semibold text-slate-700">Confirmar contraseña</label>
+
+                        <label for="password_confirmation" class="mb-2 block text-sm font-semibold text-slate-700">
+
+                            Confirmar contraseña
+
+                        </label>
+
                         <div class="relative">
-                            <input
-                                id="password_confirmation"
-                                :type="showPasswordConfirm ? 'text' : 'password'"
-                                name="password_confirmation"
-                                x-model="passwordConfirm"
-                                @input="validatePasswordRules()"
-                                required
-                                placeholder="••••••••"
-                                class="w-full rounded-2xl border border-slate-300 px-4 py-3 pr-14 text-slate-800 outline-none transition focus:border-[#568F7C] focus:ring-4 focus:ring-[#85B093]/20">
-                            <button
-                                type="button"
-                                @click="showPasswordConfirm = !showPasswordConfirm"
-                                class="absolute right-4 top-1/2 -translate-y-1/2 text-xl text-slate-400 transition hover:text-slate-700">
-                                <span x-text="showPasswordConfirm ? '🙈' : '👁️'"></span>
+
+                            <!-- ICONO CANDADO -->
+
+                            <i class="fa-solid fa-lock 
+
+absolute left-4 
+top-1/2 
+-translate-y-1/2 
+
+text-slate-400">
+
+                            </i>
+
+                            <input id="password_confirmation" :type="showPasswordConfirm ? 'text' : 'password'"
+                                name="password_confirmation" x-model="passwordConfirm" @input="validatePasswordRules()"
+                                required placeholder="••••••••"
+                                class="w-full 
+
+rounded-2xl 
+
+border border-slate-300 
+
+pl-12 pr-14 py-3 
+
+text-slate-800 
+
+outline-none 
+
+transition 
+
+focus:border-[#568F7C] 
+focus:ring-4 
+focus:ring-[#85B093]/20
+
+focus:shadow-md">
+
+                            <!-- BOTÓN OJITO -->
+
+                            <button type="button" @click="showPasswordConfirm = !showPasswordConfirm"
+                                class="absolute 
+
+right-4 
+top-1/2 
+-translate-y-1/2 
+
+text-lg 
+
+text-slate-400 
+
+transition 
+
+hover:text-[#326D6C]">
+
+                                <i :class="showPasswordConfirm
+                                
+                                    ?
+                                    'fa-solid fa-eye-slash'
+                                
+                                    :
+                                    'fa-solid fa-eye'">
+
+                                </i>
+
                             </button>
+
                         </div>
-                        <p class="mt-3 text-sm font-medium" :class="passwordConfirm.length ? (passwordMatch ? 'text-emerald-600' : 'text-red-600') : 'text-slate-400'">
-                            <span x-text="passwordConfirm.length ? (passwordMatch ? 'Las contraseñas coinciden.' : 'Las contraseñas no coinciden.') : 'Confirma tu nueva contraseña.'"></span>
+
+                        <!-- MENSAJE DE VALIDACIÓN -->
+
+                        <p class="mt-3 
+
+text-sm 
+
+font-medium 
+
+flex items-center gap-2"
+                            :class="passwordConfirm.length
+                            
+                                ?
+                                (passwordMatch
+                            
+                                    ?
+                                    'text-emerald-600'
+                            
+                                    :
+                                    'text-red-600')
+                            
+                                :
+                                'text-slate-400'">
+
+                            <!-- ICONO DINÁMICO -->
+
+                            <i
+                                :class="passwordConfirm.length
+                                
+                                    ?
+                                    (passwordMatch
+                                
+                                        ?
+                                        'fa-solid fa-circle-check'
+                                
+                                        :
+                                        'fa-solid fa-circle-xmark')
+                                
+                                    :
+                                   'fa-regular fa-circle'">
+                            </i>
+
+                            <span
+                                x-text="passwordConfirm.length ? (passwordMatch ? 'Las contraseñas coinciden.' : 'Las contraseñas no coinciden.') : 'Confirma tu nueva contraseña.'">
+                            </span>
                         </p>
+
                     </div>
 
-                    <button
-                        type="submit"
-                        :disabled="!isFormValid"
+                    <button type="submit" :disabled="!isFormValid"
                         class="w-full rounded-2xl bg-[#326D6C] px-6 py-3 font-bold text-white shadow-lg transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:hover:translate-y-0">
                         Actualizar contraseña
                     </button>
@@ -117,24 +218,58 @@
                 <aside class="rounded-[1.75rem] bg-slate-50 p-6 ring-1 ring-slate-200">
                     <h2 class="text-lg font-semibold text-[#173C4C]">Requisitos de seguridad</h2>
                     <div class="mt-5 space-y-3 text-sm">
-                        <div class="flex items-start gap-3" :class="hasMinLength ? 'text-emerald-700' : 'text-slate-500'">
-                            <span class="mt-0.5" x-text="hasMinLength ? '✓' : '○'"></span>
+                        <div class="flex items-start gap-3"
+                            :class="hasMinLength ? 'text-emerald-700' : 'text-slate-500'">
+                            <i
+                                :class="hasMinLength
+                                    ?
+                                    'fa-solid fa-circle-check text-emerald-600' :
+                                    'fa-regular fa-circle text-slate-400'">
+
+                            </i>
                             <span>Mínimo 8 caracteres</span>
                         </div>
-                        <div class="flex items-start gap-3" :class="hasUppercase ? 'text-emerald-700' : 'text-slate-500'">
-                            <span class="mt-0.5" x-text="hasUppercase ? '✓' : '○'"></span>
+                        <div class="flex items-start gap-3"
+                            :class="hasUppercase ? 'text-emerald-700' : 'text-slate-500'">
+                            <i
+                                :class="hasUppercase
+                                    ?
+                                    'fa-solid fa-circle-check text-emerald-600' :
+                                    'fa-regular fa-circle text-slate-400'">
+
+                            </i>
                             <span>Al menos una letra mayúscula</span>
                         </div>
-                        <div class="flex items-start gap-3" :class="hasLowercase ? 'text-emerald-700' : 'text-slate-500'">
-                            <span class="mt-0.5" x-text="hasLowercase ? '✓' : '○'"></span>
+                        <div class="flex items-start gap-3"
+                            :class="hasLowercase ? 'text-emerald-700' : 'text-slate-500'">
+                            <i
+                                :class="hasLowercase
+                                    ?
+                                    'fa-solid fa-circle-check text-emerald-600' :
+                                    'fa-regular fa-circle text-slate-400'">
+
+                            </i>
                             <span>Al menos una letra minúscula</span>
                         </div>
                         <div class="flex items-start gap-3" :class="hasNumber ? 'text-emerald-700' : 'text-slate-500'">
-                            <span class="mt-0.5" x-text="hasNumber ? '✓' : '○'"></span>
+                            <i
+                                :class="hasNumber
+                                    ?
+                                    'fa-solid fa-circle-check text-emerald-600' :
+                                    'fa-regular fa-circle text-slate-400'">
+
+                            </i>
                             <span>Al menos un número</span>
                         </div>
-                        <div class="flex items-start gap-3" :class="hasSpecialChar ? 'text-emerald-700' : 'text-slate-500'">
-                            <span class="mt-0.5" x-text="hasSpecialChar ? '✓' : '○'"></span>
+                        <div class="flex items-start gap-3"
+                            :class="hasSpecialChar ? 'text-emerald-700' : 'text-slate-500'">
+                            <i
+                                :class="hasSpecialChar
+                                    ?
+                                    'fa-solid fa-circle-check text-emerald-600' :
+                                    'fa-regular fa-circle text-slate-400'">
+
+                            </i>
                             <span>Al menos un carácter especial `@$!%*#?&`</span>
                         </div>
                     </div>
@@ -146,7 +281,8 @@
             </form>
 
             <div class="mt-6 text-center">
-                <a href="{{ route('login') }}" class="text-sm font-semibold text-[#326D6C] transition hover:text-[#173C4C]">
+                <a href="{{ route('login') }}"
+                    class="text-sm font-semibold text-[#326D6C] transition hover:text-[#173C4C]">
                     Volver al login
                 </a>
             </div>
@@ -211,15 +347,16 @@
                 },
 
                 get isFormValid() {
-                    return this.hasMinLength
-                        && this.hasUppercase
-                        && this.hasLowercase
-                        && this.hasNumber
-                        && this.hasSpecialChar
-                        && this.passwordMatch;
+                    return this.hasMinLength &&
+                        this.hasUppercase &&
+                        this.hasLowercase &&
+                        this.hasNumber &&
+                        this.hasSpecialChar &&
+                        this.passwordMatch;
                 }
             }
         }
     </script>
 </body>
+
 </html>

@@ -19,7 +19,7 @@
             <p class="text-gray-600">Información básica y roles asignados a esta funcionalidad.</p>
         </div>
         <a href="{{ route('permisos.index') }}" 
-           class="px-5 py-2 rounded-xl bg-gray-300 hover:bg-gray-400 transition font-semibold flex items-center gap-2">
+           class="px-5 py-2 rounded-xl bg-white-300 hover:bg-gray-400 transition font-semibold flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
@@ -80,7 +80,9 @@
             {{-- BOTÓN PARA ABRIR MODAL --}}
             <button 
                 @click="openModal = true"
-                class="bg-[#0C4B54] text-white px-5 py-2 rounded-xl shadow hover:bg-[#093D45] transition flex items-center gap-2 text-sm font-medium"
+                class="bg-gradient-to-r 
+from-[#326D6C] 
+to-[#568F7C] text-white px-5 py-2 rounded-xl shadow hover:bg-[#093D45] transition flex items-center gap-2 text-sm font-medium"
             >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -104,7 +106,12 @@
             </div>
         @else
             <table class="min-w-full text-left">
-                <thead class="bg-gray-100 text-gray-600 border-b">
+                <thead class="bg-gradient-to-r 
+
+from-[#326D6C] 
+to-[#568F7C]
+
+text-white">
                     <tr>
                         <th class="px-6 py-3">ID</th>
                         <th class="px-6 py-3">Nombre del Rol</th>
@@ -207,7 +214,9 @@
                     </button>
 
                     <button type="submit"
-                        class="px-6 py-2 rounded-xl bg-green-600 text-white font-semibold hover:bg-green-700 transition shadow">
+                        class="px-6 py-2 rounded-xl bg-gradient-to-r 
+from-[#326D6C] 
+to-[#568F7C]  text-white font-semibold hover:bg-green-700 transition shadow">
                         Guardar Cambios
                     </button>
                 </div>
