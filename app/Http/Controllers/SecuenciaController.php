@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Mail\ComentarioSecuenciaNotificationMail;
+use App\Mail\DictamenRevisionMail;
+use App\Mail\DictamenCorrecionesMail;
+use App\Mail\DictamenAprobadaMail;
 use App\Models\Carrera;
 use App\Models\HistorialEstado;
 use App\Models\Materia;
@@ -218,6 +221,58 @@ class SecuenciaController extends Controller
         ]);
 
         $this->registrarHistorialEstatusAcademico($secuencia, $estatusAnterior, $estatusNuevo, $validated['motivo']);
+
+        // ✅ ENVIAR NOTIFICACIÓN POR CORREO AL DOCENTE SEGÚN EL DICTAMEN
+        try {
+            $secuencia->load('docente');
+            
+            if ($secuencia->docente) {
+                \Illuminate\Support\Facades\DB::transaction(function () use ($secuencia, $user, $estatusNuevo, $validated) {
+                    
+                    // Enviar correo según el estado
+                    match($estatusNuevo) {
+                        'revision' => \Illuminate\Support\Facades\Mail::mailer('resend')
+                            ->to($secuencia->docente->email)
+                            ->send(new DictamenRevisionMail(
+                                $secuencia,
+                                $secuencia->docente,
+                                $user,
+                                $validated['motivo']
+                            )),
+                        
+                        'correcciones' => \Illuminate\Support\Facades\Mail::mailer('resend')
+                            ->to($secuencia->docente->email)
+                            ->send(new DictamenCorrecionesMail(
+                                $secuencia,
+                                $secuencia->docente,
+                                $user,
+                                $validated['motivo'],
+                                $secuencia->comentarios()
+                                    ->where('estatus', 'pendiente')
+                                    ->get()
+                            )),
+                        
+                        'aprobada' => \Illuminate\Support\Facades\Mail::mailer('resend')
+                            ->to($secuencia->docente->email)
+                            ->send(new DictamenAprobadaMail(
+                                $secuencia,
+                                $secuencia->docente,
+                                $user,
+                                $validated['motivo']
+                            )),
+                        
+                        default => null
+                    };
+                });
+            }
+        } catch (\Exception $e) {
+            // 📝 Log del error pero no afecta la actualización del estatus
+            \Illuminate\Support\Facades\Log::error('Error al enviar notificación de dictamen: ' . $e->getMessage(), [
+                'secuencia_id' => $secuencia->id,
+                'estatus' => $estatusNuevo,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return back()->with('success', 'Estatus academico actualizado correctamente.');
     }
@@ -478,23 +533,29 @@ class SecuenciaController extends Controller
             'estatus' => 'pendiente',
         ]);
 
-        // Enviar notificación por correo al docente (usando Resend)
+        // ✅ ENVIAR NOTIFICACIÓN POR CORREO AL DOCENTE (USANDO RESEND CON EMAIL DE PRUEBA)
         try {
             $secuencia->load('docente');
             $usuario = Auth::user();
 
             if ($secuencia->docente && $usuario) {
-                $notificacionEmail = config('mail.notification_email') ?? env('NOTIFICATION_EMAIL');
-                
-                if ($notificacionEmail) {
-                    Mail::mailer('resend')->to($notificacionEmail)->send(
-                        new ComentarioSecuenciaNotificationMail($comentario, $secuencia->docente, $usuario)
-                    );
-                }
+                // 🔒 Usar transacción para envío seguro de email
+                \Illuminate\Support\Facades\DB::transaction(function () use ($comentario, $secuencia, $usuario) {
+                    // Enviar desde onboarding@resend.dev (email de prueba de Resend)
+                    \Illuminate\Support\Facades\Mail::mailer('resend')
+                        ->to($secuencia->docente->email)  // 📧 Enviar AL docente
+                        ->send(
+                            new ComentarioSecuenciaNotificationMail(
+                                $comentario,
+                                $secuencia->docente,
+                                $usuario
+                            )
+                        );
+                });
             }
         } catch (\Exception $e) {
-            // Log del error pero no afecta la creación del comentario
-            \Log::error('Error al enviar notificación de comentario: ' . $e->getMessage());
+            // 📝 Log del error pero no afecta la creación del comentario
+            \Illuminate\Support\Facades\Log::error('Error al enviar notificación de comentario: ' . $e->getMessage());
         }
 
         return back()->with('success', 'Comentario registrado correctamente.');

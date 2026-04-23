@@ -2,35 +2,36 @@
 
 namespace App\Mail;
 
-use App\Models\SecuenciaComentario;
+use App\Models\Secuencia;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Collection;
 
-class ComentarioSecuenciaNotificationMail extends Mailable
+class DictamenCorrecionesMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public SecuenciaComentario $comentario;
+    public Secuencia $secuencia;
     public User $docente;
-    public User $comentador;
+    public User $revisor;
+    public string $motivo;
     public string $nombreDocente;
+    public Collection $comentariosPendientes;
 
     /**
      * Create a new message instance.
-     * 
-     * @param SecuenciaComentario $comentario
-     * @param User $docente
-     * @param User $comentador
      */
-    public function __construct(SecuenciaComentario $comentario, User $docente, User $comentador)
+    public function __construct(Secuencia $secuencia, User $docente, User $revisor, string $motivo, Collection $comentariosPendientes)
     {
-        $this->comentario = $comentario;
+        $this->secuencia = $secuencia;
         $this->docente = $docente;
-        $this->comentador = $comentador;
+        $this->revisor = $revisor;
+        $this->motivo = $motivo;
+        $this->comentariosPendientes = $comentariosPendientes;
         
         // Construir nombre completo del docente
         $nombre = trim($docente->name ?? '');
@@ -46,8 +47,8 @@ class ComentarioSecuenciaNotificationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            from: env('MAIL_FROM'),  // ✅ USAR EMAIL DE RESEND (sin nombre)
-            subject: 'Nuevo Comentario en tu Secuencia Didáctica - ' . $this->comentador->name,
+            from: env('MAIL_FROM'),
+            subject: '⚠️ Dictamen de Correcciones - ' . $this->secuencia->materia?->nombre,
         );
     }
 
@@ -57,20 +58,20 @@ class ComentarioSecuenciaNotificationMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.comentario-secuencia',
+            view: 'emails.dictamen-correcciones',
             with: [
-                'comentario' => $this->comentario,
+                'secuencia' => $this->secuencia,
                 'docente' => $this->docente,
-                'comentador' => $this->comentador,
+                'revisor' => $this->revisor,
+                'motivo' => $this->motivo,
                 'nombreDocente' => $this->nombreDocente,
+                'comentariosPendientes' => $this->comentariosPendientes,
             ],
         );
     }
 
     /**
      * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
      */
     public function attachments(): array
     {

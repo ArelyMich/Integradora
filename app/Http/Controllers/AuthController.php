@@ -121,14 +121,21 @@ class AuthController extends Controller
     // 5. INTENTAR LOGIN
     // ============================
     if (!Auth::attempt($credentials)) {
-
-        LogAcceso::create([
-            'username'   => $isEmail ? null : $loginInput,
-            'email'      => $isEmail ? $loginInput : null,
-            'ip_address' => $ip,
-            'user_agent' => $ua,
-            'resultado'  => 'fallido',
-        ]);
+        // 🔒 Usar transacción para registro seguro de intentos fallidos
+        try {
+            DB::transaction(function () use ($isEmail, $loginInput, $ip, $ua) {
+                LogAcceso::create([
+                    'username'   => $isEmail ? null : $loginInput,
+                    'email'      => $isEmail ? $loginInput : null,
+                    'ip_address' => $ip,
+                    'user_agent' => $ua,
+                    'resultado'  => 'fallido',
+                ]);
+            });
+        } catch (\Exception $e) {
+            // Log del error pero no bloquear el login
+            \Illuminate\Support\Facades\Log::warning('Error registrando intento fallido: ' . $e->getMessage());
+        }
 
         return back()->withErrors(['username' => 'Credenciales incorrectas.']);
     }
@@ -176,13 +183,21 @@ class AuthController extends Controller
     // ============================
     // 8. LOG COMO 2FA PENDIENTE
     // ============================
-    LogAcceso::create([
-        'username'   => $isEmail ? null : $user->username,
-        'email'      => $isEmail ? $user->email : null,
-        'ip_address' => $ip,
-        'user_agent' => $ua,
-        'resultado'  => '2fa_pendiente',
-    ]);
+    // 🔒 Usar transacción para registro seguro del 2FA pendiente
+    try {
+        DB::transaction(function () use ($isEmail, $user, $ip, $ua) {
+            LogAcceso::create([
+                'username'   => $isEmail ? null : $user->username,
+                'email'      => $isEmail ? $user->email : null,
+                'ip_address' => $ip,
+                'user_agent' => $ua,
+                'resultado'  => '2fa_pendiente',
+            ]);
+        });
+    } catch (\Exception $e) {
+        // Log del error pero no bloquear el flujo
+        \Illuminate\Support\Facades\Log::warning('Error registrando 2FA pendiente: ' . $e->getMessage());
+    }
 
     return redirect('/2fa');
 }
@@ -219,16 +234,24 @@ class AuthController extends Controller
         Auth::login($user);
 
         // ✅ MARCAR EL LOGIN REAL COMO EXITOSO
-        LogAcceso::where('resultado', '2fa_pendiente')
-            ->where('ip_address', request()->ip())
-            ->where(function ($q) use ($user) {
-                $q->where('username', $user->username)
-                  ->orWhere('email', $user->email);
-            })
-            ->latest()
-            ->first()?->update([
-                'resultado' => 'exitoso'
-            ]);
+        // 🔒 Usar transacción para actualizar el estado de login
+        try {
+            DB::transaction(function () use ($user) {
+                LogAcceso::where('resultado', '2fa_pendiente')
+                    ->where('ip_address', request()->ip())
+                    ->where(function ($q) use ($user) {
+                        $q->where('username', $user->username)
+                          ->orWhere('email', $user->email);
+                    })
+                    ->latest()
+                    ->first()?->update([
+                        'resultado' => 'exitoso'
+                    ]);
+            });
+        } catch (\Exception $e) {
+            // Log del error pero no bloquear el acceso
+            \Illuminate\Support\Facades\Log::warning('Error actualizando login a exitoso: ' . $e->getMessage());
+        }
 
         return redirect('/dashboard');
     }
@@ -244,19 +267,26 @@ class AuthController extends Controller
     $user = Auth::user();
 
     if ($user) {
+        // 🔒 Usar transacción para actualizar el estado de logout
+        try {
+            DB::transaction(function () use ($user) {
+                $log = LogAcceso::whereNull('logout_at')
+                    ->where(function ($q) use ($user) {
+                        $q->where('username', $user->username)
+                          ->orWhere('email', $user->email);
+                    })
+                    ->orderByDesc('id')
+                    ->first();
 
-        $log = LogAcceso::whereNull('logout_at')
-            ->where(function ($q) use ($user) {
-                $q->where('username', $user->username)
-                  ->orWhere('email', $user->email);
-            })
-            ->orderByDesc('id')
-            ->first();
-
-        if ($log) {
-            $log->update([
-                'logout_at' => now()
-            ]);
+                if ($log) {
+                    $log->update([
+                        'logout_at' => now()
+                    ]);
+                }
+            });
+        } catch (\Exception $e) {
+            // Log del error pero no bloquear el logout
+            \Illuminate\Support\Facades\Log::warning('Error registrando logout: ' . $e->getMessage());
         }
     }
 
@@ -535,34 +565,44 @@ $codigo = random_int(100000, 999999);
     // Por defecto, el registro público se considera como Docente.
     $roleId = (int) $request->input('role_id', 4);
 
-    // ✅ CREAR USUARIO
-    $user = User::create([
-        'name' => $request->name,
-        'apellido_paterno' => $request->apellido_paterno,
-        'apellido_materno' => $request->apellido_materno,
-        'username' => $request->username,
-        'email' => $request->email,
-        'password' => Hash::make($request->password),
-        'status' => 1,
-        'two_factor_enabled' => true,
-        'email_verified_at' => null,
-    ]);
+    // ✅ CREAR USUARIO CON TRANSACCIÓN
+    try {
+        $user = DB::transaction(function () use ($request, $roleId) {
+            // Crear usuario
+            $user = User::create([
+                'name' => $request->name,
+                'apellido_paterno' => $request->apellido_paterno,
+                'apellido_materno' => $request->apellido_materno,
+                'username' => $request->username,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'status' => 1,
+                'two_factor_enabled' => true,
+                'email_verified_at' => null,
+            ]);
 
-    // ✅ ASIGNAR ROL
-    DB::table('user_has_role')->insert([
-        'user_id' => $user->id,
-        'role_id' => $roleId,
-        'created_at' => now(),
-        'updated_at' => now(),
-    ]);
+            // Asignar rol
+            DB::table('user_has_role')->insert([
+                'user_id' => $user->id,
+                'role_id' => $roleId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
 
-    // ✅ LOG DE REGISTRO
-    LogAcceso::create([
-        'email'       => $request->email,
-        'ip_address'  => $request->ip(),
-        'user_agent' => $request->header('User-Agent'),
-        'resultado'  => 'registro',
-    ]);
+            // Registrar log de registro
+            LogAcceso::create([
+                'email'       => $request->email,
+                'ip_address'  => $request->ip(),
+                'user_agent' => $request->header('User-Agent'),
+                'resultado'  => 'registro',
+            ]);
+
+            return $user;
+        });
+    } catch (\Exception $e) {
+        return back()->withErrors(['error' => 'Error al registrar usuario. Intenta de nuevo.'])
+                     ->withInput();
+    }
 
     // ✅ LOGIN INTERNO SOLO PARA PODER ENVIAR VERIFICACIÓN
     Auth::login($user);
