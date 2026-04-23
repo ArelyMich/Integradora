@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script src="https://www.google.com/recaptcha/api.js" async></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
@@ -381,7 +381,7 @@ text-[#14B8A6]">
 
                 <div class="rounded-2xl bg-white/8 p-3">
                     <div class="flex justify-center overflow-x-auto">
-                        <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.key') }}">
+                        <div class="g-recaptcha" data-sitekey="{{ $recaptcha_key }}">
                         </div>
                     </div>
                 </div>
