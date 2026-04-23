@@ -1,5 +1,4 @@
 @php
-
     $user = auth()->user();   
     $roleIds = $user?->roles?->pluck('id')->all() ?? [];
     $isAcademicRole = in_array(2, $roleIds, true)
@@ -8,10 +7,8 @@
 
     $currentRoute = request()->routeIs('*') ? request()->route()->getName() : '';
 
-
-    $activeBase = 'bg-white/20 border-l-4 border-[var(--c2)] text-white font-semibold shadow-md';
- 
-    $inactiveBase = 'opacity-85 hover:opacity-100 hover:bg-white/10 text-white';
+    $activeBase = 'bg-green-100 text-green-700 border-l-4 border-green-600 font-semibold';
+    $inactiveBase = 'text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-colors';
 
     function isActive($routeName, $currentRoute, $activeBase, $inactiveBase) {
         $routePrefix = Str::before($routeName, '.');
@@ -22,99 +19,97 @@
     }
 @endphp
 
-<div class="flex flex-col items-center justify-center pt-2 pb-6 mb-8 border-b border-white/10">
-    <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center ring-2 ring-[var(--c3)] mb-3 shadow-lg">
-        <i class="fas fa-user-shield text-xl text-white opacity-90"></i>
+<!-- HEADER DEL SIDEBAR -->
+<div class="px-4 py-6 border-b border-gray-200">
+    <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-indigo-600 text-white flex items-center justify-center font-bold">
+            <i class="fas fa-graduation-cap text-lg"></i>
+        </div>
+        <div>
+            <h1 class="text-lg font-bold text-gray-900">Sistema Académico</h1>
+           
+        </div>
     </div>
-    <h2 class="text-xl font-extrabold tracking-wider text-white uppercase">Panel {{ $user->roles?->first()?->nombre ?? 'Usuario' }}</h2>
 </div>
 
-<nav class="flex flex-col gap-1.5 overflow-y-auto max-h-[calc(100vh-160px)] pr-2">
+<!-- NAVEGACIÓN PRINCIPAL -->
+<nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
 
-    {{-- Dashboard siempre visible --}}
+    {{-- DASHBOARD --}}
     <a href="{{ route('dashboard') }}" 
-         class="flex items-center gap-4 px-4 py-2.5 rounded-lg transition-all duration-300 ease-in-out {{ isActive('dashboard', $currentRoute, $activeBase, $inactiveBase) }}"
+       class="flex items-center gap-3 px-4 py-2.5 rounded-lg {{ isActive('dashboard', $currentRoute, $activeBase, $inactiveBase) }}"
        title="Vista general del sistema">
-        <div class="w-6 text-center">
-            <i class="fas fa-tachometer-alt text-lg"></i>
-        </div>
-        <span class="font-medium tracking-wide">Dashboard</span>
+        <i class="fas fa-chart-line text-base flex-shrink-0"></i>
+        <span class="text-sm font-medium">Dashboard</span>
     </a>
 
-    <p class="text-xs text-white/40 font-semibold uppercase mt-4 mb-1 pl-4">Gestión de Contenido</p>
+    {{-- SECCIÓN: GESTIÓN ACADÉMICA --}}
+    <div class="mt-6 mb-3">
+        <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Académico</p>
+    </div>
 
-
- {{-- Materias --}}
-     @if($isAcademicRole || $user->hasPermission('materias.index'))
+    {{-- MATERIAS --}}
+    @if($isAcademicRole || $user->hasPermission('materias.index'))
     <a href="{{ route('materias.index') }}" 
-       class="flex items-center gap-4 px-4 py-2.5 rounded-lg transition-all duration-300 ease-in-out {{ isActive('materias.index', $currentRoute, $activeBase, $inactiveBase) }}"
+       class="flex items-center gap-3 px-4 py-2.5 rounded-lg {{ isActive('materias.index', $currentRoute, $activeBase, $inactiveBase) }}"
        title="Gestión de Materias">
-        <div class="w-6 text-center">
-            <i class="fas fa-book-open text-lg"></i>
-        </div>
-        <span class="font-medium tracking-wide">Materias</span>
+        <i class="fas fa-book text-base flex-shrink-0"></i>
+        <span class="text-sm font-medium">Materias</span>
     </a>
     @endif
 
-    {{-- Secuencias --}}
+    {{-- SECUENCIAS --}}
     @if($isAcademicRole || $user->hasPermission('secuencias.index'))
     <a href="{{ route('secuencias.index') }}" 
-       class="flex items-center gap-4 px-4 py-2.5 rounded-lg transition-all duration-300 ease-in-out {{ isActive('secuencias.index', $currentRoute, $activeBase, $inactiveBase) }}"
-       title="Gestión de Secuencias">
-        <div class="w-6 text-center">
-            <i class="fas fa-layer-group text-lg"></i>
-        </div>
-        <span class="font-medium tracking-wide">Secuencias</span>
+       class="flex items-center gap-3 px-4 py-2.5 rounded-lg {{ isActive('secuencias.index', $currentRoute, $activeBase, $inactiveBase) }}"
+       title="Gestión de Secuencias Didácticas">
+        <i class="fas fa-layer-group text-base flex-shrink-0"></i>
+        <span class="text-sm font-medium">Secuencias</span>
     </a>
     @endif
 
-    {{-- Carreas --}}
+    {{-- CARRERAS --}}
     @if($isAcademicRole || $user->hasPermission('carreras.index'))
     <a href="{{ route('carreras.index') }}" 
-       class="flex items-center gap-4 px-4 py-2.5 rounded-lg transition-all duration-300 ease-in-out {{ isActive('carreras.index', $currentRoute, $activeBase, $inactiveBase) }}"
-       title="Gestión de Materias">
-        <div class="w-6 text-center">
-            <i class="fas fa-graduation-cap text-lg"></i>  <!-- birrete, el más común para carreras -->
-        </div>
-        <span class="font-medium tracking-wide">Carreras</span>
+       class="flex items-center gap-3 px-4 py-2.5 rounded-lg {{ isActive('carreras.index', $currentRoute, $activeBase, $inactiveBase) }}"
+       title="Gestión de Carreras">
+        <i class="fas fa-university text-base flex-shrink-0"></i>
+        <span class="text-sm font-medium">Carreras</span>
     </a>
     @endif
 
-    <p class="text-xs text-white/40 font-semibold uppercase mt-4 mb-1 pl-4">Administración del Sistema</p>
+    {{-- SECCIÓN: ADMINISTRACIÓN --}}
+    <div class="mt-6 mb-3">
+        <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Administración</p>
+    </div>
 
-    {{-- Roles --}}
-    @if($user->hasPermission('roles.index'))
-    <a href="{{ route('roles.index') }}" 
-       class="flex items-center gap-4 px-4 py-2.5 rounded-lg transition-all duration-300 ease-in-out {{ isActive('roles.index', $currentRoute, $activeBase, $inactiveBase) }}"
-       title="Gestión de Roles de Usuario">
-        <div class="w-6 text-center">
-            <i class="fas fa-user-tag text-lg"></i>
-        </div>
-        <span class="font-medium tracking-wide">Roles</span>
-    </a>
-    @endif
-
-    {{-- Usuarios --}}
+    {{-- USUARIOS --}}
     @if($user->hasPermission('usuarios.index'))
     <a href="{{ route('usuarios.index') }}" 
-       class="flex items-center gap-4 px-4 py-2.5 rounded-lg transition-all duration-300 ease-in-out {{ isActive('usuarios.index', $currentRoute, $activeBase, $inactiveBase) }}"
-       title="Gestión de Cuentas de Usuario">
-        <div class="w-6 text-center">
-            <i class="fas fa-users text-lg"></i>
-        </div>
-        <span class="font-medium tracking-wide">Usuarios</span>
+       class="flex items-center gap-3 px-4 py-2.5 rounded-lg {{ isActive('usuarios.index', $currentRoute, $activeBase, $inactiveBase) }}"
+       title="Gestión de Usuarios">
+        <i class="fas fa-users text-base flex-shrink-0"></i>
+        <span class="text-sm font-medium">Usuarios</span>
     </a>
     @endif
 
-    {{-- Permisos --}}
+    {{-- ROLES --}}
+    @if($user->hasPermission('roles.index'))
+    <a href="{{ route('roles.index') }}" 
+       class="flex items-center gap-3 px-4 py-2.5 rounded-lg {{ isActive('roles.index', $currentRoute, $activeBase, $inactiveBase) }}"
+       title="Gestión de Roles">
+        <i class="fas fa-shield-alt text-base flex-shrink-0"></i>
+        <span class="text-sm font-medium">Roles</span>
+    </a>
+    @endif
+
+    {{-- PERMISOS --}}
     @if($user->hasPermission('permisos.index'))
     <a href="{{ route('permisos.index') }}" 
-       class="flex items-center gap-4 px-4 py-2.5 rounded-lg transition-all duration-300 ease-in-out {{ isActive('permisos.index', $currentRoute, $activeBase, $inactiveBase) }}"
-       title="Definición y Asignación de Permisos">
-        <div class="w-6 text-center">
-            <i class="fas fa-key text-lg"></i>
-        </div>
-        <span class="font-medium tracking-wide">Permisos</span>
+       class="flex items-center gap-3 px-4 py-2.5 rounded-lg {{ isActive('permisos.index', $currentRoute, $activeBase, $inactiveBase) }}"
+       title="Gestión de Permisos">
+        <i class="fas fa-lock text-base flex-shrink-0"></i>
+        <span class="text-sm font-medium">Permisos</span>
     </a>
     @endif
 
