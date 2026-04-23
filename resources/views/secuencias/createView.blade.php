@@ -92,8 +92,8 @@ if(isset($unidades)){
         x-transition:leave="ease-in duration-200" 
         x-transition:leave-start="opacity-100" 
         x-transition:leave-end="opacity-0"
-        @click.away="showUploadModal = false"
-        @keydown.escape.window="showUploadModal = false"
+        @click.away="closeUploadModal()"
+        @keydown.escape.window="closeUploadModal()"
     >
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             
@@ -141,16 +141,20 @@ if(isset($unidades)){
                         Seleccionar Archivo
                         </label>
 
-                        <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl">
+                        <div
+                        class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-xl transition"
+                        :class="selectedUploadFile ? 'border-[#0C4B54] bg-[#0C4B54]/5' : 'border-gray-300'"
+                        >
 
                         <div class="text-center">
 
                         <label 
                         for="file-upload"
-                        class="cursor-pointer font-medium text-[#F59E0B]"
+                        class="cursor-pointer font-medium"
+                        :class="selectedUploadFile ? 'text-[#0C4B54]' : 'text-[#F59E0B]'"
                         >
 
-                        Sube un archivo
+                        <span x-text="selectedUploadFile ? 'Cambiar archivo' : 'Sube un archivo'"></span>
 
                         <input 
                         id="file-upload"
@@ -159,13 +163,40 @@ if(isset($unidades)){
                         class="sr-only"
                         accept=".pdf"
                         required
+                        x-ref="uploadInput"
+                        @change="handleUploadSelection($event)"
                         >
 
                         </label>
 
-                        <p class="text-xs text-gray-500">
-                        PDF hasta 10MB
+                        <p class="text-xs mt-2" :class="selectedUploadFile ? 'text-[#0C4B54]' : 'text-gray-500'">
+                        <span x-text="selectedUploadFile ? 'Documento listo para procesarse' : 'PDF hasta 10MB'"></span>
                         </p>
+
+                        <div
+                        x-show="selectedUploadFile"
+                        x-transition
+                        class="mt-4 rounded-2xl border border-[#0C4B54]/15 bg-white px-4 py-3 text-left shadow-sm min-w-[260px]"
+                        >
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="flex items-start gap-3 min-w-0">
+                                    <div class="mt-1 flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 text-red-500">
+                                        <i class="fas fa-file-pdf text-lg"></i>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-semibold text-gray-800 truncate" x-text="selectedUploadFile ? selectedUploadFile.name : ''"></p>
+                                        <p class="text-xs text-gray-500" x-text="selectedUploadFileSize"></p>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    @click="clearUploadFile()"
+                                    class="text-xs font-semibold text-red-500 hover:text-red-600 transition"
+                                >
+                                    Quitar
+                                </button>
+                            </div>
+                        </div>
 
                         </div>
 
@@ -177,10 +208,10 @@ if(isset($unidades)){
 
                 </div>
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                    <button type="submit" form="upload-form" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-6 py-3 bg-[#0C4B54] text-base font-medium text-white hover:bg-[#093D45] sm:ml-3 sm:w-auto sm:text-sm transition">
+                    <button type="submit" form="upload-form" :disabled="!selectedUploadFile" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-6 py-3 bg-[#0C4B54] text-base font-medium text-white hover:bg-[#093D45] disabled:cursor-not-allowed disabled:opacity-60 sm:ml-3 sm:w-auto sm:text-sm transition">
                         Procesar y Llenar
                     </button>
-                    <button @click="showUploadModal = false" type="button" class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-6 py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm transition">
+                    <button @click="closeUploadModal()" type="button" class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-6 py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm transition">
                         Cancelar
                     </button>
                 </div>
@@ -664,6 +695,10 @@ currentStep:1,
 
 showUploadModal:false,
 
+selectedUploadFile:null,
+
+selectedUploadFileSize:'',
+
 unidades: @json($unidadesFormateadas ?? []),
 
 get steps(){
@@ -725,6 +760,56 @@ prevStep(){
 
 if(this.currentStep>1)
 this.currentStep--;
+
+},
+
+handleUploadSelection(event){
+
+const file = event.target.files[0];
+
+if(!file){
+this.clearUploadFile();
+return;
+}
+
+this.selectedUploadFile = {
+name: file.name,
+size: file.size
+};
+
+this.selectedUploadFileSize = this.formatFileSize(file.size);
+
+},
+
+clearUploadFile(){
+
+this.selectedUploadFile = null;
+this.selectedUploadFileSize = '';
+
+if(this.$refs.uploadInput){
+this.$refs.uploadInput.value = '';
+}
+
+},
+
+closeUploadModal(){
+
+this.showUploadModal = false;
+this.clearUploadFile();
+
+},
+
+formatFileSize(bytes){
+
+if(bytes < 1024){
+return bytes + ' B';
+}
+
+if(bytes < 1024 * 1024){
+return (bytes / 1024).toFixed(1) + ' KB';
+}
+
+return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
 
 }
 
